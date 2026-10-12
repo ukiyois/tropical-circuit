@@ -1,0 +1,10 @@
+MK4: m=6 k=3 L=3 {'states': 167517, 'potential_fail': 0, 'S_shrink': 0, 'nu_drop': 0, 'over_bound': 0} worst excess over r+1: 0  example ([0, 0, 0, 1, 2, 0], ['3', '1', '2', '3', '2', '0'], 2, 3, 1)  time 12s
+    (r, stage length) histogram: {(1, 1): 11205, (2, 1): 132570, (2, 2): 22710, (2, 3): 1032}
+W3: m=6 k=3 L=3 {'states': 167769, 'potential_fail': 0, 'S_shrink': 0, 'nu_drop': 0, 'over_bound': 0} worst excess over r+1: 0  example ([0, 0, 1, 2, 0, 0], ['3', '1', '3', '2', '1', '0'], 2, 3, 1)  time 15s
+    (r, stage length) histogram: {(1, 1): 11280, (2, 1): 132678, (2, 2): 23061, (2, 3): 750}
+K4minus+par: m=6 k=3 L=3 {'states': 164073, 'potential_fail': 0, 'S_shrink': 0, 'nu_drop': 0, 'over_bound': 0} worst excess over r+1: 1  example ([0, 1, 1, 1, 2, 0], ['3', '1', '0', '3', '3', '2'], 2, 4, 2)  time 13s
+    (r, stage length) histogram: {(1, 1): 10546, (2, 1): 130029, (2, 2): 22104, (2, 3): 1370, (2, 4): 24}
+C4+chord par: m=6 k=3 L=3 {'states': 164199, 'potential_fail': 0, 'S_shrink': 0, 'nu_drop': 0, 'over_bound': 0} worst excess over r+1: 1  example ([0, 1, 0, 0, 2, 1], ['0', '3', '1', '3', '3', '2'], 2, 4, 2)  time 12s
+    (r, stage length) histogram: {(1, 1): 10320, (2, 1): 129823, (2, 2): 22288, (2, 3): 1736, (2, 4): 32}
+U36: m=6 k=3 L=3 {'states': 168525, 'potential_fail': 0, 'S_shrink': 0, 'nu_drop': 0, 'over_bound': 0} worst excess over r+1: -1  example ([0, 0, 0, 0, 1, 2], ['0', '0', '1', '3', '1', '3'], 2, 2, 0)  time 17s
+    (r, stage length) histogram: {(1, 1): 11505, (2, 1): 132930, (2, 2): 24090}

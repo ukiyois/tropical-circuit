@@ -1,0 +1,13 @@
+U24: L=3 {'states': 390, 'Bstar': 450} bad=[] time 0s
+U25: L=3 {'states': 3945, 'Bstar': 5130} bad=[] time 0s
+U35: L=3 {'states': 9765, 'Bstar': 12690} bad=[] time 0s
+U36: L=3 {'states': 168525, 'Bstar': 247860} bad=[] time 4s
+MK4: L=3 {'states': 167517, 'Bstar': 242244} bad=[] time 3s
+W3: L=3 {'states': 167769, 'Bstar': 243648} bad=[] time 3s
+P6dbl: L=3 {'states': 34047, 'Bstar': 47988} bad=[] time 1s
+K4minus+par: L=3 {'states': 164073, 'Bstar': 235588} bad=[] time 3s
+C4+chord par: L=3 {'states': 164199, 'Bstar': 236024} bad=[] time 3s
+sumU12U23: L=3 {'states': 9000, 'Bstar': 11400} bad=[] time 0s
+sumU12U12: L=3 {'states': 157140, 'Bstar': 219456} bad=[] time 3s
+gf3_U24: L=3 {'states': 390, 'Bstar': 450} bad=[] time 0s
+U23+loop+coloop: L=3 {'states': 5454, 'Bstar': 6075} bad=[] time 0s

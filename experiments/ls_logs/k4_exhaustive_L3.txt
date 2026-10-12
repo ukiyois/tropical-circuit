@@ -1,0 +1,8 @@
+U45 {'assign': 10, 'states': 0, 'nu0_1': 0, 'nu0_2': 0, 'nu0_3': 0, 'END': 0, 'PATH_below2': 0, 'nu1_to_ge2': 0, 'nu1_fail': 0}
+U46 {'assign': 65, 'states': 13155, 'nu0_1': 0, 'nu0_2': 13155, 'nu0_3': 0, 'END': 0, 'PATH_below2': 0, 'nu1_to_ge2': 0, 'nu1_fail': 0}
+C5+chord {'assign': 64, 'states': 12081, 'nu0_1': 0, 'nu0_2': 12081, 'nu0_3': 0, 'END': 0, 'PATH_below2': 0, 'nu1_to_ge2': 0, 'nu1_fail': 0}
+C5+2chords {'assign': 347, 'states': 497399, 'nu0_1': 5764, 'nu0_2': 491635, 'nu0_3': 0, 'END': 0, 'PATH_below2': 0, 'nu1_to_ge2': 5764, 'nu1_fail': 0}
+K4+pendant {'assign': 346, 'states': 539871, 'nu0_1': 5148, 'nu0_2': 534723, 'nu0_3': 0, 'END': 0, 'PATH_below2': 0, 'nu1_to_ge2': 5148, 'nu1_fail': 0}
+U23+U23 {'assign': 63, 'states': 12015, 'nu0_1': 0, 'nu0_2': 12015, 'nu0_3': 0, 'END': 0, 'PATH_below2': 0, 'nu1_to_ge2': 0, 'nu1_fail': 0}
+bin4_7 {'assign': 347, 'states': 497399, 'nu0_1': 5764, 'nu0_2': 491635, 'nu0_3': 0, 'END': 0, 'PATH_below2': 0, 'nu1_to_ge2': 5764, 'nu1_fail': 0}
+C4par+tail {'assign': 316, 'states': 417084, 'nu0_1': 5040, 'nu0_2': 412044, 'nu0_3': 0, 'END': 0, 'PATH_below2': 0, 'nu1_to_ge2': 5040, 'nu1_fail': 0}

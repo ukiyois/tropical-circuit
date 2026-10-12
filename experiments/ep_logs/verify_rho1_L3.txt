@@ -1,0 +1,13 @@
+MK4: L=3 {'Bstar': 34452, 'fail_F1': 1296, 'fail_F2': 3096, 'n_F1': 2700, 'n_F2': 31752, 'n_T1': 2700, 'n_T2': 2700, 'n_T3': 2700, 'states': 14157} bad=[] time 2s
+W3: L=3 {'Bstar': 34614, 'fail_F1': 972, 'fail_F2': 2322, 'n_F1': 1953, 'n_F2': 32661, 'n_T1': 1953, 'n_T2': 1953, 'n_T3': 1953, 'states': 14229} bad=[] time 2s
+K4minus+par: L=3 {'Bstar': 33326, 'fail_F1': 1988, 'fail_F2': 6558, 'n_F1': 3461, 'n_F2': 29865, 'n_T1': 3461, 'n_T2': 3461, 'n_T3': 3461, 'states': 13940} bad=[] time 1s
+C4+chord par: L=3 {'Bstar': 32656, 'fail_F1': 2752, 'fail_F2': 6624, 'n_F1': 4308, 'n_F2': 28348, 'n_T1': 4308, 'n_T2': 4308, 'n_T3': 4308, 'states': 13678} bad=[] time 1s
+P6dbl: L=3 {'Bstar': 0, 'states': 0} bad=[] time 0s
+U24: L=3 {'Bstar': 0, 'states': 0} bad=[] time 0s
+U25: L=3 {'Bstar': 0, 'states': 0} bad=[] time 0s
+U35: L=3 {'Bstar': 2250, 'n_F2': 2250, 'states': 990} bad=[] time 0s
+U36: L=3 {'Bstar': 35100, 'n_F2': 35100, 'states': 14445} bad=[] time 2s
+sumU12U23: L=3 {'Bstar': 1644, 'fail_F2': 708, 'n_F2': 1644, 'states': 777} bad=[] time 0s
+sumU12U12: L=3 {'Bstar': 29088, 'fail_F2': 29088, 'n_F2': 29088, 'states': 12888} bad=[] time 2s
+gf3_U24: L=3 {'Bstar': 0, 'states': 0} bad=[] time 0s
+U23+loop+coloop: L=3 {'Bstar': 1242, 'n_F2': 1242, 'states': 621} bad=[] time 0s

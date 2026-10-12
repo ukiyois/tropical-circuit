@@ -1,0 +1,11 @@
+objective 2: T_LS=12 regular=12 drops=0 Psi=Opt:True nu0 seq [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5]
+objective 1: T_LS=11 regular=11 drops=0 Psi=Opt:True nu0 seq [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5]
+objective 1: T_LS=11 regular=11 drops=0 Psi=Opt:True nu0 seq [3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 5]
+objective 1: T_LS=11 regular=12 drops=0 Psi=Opt:True nu0 seq [3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5]
+objective 1: T_LS=11 regular=11 drops=0 Psi=Opt:True nu0 seq [3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5]
+objective 1: T_LS=11 regular=11 drops=0 Psi=Opt:True nu0 seq [3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 5]
+objective 0: T_LS=10 regular=10 drops=0 Psi=Opt:True nu0 seq [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5]
+objective 0: T_LS=10 regular=10 drops=0 Psi=Opt:True nu0 seq [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5]
+objective 0: T_LS=10 regular=10 drops=0 Psi=Opt:True nu0 seq [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5]
+objective 0: T_LS=10 regular=10 drops=0 Psi=Opt:True nu0 seq [3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 5]
+best: ([(2, 5), (4, 1), (1, 2), (4, 2), (2, 0), (2, 3), (5, 1), (1, 3), (5, 2), (3, 0)], [3, 1, 1, 3, 4, 2, 3, 2, 2, 0], [32, 73710, 2097155, 5, 16777215, 0, 1083469, 139577, 4194310, 8388605], (2, 12, 12, 0, 'ok'), True, [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5])

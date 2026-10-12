@@ -1,0 +1,11 @@
+L=0 m=5: regular stage lengths [0, 2] (total 2), last-stage-only updates 2, nu0 trace [2, 2, 3], Psi 3 Opt 3
+L=1 m=6: regular stage lengths [0, 3] (total 3), last-stage-only updates 3, nu0 trace [2, 2, 2, 3], Psi 5 Opt 5
+L=2 m=7: regular stage lengths [0, 4] (total 4), last-stage-only updates 4, nu0 trace [2, 2, 2, 2, 3], Psi 9 Opt 9
+L=3 m=8: regular stage lengths [0, 5] (total 5), last-stage-only updates 5, nu0 trace [2, 2, 2, 2, 2, 3], Psi 17 Opt 17
+L=4 m=9: regular stage lengths [0, 6] (total 6), last-stage-only updates 6, nu0 trace [2, 2, 2, 2, 2, 2, 3], Psi 33 Opt 33
+L=5 m=10: regular stage lengths [0, 7] (total 7), last-stage-only updates 7, nu0 trace [2, 2, 2, 2, 2, 2, 2, 3], Psi 65 Opt 65
+L=6 m=11: regular stage lengths [0, 8] (total 8), last-stage-only updates 8, nu0 trace [2, 2, 2, 2, 2, 2, 2, 2, 3], Psi 129 Opt 129
+L=7 m=12: regular stage lengths [0, 9] (total 9), last-stage-only updates 9, nu0 trace [2, 2, 2, 2, 2, 2, 2, 2, 2, 3], Psi 257 Opt 257
+L=8 m=13: regular stage lengths [0, 10] (total 10), last-stage-only updates 10, nu0 trace [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3], Psi 513 Opt 513
+L=9 m=14: regular stage lengths [0, 11] (total 11), last-stage-only updates 11, nu0 trace [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3], Psi 1025 Opt 1025
+L=10 m=15: regular stage lengths [0, 12] (total 12), last-stage-only updates 12, nu0 trace [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3], Psi 2049 Opt 2049

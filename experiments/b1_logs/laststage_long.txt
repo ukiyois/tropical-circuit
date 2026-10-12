@@ -1,0 +1,4 @@
+k5 long: k=5 m=10 regular stage lengths [0, 0, 0, 13] (total 13); last-stage-only: 13 updates, nu0 trace [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5], Psi 3379272, Opt 3379272
+epoch |U|+1: k=3 m=8 regular stage lengths [0, 7] (total 7); last-stage-only: 7 updates, nu0 trace [2, 2, 2, 2, 2, 2, 2, 3], Psi 266076, Opt 266076
+conj 2.7 cex: k=4 m=10 regular stage lengths [0, 1, 7] (total 8); last-stage-only: 7 updates, nu0 trace [2, 3, 3, 3, 3, 3, 3, 4], Psi 99329, Opt 99329
+epochmax: k=4 m=10 regular stage lengths [0, 1, 8] (total 9); last-stage-only: 8 updates, nu0 trace [2, 3, 3, 3, 3, 3, 3, 3, 4], Psi 1698368, Opt 1698368

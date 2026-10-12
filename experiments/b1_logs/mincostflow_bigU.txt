@@ -1,0 +1,1 @@
+{'inst': 360, 'restarts': 1930, 'fail_O': 0, 'fail_2m': 0, 'wrong': 0, 'max_d': 4, 'max_upd': 4, 'bal_wrong': 0}

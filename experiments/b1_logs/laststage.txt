@@ -1,0 +1,1 @@
+{'inst': 147, 'last_ok': 147, 'last_stuck': 0, 'last_nonmono': 0, 'last_max_upd': 4, 'reg_max_upd': 5, 'scaled_last_ok': 147, 'scaled_last_max_upd': 5, 'psi_over': 0, 'last_sum_upd': 83, 'reg_sum_upd': 112}

@@ -1,0 +1,14 @@
+xlink U24: L=4 {'states': 369, 'levels': 1361, 'F1': 0, 'F2': 0, 'F3': 0, 'F4': 0} examples={} 2s
+xlink U25: L=4 {'states': 2101, 'levels': 8701, 'F1': 0, 'F2': 0, 'F3': 0, 'F4': 0} examples={} 2s
+xlink U35: L=4 {'states': 2101, 'levels': 8701, 'F1': 0, 'F2': 0, 'F3': 0, 'F4': 0} examples={} 2s
+xlink U36: L=4 {'states': 11529, 'levels': 51017, 'F1': 0, 'F2': 0, 'F3': 0, 'F4': 0} examples={} 7s
+xlink MK4: L=4 {'states': 11529, 'levels': 51017, 'F1': 0, 'F2': 36, 'F3': 0, 'F4': 0} examples={'F2': ([1, 2, 4, 2, 4, 0], 3)} 4s
+xlink W3: L=4 {'states': 11529, 'levels': 51017, 'F1': 0, 'F2': 27, 'F3': 0, 'F4': 0} examples={'F2': ([1, 0, 4, 2, 2, 4], 3)} 6s
+xlink P6dbl: L=4 {'states': 11529, 'levels': 51017, 'F1': 0, 'F2': 0, 'F3': 0, 'F4': 0} examples={} 5s
+xlink K4minus+par: L=4 {'states': 11529, 'levels': 51017, 'F1': 0, 'F2': 46, 'F3': 0, 'F4': 0} examples={'F2': ([2, 2, 0, 1, 4, 4], 3)} 6s
+xlink C4+chord par: L=4 {'states': 11529, 'levels': 51017, 'F1': 0, 'F2': 32, 'F3': 0, 'F4': 0} examples={'F2': ([0, 4, 2, 1, 2, 4], 3)} 5s
+xlink sumU12U23: L=4 {'states': 2101, 'levels': 8701, 'F1': 0, 'F2': 0, 'F3': 0, 'F4': 0} examples={} 1s
+xlink sumU12U12: L=4 {'states': 11529, 'levels': 51017, 'F1': 0, 'F2': 0, 'F3': 0, 'F4': 0} examples={} 4s
+xlink gf3_U24: L=4 {'states': 369, 'levels': 1361, 'F1': 0, 'F2': 0, 'F3': 0, 'F4': 0} examples={} 1s
+xlink U23+loop+coloop: L=4 {'states': 2101, 'levels': 8701, 'F1': 0, 'F2': 0, 'F3': 0, 'F4': 0} examples={} 1s
+xlink F7: L=2 {'states': 2059, 'levels': 5923, 'F1': 0, 'F2': 0, 'F3': 0, 'F4': 0} examples={} 3s

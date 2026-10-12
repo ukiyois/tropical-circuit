@@ -1,0 +1,4 @@
+tight instance b m=9: T_LS=8
+tight instance g m=8: T_LS=7
+tight instance g m=11: T_LS=10
+{'runs': 215734, 'THM': 0, 'STEP1': 0, 'REG': 0, 'OPT': 0, 'F1': 3, 'F2': 158, 'CAP': 0, 'maxT_minus_m': -1}

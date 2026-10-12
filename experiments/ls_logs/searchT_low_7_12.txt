@@ -1,0 +1,6 @@
+objective 10: T_LS=11 regular=11 drops=0 Psi=Opt:True nu0 seq [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 6]
+objective 9: T_LS=9 regular=10 drops=0 Psi=Opt:True nu0 seq [4, 4, 4, 4, 4, 4, 4, 4, 4, 6]
+objective 9: T_LS=9 regular=11 drops=0 Psi=Opt:True nu0 seq [1, 2, 2, 2, 2, 2, 2, 2, 2, 4]
+objective 9: T_LS=9 regular=12 drops=0 Psi=Opt:True nu0 seq [4, 4, 4, 4, 4, 4, 4, 4, 4, 6]
+objective 9: T_LS=10 regular=10 drops=0 Psi=Opt:True nu0 seq [3, 3, 4, 4, 4, 4, 4, 4, 4, 5, 6]
+best: ([(2, 6), (0, 2), (6, 2), (3, 5), (3, 4), (4, 6), (6, 3), (5, 1), (2, 5), (1, 0), (1, 2), (4, 1)], [2, 4, 4, 3, 4, 2, 0, 5, 1, 4, 0, 0], [999, 27669, 254, 65535, 9, 392, 5231, 65535, 32767, 16829, 605, 2332], (10, 11, 11, 0, 'ok'), True, [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 6])

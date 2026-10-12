@@ -1,0 +1,2 @@
+8 8 floor phases 5 P at restart [0, 0, 0, 0, 0, 0, 0, 0, 0] deficit 64 kq 64
+8 8 bal phases 5 P at restart [0, 0, 0, 0, 0, 0, 0, 0, 0] deficit 64 kq 64

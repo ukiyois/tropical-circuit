@@ -1,0 +1,1 @@
+{'inst': 694029, 'blocks': 331570, 'intervals': 4791073, 'PATH': 0, 'END': 0, 'ASCENT': 0}

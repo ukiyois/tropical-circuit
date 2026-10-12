@@ -1,0 +1,6 @@
+objective 715: T_LS=8 regular=15 stages=(0, 0, 8, 7) drops=0 Psi=Opt:True nu0 seq [3, 3, 3, 3, 3, 3, 4, 4, 5]
+objective 614: T_LS=3 regular=14 stages=(0, 1, 6, 7) drops=0 Psi=Opt:True nu0 seq [2, 3, 4, 5]
+objective 613: T_LS=7 regular=13 stages=(0, 1, 6, 6) drops=0 Psi=Opt:True nu0 seq [2, 3, 3, 3, 3, 3, 4, 5]
+objective 613: T_LS=7 regular=13 stages=(0, 1, 6, 6) drops=0 Psi=Opt:True nu0 seq [2, 3, 3, 3, 3, 3, 4, 5]
+objective 511: T_LS=6 regular=11 stages=(0, 0, 6, 5) drops=0 Psi=Opt:True nu0 seq [3, 3, 3, 3, 4, 4, 5]
+best: ([(0, 2), (4, 0), (4, 3), (1, 2), (1, 4), (0, 2), (1, 2), (5, 4), (5, 2), (5, 0), (3, 1)], [0, 0, 1, 0, 0, 0, 0, 3, 3, 2, 4], [0, 13248, 54328, 28052, 7, 772, 386, 114366, 108656, 71209, 262143], (715, 8, 15, 0, 'ok', (0, 0, 8, 7)), True, [3, 3, 3, 3, 3, 3, 4, 4, 5])

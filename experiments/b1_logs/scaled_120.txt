@@ -1,0 +1,1 @@
+{'inst': 720, 'restarts': 6401, 'X_fail': 0, 'fine_fail': 0, 'wrong': 0, 'max_ratio_floor': 0.3125, 'max_ratio_bal': 0.25, 'max_upd_floor': 12, 'max_upd_bal': 14, 'max_d_floor': 8, 'max_d_bal': 5, 'unc_cases': 339, 'unc_fail': 0}

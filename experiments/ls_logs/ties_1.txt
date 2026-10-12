@@ -1,0 +1,2 @@
+{'ties': 42794, 'gain_pos': 151, 'loss_pos': 14, 'loss_gt_gain': 0, 'bound': 2456522, 'bound_drop_vs_before': 0, 'bound_after_lt_at': 0}
+(gain on A, loss on A^c) histogram: [((0, 0), 42643), ((1, 0), 137), ((1, 1), 14)]

@@ -1,0 +1,7 @@
+score 32: deficit 84 X 52 Opt-Psi_static 0 nu0_end 136/136
+score 32: deficit 84 X 52 Opt-Psi_static 0 nu0_end 122/122
+score 32: deficit 84 X 52 Opt-Psi_static 0 nu0_end 130/130
+score 30: deficit 82 X 52 Opt-Psi_static 0 nu0_end 118/118
+score 26: deficit 78 X 52 Opt-Psi_static 0 nu0_end 112/112
+score 23: deficit 75 X 52 Opt-Psi_static 0 nu0_end 112/112
+best instance: (1, 2, 7, {(0, 0): 12, (0, 1): 20, (0, 2): 20, (0, 3): 14, (0, 4): 22, (0, 5): 16, (0, 6): 18}, {(0, 0): 1, (0, 1): 0, (0, 2): 0, (0, 3): 2, (0, 4): 2, (0, 5): 0, (0, 6): 5}, {(0, 0): 15, (1, 0): 8, (2, 0): 2, (0, 1): 25, (1, 1): 0, (2, 1): 0, (0, 2): 9, (1, 2): 1, (2, 2): 1, (0, 3): 4, (1, 3): 0, (2, 3): 1, (0, 4): 10, (1, 4): 0, (2, 4): 0, (0, 5): 15, (1, 5): 0, (2, 5): 8, (0, 6): 10, (1, 6): 0, (2, 6): 0})

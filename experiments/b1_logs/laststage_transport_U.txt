@@ -1,0 +1,8 @@
+U=4: instances 40, F max 34, last-stage-only updates max 3, Psi=Opt 40/40, nu0 monotone True
+U=64: instances 40, F max 577, last-stage-only updates max 3, Psi=Opt 40/40, nu0 monotone True
+U=1024: instances 40, F max 8361, last-stage-only updates max 4, Psi=Opt 40/40, nu0 monotone True
+U=16384: instances 40, F max 136639, last-stage-only updates max 3, Psi=Opt 40/40, nu0 monotone True
+T (1, 7, 3) F 49 updates 1 ok True
+T (2, 6, 5) F 72 updates 1 ok True
+R (4, 4) F 96 updates 1 ok True
+R (8, 8) F 384 updates 1 ok True

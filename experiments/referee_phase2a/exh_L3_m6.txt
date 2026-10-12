@@ -1,0 +1,16 @@
+U36: m=6 k=3 blocks=90 L=3 states(nu0<k)=168525 failures=0 time=62s
+    {'F1': 168525, 'F2': 1101315, 'F3': 1269840, 'F4': 168525, 'rel': 634920, 'T6': 168525, 'T8': 168525, 'T8-item3-cases': 0, 'S-grow': 24090, 'aug': 144435, 'C-not-strict-anyway': 0, 'step3-choices': 911160, 'compile': 168525}
+MK4: m=6 k=3 blocks=90 L=3 states(nu0<k)=167517 failures=0 time=55s
+    {'F1': 167517, 'F2': 1096083, 'F3': 1263600, 'F4': 167517, 'rel': 631800, 'T6': 167517, 'T8': 167517, 'T8-item3-cases': 1188, 'S-grow': 22554, 'aug': 143775, 'C-not-strict-anyway': 0, 'step3-choices': 646272, 'compile': 167517}
+W3: m=6 k=3 blocks=90 L=3 states(nu0<k)=167769 failures=0 time=59s
+    {'F1': 167769, 'F2': 1097391, 'F3': 1265160, 'F4': 167769, 'rel': 632580, 'T6': 167769, 'T8': 167769, 'T8-item3-cases': 873, 'S-grow': 22938, 'aug': 143958, 'C-not-strict-anyway': 0, 'step3-choices': 717138, 'compile': 167769}
+P6dbl: m=6 k=2 blocks=31 L=3 states(nu0<k)=34047 failures=0 time=11s
+    {'F1': 34047, 'F2': 223845, 'F3': 257892, 'F4': 34047, 'rel': 128946, 'T6': 34047, 'T8': 34047, 'T8-item3-cases': 0, 'S-grow': 0, 'aug': 34047, 'C-not-strict-anyway': 0, 'step3-choices': 93456, 'compile': 34047}
+K4minus+par: m=6 k=3 blocks=89 L=3 states(nu0<k)=164073 failures=0 time=55s
+    {'F1': 164073, 'F2': 1073995, 'F3': 1238068, 'F4': 164073, 'rel': 619034, 'T6': 164073, 'T8': 164073, 'T8-item3-cases': 1486, 'S-grow': 22012, 'aug': 140575, 'C-not-strict-anyway': 0, 'step3-choices': 535360, 'compile': 164073}
+C4+chord par: m=6 k=3 blocks=89 L=3 states(nu0<k)=164199 failures=0 time=49s
+    {'F1': 164199, 'F2': 1074705, 'F3': 1238904, 'F4': 164199, 'rel': 619452, 'T6': 164199, 'T8': 164199, 'T8-item3-cases': 1840, 'S-grow': 22216, 'aug': 140143, 'C-not-strict-anyway': 0, 'step3-choices': 508896, 'compile': 164199}
+sumU12U23: m=5 k=3 blocks=24 L=3 states(nu0<k)=9000 failures=0 time=2s
+    {'F1': 9000, 'F2': 56880, 'F3': 65880, 'F4': 9000, 'rel': 32940, 'T6': 9000, 'T8': 9000, 'T8-item3-cases': 0, 'S-grow': 1080, 'aug': 7920, 'C-not-strict-anyway': 0, 'step3-choices': 17766, 'compile': 9000}
+U26: m=6 k=2 blocks=31 L=3 states(nu0<k)=34848 failures=0 time=11s
+    {'F1': 34848, 'F2': 228624, 'F3': 263472, 'F4': 34848, 'rel': 131736, 'T6': 34848, 'T8': 34848, 'T8-item3-cases': 0, 'S-grow': 0, 'aug': 34848, 'C-not-strict-anyway': 0, 'step3-choices': 130680, 'compile': 34848}

@@ -1,0 +1,2 @@
+F7: m=7 k=3 blocks=301 L=2 states(nu0<k)=318934 failures=0 time=144s
+    {'F1': 318934, 'F2': 1533630, 'F3': 1852564, 'F4': 318934, 'rel': 926282, 'T6': 318934, 'T8': 318934, 'T8-item3-cases': 651, 'S-grow': 24500, 'aug': 293783, 'C-not-strict-anyway': 0, 'step3-choices': 2058504, 'compile': 318934}

@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Environments
+.env
+.venv/
+
+# Build artifacts
+build/
+dist/
+*.o
+*.exe
+
+# Bench outputs
+bench/results/*.csv
+bench/fourti2/work/
+bench/fourti2/toy/*.gro
+bench/fourti2/toy/*.nf
+bench/fourti2/toy/*.feas
+bench/fourti2/toy/*.cost
+
+# LaTeX auxiliary files
+paper/*.pdf
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.fdb_latexmk
+paper/*.fls
+paper/*.log
+paper/*.out
+paper/*.synctex.gz
+paper/*.toc
+
+# Lean build artifacts
+.lake/
+docbuild/.lake/

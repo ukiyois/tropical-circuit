@@ -1,0 +1,5 @@
+k 7 m 14
+regular stage lengths from w: [0, 0, 0, 0, 1, 20]
+w' (entry of stage 6 ): [430261, 4251475, 307393, 19124, 153712, 3840, 2342092, 1171454, 102834, 307393, 14844536, 46321, 200643, 256338] nu0(w') = 6
+T_LS(w') = 20  m + 6 = 20  Psi=Opt: True  nu0 seq: [6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 7]
+referee: updates of stage 6 from w' = 20  final state equal: True

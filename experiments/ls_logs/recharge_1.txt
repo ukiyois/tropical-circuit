@@ -1,0 +1,11 @@
+objective 103: T_LS=7 regular=4 drops=1 Psi=Opt:True nu0 seq [3, 2, 3, 4, 4, 4, 4, 5]
+objective 103: T_LS=7 regular=4 drops=1 Psi=Opt:True nu0 seq [3, 2, 3, 4, 4, 4, 4, 5]
+objective 103: T_LS=7 regular=4 drops=1 Psi=Opt:True nu0 seq [3, 2, 4, 4, 4, 4, 4, 5]
+objective 101: T_LS=4 regular=3 drops=1 Psi=Opt:True nu0 seq [3, 2, 3, 4, 5]
+objective 101: T_LS=7 regular=6 drops=1 Psi=Opt:True nu0 seq [3, 2, 3, 4, 4, 4, 4, 5]
+objective 101: T_LS=8 regular=7 drops=1 Psi=Opt:True nu0 seq [3, 3, 2, 3, 4, 4, 4, 4, 5]
+objective 101: T_LS=6 regular=5 drops=1 Psi=Opt:True nu0 seq [3, 2, 3, 4, 4, 4, 5]
+objective 101: T_LS=7 regular=6 drops=1 Psi=Opt:True nu0 seq [3, 2, 3, 4, 4, 4, 4, 5]
+objective 101: T_LS=6 regular=5 drops=1 Psi=Opt:True nu0 seq [3, 2, 3, 4, 4, 4, 5]
+objective 100: T_LS=6 regular=6 drops=1 Psi=Opt:True nu0 seq [3, 2, 3, 3, 4, 4, 5]
+best: ([(2, 3), (5, 1), (1, 0), (4, 2), (5, 1), (5, 3), (0, 4), (0, 5), (1, 0), (2, 4), (5, 3), (4, 2)], [0, 1, 1, 0, 2, 0, 3, 4, 3, 0, 1, 2], [636, 1534, 1843, 25, 1822, 260, 2013, 1816, 426, 1239, 2114, 2110], (103, 7, 4, 1), True, [3, 2, 3, 4, 4, 4, 4, 5])

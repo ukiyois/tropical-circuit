@@ -1,0 +1,3 @@
+Part A (sinks): {'cases': 153300, 'minmax_fail': 0, 'cmp_fail': 0, 'V1': 25114, 'V2': 24544, 'V3': 49658, 'V4': 373}
+Part B (pairs): {'pairs': 1440, 'sets': 10778, 'rado_fail': 0, 'thm_fail': 0, 'noalpha_fail': 84, 'max_d': 12, 'tight': 19}
+Part C (chains): {'restarts_floor': 1416, 'restarts_bal': 1797, 'thm_fail': 0, 'floorcor_fail': 0, 'floor_global_fail': 0, 'bal_fail': 0, 'bal_delta_fail': 0, 'max_floor': 7, 'max_bal': 4, 'correct': 1200, 'runs': 1200, 'max_bal_minus_m0': -1}

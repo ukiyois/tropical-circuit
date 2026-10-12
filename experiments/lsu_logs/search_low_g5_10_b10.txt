@@ -1,0 +1,3 @@
+# lsu_search g n=5 m=10 bits=10 obj=low budget=600.0 workers=1
+objective 8: T=8 low=8 mis=1 nonpure=2 drops=0 Psi=Opt:True nu0 seq [2, 2, 2, 2, 2, 2, 2, 2, 4]
+   data=[(2, 3), (4, 2), (4, 0), (0, 1), (3, 4), (4, 0), (1, 0), (4, 0), (2, 1), (3, 0)] blk=[1, 2, 2, 2, 3, 2, 2, 2, 2, 0] w=[766, 0, 32, 81, 515, 257, 160, 2, 110, 1023]
