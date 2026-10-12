@@ -270,9 +270,9 @@ blocks.  One update raises the potential of each block $b$ by the length of the
 set of levels $t\ge0$ at which a family $N(t)$ of bases, read from the relation
 $G_t=\{(e,f):v_f-v_e\le t\}$, has a base that meets exactly $r$ blocks and misses
 $b$, counted up to the first level at which $N(t)$ has a base meeting $r+1$
-blocks.  Such a length is a threshold integral, and the compiler of the
-companion paper~\cite{wang26-assign} turns a Boolean circuit for the observation
-into a signed tropical circuit for the integral.
+blocks.  Such a length is a threshold integral, and the compiler of
+Theorem~\ref{thm:compiler} turns a Boolean circuit for the observation into a
+signed tropical circuit for the integral.
 
 \paragraph{Which family.}
 For the assignment problem the companion paper observes threshold graphs of
@@ -388,8 +388,10 @@ of $u$ and $U_i=\{u\le\ell_i\}$, $U_0=\varnothing$, then
 
 \subsection{Threshold integrals}
 
-The compiler of the companion paper~\cite{wang26-assign} is the bridge between
-Boolean observations and signed circuits.  We restate it with explicit constants.
+The bridge between Boolean observations and signed circuits is the compiler of
+Theorem~\ref{thm:compiler}.  We prove it here with explicit constants, so that the
+results of this paper do not rest on the companion paper~\cite{wang26-assign},
+which uses a compiler of the same kind for the assignment problem.
 
 \begin{definition}[Threshold integral]
 \label{def:ti}
@@ -407,7 +409,7 @@ The two expressions agree because $G_t(D)=G_{s_i}(D)$ for every $t$ in
 $[s_i,s_{i+1})$.  If $F(E)=0$, the upper limit $s_m=\max_eD_e$ can be replaced
 by $\infty$, since $G_t(D)=E$ for $t\ge s_m$.
 
-\begin{theorem}[Compiler~\cite{wang26-assign}]
+\begin{theorem}[Compiler]
 \label{thm:compiler}
 Let one Boolean circuit of size $s$ compute $F=(F_1,\ldots,F_N):2^{E}\to\{0,1\}^{N}$
 from the indicator vector of its argument.  Then a signed tropical circuit of
