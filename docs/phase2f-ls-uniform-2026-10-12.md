@@ -16,7 +16,7 @@ alone, for all real `w`; or show that no such bound exists. Setting and labels:
   `experiments/lsu_*.py`, logs to `experiments/lsu_logs/`. At most 4 workers.
 - 19:40 exploration done (scripts `lsu_core.py`, `lsu_trace.py`, `lsu_search.py`,
   `lsu_overshoot.py`, `lsu_blockconst.py`, `lsu_bc_ties.py`; throwaway probes
-  `lsu_tmp_*.py`, whose numbers are copied into Section 7). Refuted as potentials:
+  `lsu_tmp_*.py`, removed on 2026-10-12, whose numbers are copied into Section 7). Refuted as potentials:
   no overshoot of the least dual optimum; order of the remaining offsets; ties of
   offsets persist; "a pair once in its final order stays so"; others (Section 7).
 - 20:05 proved and checked: Theorem 2.1 (`k = 3`: `T_LS <= m`), Lemmas 3.1 to 3.3
@@ -641,4 +641,4 @@ improved here.
 | `lsu_fewvalues.py` | `T_LS` against the number of distinct values of `w` | `lsu_logs/fewvalues_1.txt` |
 | `lsu_search.py` | hill climbing for many steps below `k - 1` (or mismatches), by bit length | `lsu_logs/search_*.txt` |
 | `lsu_overshoot.py` | first version of P1 (no overshoot of `p0`) | (console: 560 of 77,560 runs) |
-| `lsu_tmp_*.py` | throwaway probes; their numbers are reproduced by the scripts above except where stated in Sections 6, 7 | |
+| `lsu_tmp_*.py` | throwaway probes, removed on 2026-10-12; their numbers are reproduced by the scripts above except where stated in Sections 6, 7 | |
