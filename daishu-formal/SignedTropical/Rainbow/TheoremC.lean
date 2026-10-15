@@ -29,16 +29,19 @@ invariant `Schedule.le_nu_schedule`).  With `CA` the circuit of Theorem A, the o
 `Σ_b p_b - h_M(-v) = Σ_b p_b + β_M(v) = Ψ(p)` (`psiV_eq`), and `Ψ(p) = Opt(w)` after the schedule
 (`Schedule.psi_schedule`).  Two instances: `theoremC`, with `L = stageLength k m` and
 `R = Schedule.rounds k m` rounds, at most `(⌊m²/4⌋ + 1) · k(k-1)/2`
-(`Schedule.rounds_le_potential`) and at most `k³ m` (`Schedule.rounds_le`); and
+(`Schedule.rounds_le_potential`) and at most `2 k² m` (`Schedule.rounds_le`); and
 `theoremC_rankOne`, with `L r = r` and `k(k-1)/2` rounds when every component of `M` has rank at
 most one (Corollary `cor:rankone`).
 
-The size: the theorems state `R · (3 m² s_O + k m² + 6 m⁴ + 2 m² + m + k)` plus the output part
-`3 m s + m L' + 9 m² + 5 m + 4 L' + k + 2`, `L' = ⌈log₂(k+1)⌉`, for observers of size at most
-`s_O`; `size_le_of_observer_le` turns `s_O ≤ c k m³ (s + m)` (the order of Lemma `lem:observer`)
-and `R ≤ k^a m^b` into `(3 c + 36) k^(a+1) m^(b+5) (s + m) + 2`: `theoremC_bigO` obtains
-`(3 c + 36) k⁴ m⁶ (s + m) + 2`, the paper's `O(k⁴ m⁶ (s + m))`, and `theoremC_bigO_rankOne`
-obtains `(3 c + 36) k³ m⁵ (s + m) + 2`.  Uniformity is not formalized.
+The size: the theorems state `Σ_{r<k} L r · (3 m² s_O(r) + k m² + 6 m⁴ + 2 m² + m + k)` plus the
+output part `3 m s + m L' + 9 m² + 5 m + 4 L' + k + 2`, `L' = ⌈log₂(k+1)⌉`, for observers of
+stage `r` of size at most `s_O(r)`.  For `s_O(r) ≤ c (r + 2) m² (s + m)`, the order of Lemma
+`lem:observer` (`r + 1` rounds of augmentation at stage `r`), a round of stage `r` has at most
+`3 c (r + 2) m⁴ (s + m) + 11 m⁴` gates (`updSize_le`), so the size is governed by
+`Σ_r L r (r + 2)` and `Σ_r L r`: `theoremC_bigO` obtains `40 |C| ≤ (147 c + 1880) k³ m⁵ (s + m) + 80`
+(`Schedule.sum_stageLength_mul_le`, `Schedule.rounds_le`), the paper's `O(k³ m⁵ (s + m))`, and
+`theoremC_bigO_rankOne` obtains `2 |C| ≤ (3 c + 72) k³ m⁴ (s + m) + 4`
+(`Schedule.sum_range_mul_le`).  Uniformity is not formalized.
 -/
 
 open Finset
@@ -262,42 +265,41 @@ theorem psiV_eq {CA : Circuit STOp m}
   simp [sub_eq_add_neg]
 
 /-- The gates of stages `1, …, j`, `j ≤ k - 1`, when every round circuit `U r`,
-`r ∈ {1, …, k - 1}`, has at most `S` gates. -/
-theorem schedCost_le {L : ℕ → ℕ} {U : ℕ → Circuit STOp (m + k)} {S : ℕ}
-    (hU : ∀ r, 1 ≤ r → r < k → (U r).size ≤ S) :
-    ∀ j, j ≤ k - 1 → schedCost L U j ≤ (∑ r ∈ range (j + 1), L r) * S
+`r ∈ {1, …, k - 1}`, has at most `S r` gates. -/
+theorem schedCost_le {L : ℕ → ℕ} {U : ℕ → Circuit STOp (m + k)} {S : ℕ → ℕ}
+    (hU : ∀ r, 1 ≤ r → r < k → (U r).size ≤ S r) :
+    ∀ j, j ≤ k - 1 → schedCost L U j ≤ ∑ r ∈ range (j + 1), L r * S r
   | 0, _ => Nat.zero_le _
   | j + 1, hj => by
     have ih := schedCost_le (L := L) hU j (by omega)
-    rw [schedCost, sum_range_succ, add_mul]
+    rw [schedCost, sum_range_succ]
     exact Nat.add_le_add ih (Nat.mul_le_mul_left _ (hU (j + 1) (by omega) (by omega)))
 
-/-- For stage lengths with `L 0 = 0`, the rounds of stages `1, …, k - 1` number
-`Σ_{r<k} L r`. -/
-theorem sum_range_sub_one (L : ℕ → ℕ) (hL0 : L 0 = 0) (k : ℕ) :
-    ∑ r ∈ range (k - 1 + 1), L r = ∑ r ∈ range k, L r := by
+/-- A sum over the stages `0, …, k - 1` whose term at `0` vanishes (stage `0` is empty). -/
+theorem sum_range_sub_one (f : ℕ → ℕ) (hf0 : f 0 = 0) (k : ℕ) :
+    ∑ r ∈ range (k - 1 + 1), f r = ∑ r ∈ range k, f r := by
   rcases Nat.eq_zero_or_pos k with rfl | hk
-  · simp [hL0]
+  · simp [hf0]
   · rw [Nat.sub_add_cancel hk]
 
 /-- **Theorem `thm:C`, for valid stage lengths**, with the observers of Lemma `lem:observer` as
 hypotheses.  Let `M` be a matroid on `E = Fin m` with rank `k` and a rainbow base, its elements
 partitioned into the `k` blocks `blk`, and `L` valid stage lengths with `L 0 = 0`.  If a Boolean
 circuit `B` of size `s` outputs the binary digits of the rank `r(S)` from the indicator vector of
-`S`, and for every stage `r ∈ {1, …, k - 1}` an observer `O r` of stage `r` with at most `s_O`
+`S`, and for every stage `r ∈ {1, …, k - 1}` an observer `O r` of stage `r` with at most `s_O(r)`
 gates is given, then a signed tropical circuit of size at most
-`(Σ_{r<k} L r) · (3 m² s_O + k m² + 6 m⁴ + 2 m² + m + k) + 3 m s + m L' + 9 m² + 5 m + 4 L' + k + 2`,
+`Σ_{r<k} L r · (3 m² s_O(r) + k m² + 6 m⁴ + 2 m² + m + k) + 3 m s + m L' + 9 m² + 5 m + 4 L' + k + 2`,
 `L' = ⌈log₂(k+1)⌉`, computes `Opt(w)` at every `w ∈ ℝ^E`. -/
 theorem theoremC_of_validLength (hE : M.E = Set.univ) (hk : rank M = k)
     (hM : ∃ B, IsRainbowBase M blk B) {L : ℕ → ℕ} (hL : Schedule.ValidLength M blk L)
     (hL0 : L 0 = 0) (B : Circuit BoolOp m)
     (hB : ∀ S : Finset (Fin m),
       (bitsVal (B.eval boolInterp (indicator S)) : ℕ∞) = M.eRk (S : Set (Fin m)))
-    (O : ℕ → Circuit BoolOp (m * m)) (sO : ℕ)
-    (hO : ∀ r, 1 ≤ r → r < k → IsObserver M blk r (O r) ∧ (O r).size ≤ sO) :
+    (O : ℕ → Circuit BoolOp (m * m)) (sO : ℕ → ℕ)
+    (hO : ∀ r, 1 ≤ r → r < k → IsObserver M blk r (O r) ∧ (O r).size ≤ sO r) :
     ∃ C : Circuit STOp m,
-      C.size ≤ (∑ r ∈ range k, L r) *
-          (3 * m ^ 2 * sO + k * m ^ 2 + 6 * m ^ 4 + 2 * m ^ 2 + m + k) +
+      C.size ≤ ∑ r ∈ range k, L r *
+          (3 * m ^ 2 * sO r + k * m ^ 2 + 6 * m ^ 4 + 2 * m ^ 2 + m + k) +
         (3 * m * B.size + m * Nat.size k + 9 * m ^ 2 + 5 * m + 4 * Nat.size k + k + 2) ∧
       ∀ w : Fin m → ℝ, C.eval (stInterp ℝ) w = [Opt M blk w] := by
   obtain ⟨hsize, heval⟩ :=
@@ -307,12 +309,12 @@ theorem theoremC_of_validLength (hE : M.E = Set.univ) (hk : rank M = k)
   · have hCA := (theoremACircuit_spec B (rank M)).1
     rw [show Nat.size (rank M) = Nat.size k by rw [hk]] at hCA
     have hU : ∀ r, 1 ≤ r → r < k → (updCircuit blk (O r)).size ≤
-        3 * m ^ 2 * sO + k * m ^ 2 + 6 * m ^ 4 + 2 * m ^ 2 + m + k := fun r h1 h2 =>
+        3 * m ^ 2 * sO r + k * m ^ 2 + 6 * m ^ 4 + 2 * m ^ 2 + m + k := fun r h1 h2 =>
       (updCircuit_size_le blk (hO r h1 h2).1.length_outs).trans (by
         have := Nat.mul_le_mul_left (3 * m ^ 2) (hO r h1 h2).2
         omega)
     have hS := schedCost_le (L := L) hU (k - 1) le_rfl
-    rw [sum_range_sub_one L hL0] at hS
+    rw [sum_range_sub_one _ (by simp [hL0]) k] at hS
     rw [hsize]
     omega
   · rw [heval, psiV_eq (theoremACircuit_correct M hE B hB),
@@ -320,120 +322,167 @@ theorem theoremC_of_validLength (hE : M.E = Set.univ) (hk : rank M = k)
         (k - 1) le_rfl, Schedule.psi_schedule hE hk hL w]
 
 /-- **Theorem `thm:C`**, with the observers of Lemma `lem:observer` as hypotheses: the case
-`L = stageLength k m` of `theoremC_of_validLength`, with `R = Σ_{r<k} stageLength k m r`
-rounds (`Schedule.rounds`), at most `(⌊m²/4⌋ + 1) k(k-1)/2` and at most `k³ m`. -/
+`L = stageLength k m` of `theoremC_of_validLength`. -/
 theorem theoremC (hE : M.E = Set.univ) (hk : rank M = k) (hM : ∃ B, IsRainbowBase M blk B)
     (B : Circuit BoolOp m)
     (hB : ∀ S : Finset (Fin m),
       (bitsVal (B.eval boolInterp (indicator S)) : ℕ∞) = M.eRk (S : Set (Fin m)))
-    (O : ℕ → Circuit BoolOp (m * m)) (sO : ℕ)
-    (hO : ∀ r, 1 ≤ r → r < k → IsObserver M blk r (O r) ∧ (O r).size ≤ sO) :
+    (O : ℕ → Circuit BoolOp (m * m)) (sO : ℕ → ℕ)
+    (hO : ∀ r, 1 ≤ r → r < k → IsObserver M blk r (O r) ∧ (O r).size ≤ sO r) :
     ∃ C : Circuit STOp m,
-      C.size ≤ Schedule.rounds k m *
-          (3 * m ^ 2 * sO + k * m ^ 2 + 6 * m ^ 4 + 2 * m ^ 2 + m + k) +
+      C.size ≤ ∑ r ∈ range k, Schedule.stageLength k m r *
+          (3 * m ^ 2 * sO r + k * m ^ 2 + 6 * m ^ 4 + 2 * m ^ 2 + m + k) +
         (3 * m * B.size + m * Nat.size k + 9 * m ^ 2 + 5 * m + 4 * Nat.size k + k + 2) ∧
       ∀ w : Fin m → ℝ, C.eval (stInterp ℝ) w = [Opt M blk w] :=
   theoremC_of_validLength hE hk hM (Schedule.validLength_stageLength hE hk hM)
     (by simp [Schedule.stageLength]) B hB O sO hO
 
-/-- **Theorem `thm:C` for components of rank one** (Corollary `cor:rankone`): when every circuit of
-`M` has at most two elements, the stage lengths `L r = r` are valid, and the circuit has
-`Σ_{r<k} r = k(k-1)/2` rounds. -/
+/-- **Theorem `thm:C` for components of rank one** (Corollary `cor:rankone`): when every component
+of `M` has rank at most one, the stage lengths `L r = r` are valid. -/
 theorem theoremC_rankOne (hE : M.E = Set.univ) (hk : rank M = k)
     (hM : ∃ B, IsRainbowBase M blk B)
-    (hpar : ∀ C : Set (Fin m), M.IsCircuit C → C.encard ≤ 2) (B : Circuit BoolOp m)
+    (hcomp : ∀ e, rk M (Conn.comp M e) ≤ 1) (B : Circuit BoolOp m)
     (hB : ∀ S : Finset (Fin m),
       (bitsVal (B.eval boolInterp (indicator S)) : ℕ∞) = M.eRk (S : Set (Fin m)))
-    (O : ℕ → Circuit BoolOp (m * m)) (sO : ℕ)
-    (hO : ∀ r, 1 ≤ r → r < k → IsObserver M blk r (O r) ∧ (O r).size ≤ sO) :
+    (O : ℕ → Circuit BoolOp (m * m)) (sO : ℕ → ℕ)
+    (hO : ∀ r, 1 ≤ r → r < k → IsObserver M blk r (O r) ∧ (O r).size ≤ sO r) :
     ∃ C : Circuit STOp m,
-      C.size ≤ (∑ r ∈ range k, r) *
-          (3 * m ^ 2 * sO + k * m ^ 2 + 6 * m ^ 4 + 2 * m ^ 2 + m + k) +
+      C.size ≤ ∑ r ∈ range k, r *
+          (3 * m ^ 2 * sO r + k * m ^ 2 + 6 * m ^ 4 + 2 * m ^ 2 + m + k) +
         (3 * m * B.size + m * Nat.size k + 9 * m ^ 2 + 5 * m + 4 * Nat.size k + k + 2) ∧
       ∀ w : Fin m → ℝ, C.eval (stInterp ℝ) w = [Opt M blk w] :=
-  theoremC_of_validLength hE hk hM (Schedule.validLength_rankOne hE hk hM hpar) rfl B hB O sO hO
+  theoremC_of_validLength hE hk hM (Schedule.validLength_rankOne hE hk hM hcomp) rfl B hB O sO hO
 
 end Correct
 
 /-! ### The order of the size -/
 
-/-- The bound of `theoremC_of_validLength` with `R ≤ k^a m^b` rounds and observers of size at
-most `c k m³ (s + m)` is at most `(3 c + 36) k^(a+1) m^(b+5) (s + m) + 2`, when `k ≤ m`, `m > 0`
-forces `k > 0`, and `L ≤ k`. -/
-theorem size_le_of_observer_le {m k s c L R a b : ℕ} (hkm : k ≤ m) (hmk : 0 < m → 0 < k)
-    (hL : L ≤ k) (hR : R ≤ k ^ a * m ^ b) :
-    R * (3 * m ^ 2 * (c * (k * m ^ 3 * (s + m))) + k * m ^ 2 + 6 * m ^ 4 + 2 * m ^ 2 + m + k) +
-      (3 * m * s + m * L + 9 * m ^ 2 + 5 * m + 4 * L + k + 2) ≤
-    (3 * c + 36) * (k ^ (a + 1) * m ^ (b + 5) * (s + m)) + 2 := by
-  rcases Nat.eq_zero_or_pos k with rfl | hk
-  · obtain rfl : m = 0 := by by_contra h; exact absurd (hmk (Nat.pos_of_ne_zero h)) (by omega)
-    obtain rfl : L = 0 := by omega
-    simp
-  have hm : 1 ≤ m := hk.trans_le hkm
-  have ha : 1 ≤ s + m := by omega
-  -- one round has at most `(3 c + 11) k m⁵ (s + m)` gates
-  have hS := updSize_le (s := s) (c := c) hk hm
-  -- the output part has at most `25 k^(a+1) m^(b+5) (s + m)` gates
-  have hT : 3 * m * s + m * L + 9 * m ^ 2 + 5 * m + 4 * L + k + 2 ≤
-      25 * (k ^ (a + 1) * m ^ (b + 5) * (s + m)) := by
-    have e1 := pow_mul_pow_le (i := 0) (j := 1) (i' := a + 1) (j' := b + 5) hk hm ha (by omega)
-      (by omega)
-    have e2 := pow_mul_pow_le (i := 1) (j := 1) (i' := a + 1) (j' := b + 5) hk hm ha (by omega)
-      (by omega)
-    have e3 := pow_mul_pow_le (i := 0) (j := 2) (i' := a + 1) (j' := b + 5) hk hm ha (by omega)
-      (by omega)
-    have e4 := pow_mul_pow_le (i := 1) (j := 0) (i' := a + 1) (j' := b + 5) hk hm ha (by omega)
-      (by omega)
-    have e5 := pow_mul_pow_le (i := 0) (j := 0) (i' := a + 1) (j' := b + 5) hk hm ha (by omega)
-      (by omega)
-    have e6 : m * s ≤ k ^ (a + 1) * m ^ (b + 5) * (s + m) := by
-      have h := Nat.mul_le_mul (pow_mul_pow_le (a := 1) (i := 0) (j := 1) (i' := a + 1)
-        (j' := b + 5) hk hm le_rfl (by omega) (by omega)) (Nat.le_add_right s m)
-      simpa using h
-    simp only [pow_zero, pow_one, one_mul, mul_one] at e1 e2 e3 e4 e5
-    have e7 : m * L ≤ k * m := by rw [mul_comm k]; exact Nat.mul_le_mul_left m hL
-    nlinarith
-  calc _ ≤ k ^ a * m ^ b * ((3 * c + 11) * (k * m ^ 5 * (s + m))) +
-        25 * (k ^ (a + 1) * m ^ (b + 5) * (s + m)) := Nat.add_le_add (Nat.mul_le_mul hR hS) hT
-    _ = (3 * c + 36) * (k ^ (a + 1) * m ^ (b + 5) * (s + m)) := by ring
-    _ ≤ _ := Nat.le_add_right _ 2
+/-- The output part: `3ms + mL' + 9m² + 5m + 4L' + k + 2 ≤ 25 k^a m^b (s + m)` for `1 ≤ a`,
+`2 ≤ b`, `L' ≤ k` and `1 ≤ k ≤ m`. -/
+theorem outSize_le {m k s L a b : ℕ} (hk : 1 ≤ k) (hkm : k ≤ m) (hL : L ≤ k) (ha : 1 ≤ a)
+    (hb : 2 ≤ b) :
+    3 * m * s + m * L + 9 * m ^ 2 + 5 * m + 4 * L + k + 2 ≤ 25 * (k ^ a * m ^ b * (s + m)) := by
+  have hm : 1 ≤ m := hk.trans hkm
+  have hX : 1 ≤ s + m := by omega
+  have e1 := pow_mul_pow_le (i := 0) (j := 1) (i' := a) (j' := b) hk hm hX (by omega) (by omega)
+  have e2 := pow_mul_pow_le (i := 1) (j := 1) (i' := a) (j' := b) hk hm hX ha (by omega)
+  have e3 := pow_mul_pow_le (i := 0) (j := 2) (i' := a) (j' := b) hk hm hX (by omega) hb
+  have e4 := pow_mul_pow_le (i := 1) (j := 0) (i' := a) (j' := b) hk hm hX ha (by omega)
+  have e5 := pow_mul_pow_le (i := 0) (j := 0) (i' := a) (j' := b) hk hm hX (by omega) (by omega)
+  have e6 : m * s ≤ k ^ a * m ^ b * (s + m) := by
+    have h := Nat.mul_le_mul (pow_mul_pow_le (a := 1) (i := 0) (j := 1) (i' := a) (j' := b) hk hm
+      le_rfl (by omega) (by omega)) (Nat.le_add_right s m)
+    simpa using h
+  simp only [pow_zero, pow_one, one_mul, mul_one] at e1 e2 e3 e4 e5
+  have e7 : m * L ≤ k * m := by rw [mul_comm k]; exact Nat.mul_le_mul_left m hL
+  nlinarith
 
 /-- **Theorem `thm:C`, the order of the size.**  Under the hypotheses of `theoremC`, with
-observers of size at most `c k m³ (s + m)` (the order `O(k m³ (s + m))` of Lemma
-`lem:observer`), a signed tropical circuit of size at most `(3 c + 36) k⁴ m⁶ (s + m) + 2`
-computes `Opt(w)` at every `w ∈ ℝ^E`: the paper's `O(k⁴ m⁶ (s + m))`.  The number of rounds is
-at most `k³ m` (`Schedule.rounds_le`, by Theorem `thm:stagelength`). -/
+observers of stage `r` of size at most `c (r + 2) m² (s + m)` (the order of Lemma `lem:observer`,
+whose observer of stage `r` has `r + 1` rounds of augmentation), a signed tropical circuit `C`
+with `40 |C| ≤ (147 c + 1880) k³ m⁵ (s + m) + 80` computes `Opt(w)` at every `w ∈ ℝ^E`: the
+paper's `O(k³ m⁵ (s + m))`.  A round of stage `r` has at most `3 c (r + 2) m⁴ (s + m) + 11 m⁴`
+gates (`updSize_le`), `40 Σ_r stageLength k m r (r + 2) ≤ 49 k³ m`
+(`Schedule.sum_stageLength_mul_le`) and `Σ_r stageLength k m r ≤ 2 k² m`
+(`Schedule.rounds_le`). -/
 theorem theoremC_bigO {M : Matroid (Fin m)} {blk : Fin m → Fin k} (hE : M.E = Set.univ)
     (hk : rank M = k) (hM : ∃ B, IsRainbowBase M blk B) (B : Circuit BoolOp m)
     (hB : ∀ S : Finset (Fin m),
       (bitsVal (B.eval boolInterp (indicator S)) : ℕ∞) = M.eRk (S : Set (Fin m)))
     (O : ℕ → Circuit BoolOp (m * m)) (c : ℕ)
     (hO : ∀ r, 1 ≤ r → r < k →
-      IsObserver M blk r (O r) ∧ (O r).size ≤ c * (k * m ^ 3 * (B.size + m))) :
-    ∃ C : Circuit STOp m, C.size ≤ (3 * c + 36) * (k ^ 4 * m ^ 6 * (B.size + m)) + 2 ∧
+      IsObserver M blk r (O r) ∧ (O r).size ≤ c * ((r + 2) * m ^ 2 * (B.size + m))) :
+    ∃ C : Circuit STOp m,
+      40 * C.size ≤ (147 * c + 1880) * (k ^ 3 * m ^ 5 * (B.size + m)) + 80 ∧
       ∀ w : Fin m → ℝ, C.eval (stInterp ℝ) w = [Opt M blk w] := by
   obtain ⟨C, hC, hCe⟩ := theoremC hE hk hM B hB O _ hO
+  refine ⟨C, ?_, hCe⟩
   have hkm : k ≤ m := hk ▸ rank_le_card M
-  exact ⟨C, hC.trans (size_le_of_observer_le (a := 3) (b := 1) hkm (fun hm => (blk ⟨0, hm⟩).pos)
-    (Nat.size_le.2 Nat.lt_two_pow_self) (by simpa using Schedule.rounds_le hkm)), hCe⟩
+  set s := B.size
+  rcases Nat.eq_zero_or_pos k with rfl | hk1
+  · obtain rfl : m = 0 := by
+      by_contra h
+      exact (blk ⟨0, Nat.pos_of_ne_zero h⟩).elim0
+    simp at hC
+    omega
+  have hm : 1 ≤ m := hk1.trans_le hkm
+  set X := k ^ 3 * m ^ 5 * (s + m) with hX
+  have h1 : ∀ r ∈ range k, Schedule.stageLength k m r *
+      (3 * m ^ 2 * (c * ((r + 2) * m ^ 2 * (s + m))) + k * m ^ 2 + 6 * m ^ 4 + 2 * m ^ 2 + m + k) ≤
+      Schedule.stageLength k m r * (r + 2) * (3 * c * (m ^ 4 * (s + m))) +
+        Schedule.stageLength k m r * (11 * m ^ 4) := fun r _ =>
+    (Nat.mul_le_mul_left _ (updSize_le (s := s) (c := c) (r := r) hkm)).trans_eq (by ring)
+  have h2 := sum_le_sum h1
+  rw [sum_add_distrib, ← sum_mul, ← sum_mul] at h2
+  have h3 : 40 * ((∑ r ∈ range k, Schedule.stageLength k m r * (r + 2)) *
+      (3 * c * (m ^ 4 * (s + m)))) ≤ 147 * c * X :=
+    calc _ = (40 * ∑ r ∈ range k, Schedule.stageLength k m r * (r + 2)) *
+          (3 * c * (m ^ 4 * (s + m))) := by ring
+      _ ≤ (49 * k ^ 3 * m) * (3 * c * (m ^ 4 * (s + m))) :=
+          Nat.mul_le_mul_right _ (Schedule.sum_stageLength_mul_le hkm)
+      _ = 147 * c * X := by rw [hX]; ring
+  have h4 : 40 * ((∑ r ∈ range k, Schedule.stageLength k m r) * (11 * m ^ 4)) ≤ 880 * X :=
+    calc _ ≤ 40 * ((2 * k ^ 2 * m) * (11 * m ^ 4)) :=
+          Nat.mul_le_mul_left _ (Nat.mul_le_mul_right _ (Schedule.rounds_le hkm))
+      _ = 880 * (k ^ 2 * m ^ 5) := by ring
+      _ ≤ 880 * X := Nat.mul_le_mul_left _
+          (pow_mul_pow_le (i := 2) (j := 5) (i' := 3) (j' := 5) hk1 hm (by omega) (by omega) le_rfl)
+  have h5 := outSize_le (s := s) (L := Nat.size k) (a := 3) (b := 5) hk1 hkm
+    (Nat.size_le.2 Nat.lt_two_pow_self) (by norm_num) (by norm_num)
+  rw [← hX] at h5
+  have e : 147 * c * X = 147 * (c * X) := by ring
+  have e' : (147 * c + 1880) * X = 147 * (c * X) + 1880 * X := by ring
+  omega
 
 /-- **Theorem `thm:C` for components of rank one, the order of the size** (Corollary
-`cor:rankone`): when every circuit of `M` has at most two elements, with observers of size at
-most `c k m³ (s + m)`, a signed tropical circuit of size at most `(3 c + 36) k³ m⁵ (s + m) + 2`
-computes `Opt(w)`. -/
+`cor:rankone`): when every component of `M` has rank at most one, with observers of stage `r` of
+size at most `c (r + 2) m² (s + m)`, a signed tropical circuit `C` with
+`2 |C| ≤ (3 c + 72) k³ m⁴ (s + m) + 4` computes `Opt(w)` (`Schedule.sum_range_mul_le`,
+`Schedule.sum_range_id_le`). -/
 theorem theoremC_bigO_rankOne {M : Matroid (Fin m)} {blk : Fin m → Fin k} (hE : M.E = Set.univ)
     (hk : rank M = k) (hM : ∃ B, IsRainbowBase M blk B)
-    (hpar : ∀ C : Set (Fin m), M.IsCircuit C → C.encard ≤ 2) (B : Circuit BoolOp m)
+    (hcomp : ∀ e, rk M (Conn.comp M e) ≤ 1) (B : Circuit BoolOp m)
     (hB : ∀ S : Finset (Fin m),
       (bitsVal (B.eval boolInterp (indicator S)) : ℕ∞) = M.eRk (S : Set (Fin m)))
     (O : ℕ → Circuit BoolOp (m * m)) (c : ℕ)
     (hO : ∀ r, 1 ≤ r → r < k →
-      IsObserver M blk r (O r) ∧ (O r).size ≤ c * (k * m ^ 3 * (B.size + m))) :
-    ∃ C : Circuit STOp m, C.size ≤ (3 * c + 36) * (k ^ 3 * m ^ 5 * (B.size + m)) + 2 ∧
+      IsObserver M blk r (O r) ∧ (O r).size ≤ c * ((r + 2) * m ^ 2 * (B.size + m))) :
+    ∃ C : Circuit STOp m, 2 * C.size ≤ (3 * c + 72) * (k ^ 3 * m ^ 4 * (B.size + m)) + 4 ∧
       ∀ w : Fin m → ℝ, C.eval (stInterp ℝ) w = [Opt M blk w] := by
-  obtain ⟨C, hC, hCe⟩ := theoremC_rankOne hE hk hM hpar B hB O _ hO
+  obtain ⟨C, hC, hCe⟩ := theoremC_rankOne hE hk hM hcomp B hB O _ hO
+  refine ⟨C, ?_, hCe⟩
   have hkm : k ≤ m := hk ▸ rank_le_card M
-  exact ⟨C, hC.trans (size_le_of_observer_le (a := 2) (b := 0) hkm (fun hm => (blk ⟨0, hm⟩).pos)
-    (Nat.size_le.2 Nat.lt_two_pow_self) (by simpa using Schedule.sum_range_id_le k)), hCe⟩
+  set s := B.size
+  rcases Nat.eq_zero_or_pos k with rfl | hk1
+  · obtain rfl : m = 0 := by
+      by_contra h
+      exact (blk ⟨0, Nat.pos_of_ne_zero h⟩).elim0
+    simp at hC
+    omega
+  have hm : 1 ≤ m := hk1.trans_le hkm
+  set X := k ^ 3 * m ^ 4 * (s + m) with hX
+  have h1 : ∀ r ∈ range k, r *
+      (3 * m ^ 2 * (c * ((r + 2) * m ^ 2 * (s + m))) + k * m ^ 2 + 6 * m ^ 4 + 2 * m ^ 2 + m + k) ≤
+      r * (r + 2) * (3 * c * (m ^ 4 * (s + m))) + r * (11 * m ^ 4) := fun r _ =>
+    (Nat.mul_le_mul_left _ (updSize_le (s := s) (c := c) (r := r) hkm)).trans_eq (by ring)
+  have h2 := sum_le_sum h1
+  rw [sum_add_distrib, ← sum_mul, ← sum_mul] at h2
+  have h3 : 2 * ((∑ r ∈ range k, r * (r + 2)) * (3 * c * (m ^ 4 * (s + m)))) ≤ 3 * c * X :=
+    calc _ = (2 * ∑ r ∈ range k, r * (r + 2)) * (3 * c * (m ^ 4 * (s + m))) := by ring
+      _ ≤ k ^ 3 * (3 * c * (m ^ 4 * (s + m))) :=
+          Nat.mul_le_mul_right _ (Schedule.sum_range_mul_le k)
+      _ = 3 * c * X := by rw [hX]; ring
+  have h4 : 2 * ((∑ r ∈ range k, r) * (11 * m ^ 4)) ≤ 22 * X :=
+    calc _ ≤ 2 * (k ^ 2 * (11 * m ^ 4)) :=
+          Nat.mul_le_mul_left _ (Nat.mul_le_mul_right _ (Schedule.sum_range_id_le k))
+      _ = 22 * (k ^ 2 * m ^ 4) := by ring
+      _ ≤ 22 * X := Nat.mul_le_mul_left _
+          (pow_mul_pow_le (i := 2) (j := 4) (i' := 3) (j' := 4) hk1 hm (by omega) (by omega) le_rfl)
+  have h5 := outSize_le (s := s) (L := Nat.size k) (a := 3) (b := 4) hk1 hkm
+    (Nat.size_le.2 Nat.lt_two_pow_self) (by norm_num) (by norm_num)
+  rw [← hX] at h5
+  have e : 3 * c * X = 3 * (c * X) := by ring
+  have e' : (3 * c + 72) * X = 3 * (c * X) + 72 * X := by ring
+  omega
 
 end SignedTropical.Rainbow.TheoremC

@@ -37,8 +37,9 @@ Results:
 * `augStep`: one round of the augmenting path algorithm with least-index choices (`leastPred`,
   `backPath`); `augStep_spec`.
 * `card_eq_nu`, `card_eq_nu_iff`: `|I| = ν(N)` exactly when no sink is reachable.
-* `iterate_step`, `iterate_augStep`: `k` rounds of augmentation from `∅` give a rainbow
-  independent set of size `ν(N)` (with `ν(N) ≤ k`, `nu_le` of `Rainbow/MinBases.lean`).
+* `iterate_step`, `iterate_augStep`: `j` rounds of augmentation from `∅` give a rainbow
+  independent set with at least `min(j, ν(N))` elements; `card_iterate_augStep`: for `j ≥ ν(N)`,
+  in particular `j = k` (`nu_le` of `Rainbow/MinBases.lean`), it has `ν(N)` elements.
 * `IsShortestPath.exchange`, `exists_exchange` (Step 3): exchanging along a shortest path from
   a source to `x ∈ I` keeps the size and misses `blk x`.
 * `av_eq` (Steps 3 to 6): for a largest `I`, `Av(N)` is the set of blocks missed by `I`
@@ -839,37 +840,40 @@ theorem card_eq_nu_iff (hI : IsRainbowIndep N blk I) :
   have := hJ.card_le_nu
   omega
 
-/-- **`k` rounds of augmentation.**  Let `step` send every rainbow independent `I` to a rainbow
+/-- **`j` rounds of augmentation.**  Let `step` send every rainbow independent `I` to a rainbow
 independent set with at least `|I|` elements, and with `|I| + 1` elements when a sink is
-reachable from a source.  Then `k` rounds from `∅` give a rainbow independent set of size
-`ν(N)`. -/
+reachable from a source.  Then `j` rounds from `∅` give a rainbow independent set with at least
+`min(j, ν(N))` elements. -/
 theorem iterate_step {step : Finset (Fin m) → Finset (Fin m)}
     (hstep : ∀ J, IsRainbowIndep N blk J → IsRainbowIndep N blk (step J) ∧
       J.card ≤ (step J).card ∧
-        ((∃ y ∈ reachSet N blk J, IsSink N J y) → (step J).card = J.card + 1)) :
-    IsRainbowIndep N blk (step^[k] ∅) ∧ (step^[k] ∅).card = nu N blk := by
-  -- after `j` rounds the set is rainbow independent with at least `min j ν(N)` elements
-  have key : ∀ j, IsRainbowIndep N blk (step^[j] ∅) ∧ min j (nu N blk) ≤ (step^[j] ∅).card := by
-    intro j
-    induction j with
-    | zero => exact ⟨isRainbowIndep_empty N blk, by simp⟩
-    | succ j ih =>
-      rw [Function.iterate_succ_apply']
-      obtain ⟨h1, h2, h3⟩ := hstep _ ih.1
-      refine ⟨h1, ?_⟩
-      by_cases hc : ∃ y ∈ reachSet N blk (step^[j] ∅), IsSink N (step^[j] ∅) y
-      · have := h3 hc
-        omega
-      · have := card_eq_nu ih.1 fun y hy hs => hc ⟨y, hy, hs⟩
-        omega
-  obtain ⟨h1, h2⟩ := key k
-  exact ⟨h1, le_antisymm h1.card_le_nu (by have := nu_le N blk; omega)⟩
+        ((∃ y ∈ reachSet N blk J, IsSink N J y) → (step J).card = J.card + 1)) (j : ℕ) :
+    IsRainbowIndep N blk (step^[j] ∅) ∧ min j (nu N blk) ≤ (step^[j] ∅).card := by
+  induction j with
+  | zero => exact ⟨isRainbowIndep_empty N blk, by simp⟩
+  | succ j ih =>
+    rw [Function.iterate_succ_apply']
+    obtain ⟨h1, h2, h3⟩ := hstep _ ih.1
+    refine ⟨h1, ?_⟩
+    by_cases hc : ∃ y ∈ reachSet N blk (step^[j] ∅), IsSink N (step^[j] ∅) y
+    · have := h3 hc
+      omega
+    · have := card_eq_nu ih.1 fun y hy hs => hc ⟨y, hy, hs⟩
+      omega
 
-/-- **The augmenting path algorithm.**  `k` rounds of `augStep` (least-index choices) from `∅`
-give a rainbow independent set of size `ν(N)`. -/
-theorem iterate_augStep (N : Matroid (Fin m)) (blk : Fin m → Fin k) :
-    IsRainbowIndep N blk ((augStep N blk)^[k] ∅) ∧ ((augStep N blk)^[k] ∅).card = nu N blk :=
-  iterate_step fun _ => augStep_spec
+/-- **The augmenting path algorithm.**  `j` rounds of `augStep` (least-index choices) from `∅`
+give a rainbow independent set with at least `min(j, ν(N))` elements. -/
+theorem iterate_augStep (N : Matroid (Fin m)) (blk : Fin m → Fin k) (j : ℕ) :
+    IsRainbowIndep N blk ((augStep N blk)^[j] ∅) ∧
+      min j (nu N blk) ≤ ((augStep N blk)^[j] ∅).card :=
+  iterate_step (fun _ => augStep_spec) j
+
+/-- **`j ≥ ν(N)` rounds**, in particular `j = k` (`nu_le`), give a rainbow independent set of size
+`ν(N)`. -/
+theorem card_iterate_augStep (N : Matroid (Fin m)) (blk : Fin m → Fin k) {j : ℕ}
+    (hj : nu N blk ≤ j) : ((augStep N blk)^[j] ∅).card = nu N blk := by
+  obtain ⟨h1, h2⟩ := iterate_augStep N blk j
+  exact le_antisymm h1.card_le_nu (by omega)
 
 /-- **Step 6.**  For a largest `I`, the set `A'` attains equality in item 1. -/
 theorem card_avOf_add_nu (hI : IsRainbowIndep N blk I) (hmax : I.card = nu N blk) :

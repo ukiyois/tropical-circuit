@@ -12,17 +12,18 @@ outputs the binary digits of the rank of `M` (the hypothesis of Theorem `thm:A`)
 `F_b(G) = [ν(N_G) ≤ r₀] ∧ [b ∈ Av(N_G)]`, correct whenever `G = G_t`, `t ≥ 0`.
 
 * Steps 1 to 3 (`Rainbow/ObserverOracle.lean`): the context of `G` (`ctxB_impl`) and the
-  independence oracle of `N_G` (`oracleB_impl`, `oracle_correct`).
-* Step 4 (`Rainbow/MICircuit.lean`, agent P6b): `k` rounds of the augmenting path algorithm, one
-  more exchange graph for `Av`, and the guard, with the oracle of Step 3 (`avGuardB_impl`,
-  `avGuardV_eq`).
+  exchange tests of `N_G` (`locB_impl`, `locV_correct`), one rank run each.
+* Step 4 (`Rainbow/MICircuit.lean`): `r₀ + 1` rounds of the augmenting path algorithm, one more
+  exchange graph for `Av`, and the guard, with the exchange tests of Step 3 (`avGuardB_impl`,
+  `avGuardV_eq`).  After `r₀ + 1` rounds the state has at least `min(r₀ + 1, ν)` elements, so
+  `[|I| ≤ r₀] = [ν ≤ r₀]`, and when `ν ≤ r₀` it is a largest rainbow independent set.
 * The input: the bits of `G` are read from the inputs `finProdFinEquiv (g, f)`, a free
   rearrangement (`inputRel`, `inputRel_pairOf`).
 * `lem_observer`: the size (`obsCost`, exact), the explicit bound
-  `(k+1)(m+1)²(ms + 70m² + 10m + 11) + 3ms + 21m³ + 1 + 5⌈log₂(r₀+1)⌉` (`obsCost_le`), the `k`
-  outputs, their values at `G_t` for every `v` and `t ≥ 0`, and Step 5: at `G = E × E` every output
-  is `0` when `M` has a rainbow base, `rank M = k` and `r₀ < k`.  `obsCost_le_bigO`: the size is
-  at most `800 k m³ (s + m)` for `m ≥ 1` and `r₀ < k`.
+  `(r₀+2)(m+1)²(s + 52(m+1)) + 3ms + 17m³ + 3k(m+1) + 1 + 5⌈log₂(r₀+1)⌉` (`obsCost_le`), the `k`
+  outputs, their values at `G_t` for every `v` and `t ≥ 0`, and Step 5: at `G = E × E` every
+  output is `0` when `M` has a rainbow base, `rank M = k` and `r₀ < k`.  `obsCost_le_bigO`: the
+  size is at most `440 (r₀ + 2) m² (s + m)` for `1 ≤ m`, `k ≤ m` and `r₀ < k`.
 -/
 
 open Finset
@@ -51,24 +52,24 @@ theorem inputRel_pairOf (G : Finset (Fin m × Fin m)) :
 /-! ### The circuit -/
 
 /-- The value of the observer at the input `X`: the bits `[|I| ≤ r₀] ∧ [b ∈ Av]` of the matroid
-intersection circuit, run with the oracle of `Rainbow/ObserverOracle.lean` at the context of the
-relation read from `X`. -/
+intersection circuit with `r₀ + 1` rounds, run with the exchange tests of
+`Rainbow/ObserverOracle.lean` at the context of the relation read from `X`. -/
 noncomputable def obsV (M : Matroid (Fin m)) (blk : Fin m → Fin k) (r₀ : ℕ)
     (X : Fin (m * m) → Bool) (b : Fin k) : Bool :=
-  (miV (fun P => oracleV M P.1 P.2) blk r₀ (ctxV M (inputRel X))).2.2.1 &&
-    (miV (fun P => oracleV M P.1 P.2) blk r₀ (ctxV M (inputRel X))).2.2.2 b
+  (miV (fun y => locV M y) blk (r₀ + 1) r₀ (ctxV M (inputRel X))).2.2.1 &&
+    (miV (fun y => locV M y) blk (r₀ + 1) r₀ (ctxV M (inputRel X))).2.2.2 b
 
 /-- The builder of the observer: read the relation, compute its context (Steps 1 to 3), and run
-the matroid intersection circuit with the oracle (Step 4). -/
+the matroid intersection circuit with `r₀ + 1` rounds and the exchange tests (Step 4). -/
 noncomputable def obsB (M : Matroid (Fin m)) (C : Circuit BoolOp m) (blk : Fin m → Fin k)
     (r₀ : ℕ) : (Fin (m * m) → Arg n) → Bld BoolOp n (Fin k → Arg n) :=
   seqB (pureB fun x g f => x (finProdFinEquiv (g, f)))
-    (seqB (ctxB M C) (avGuardB (oracleB C) blk r₀))
+    (seqB (ctxB M C) (avGuardB (locB C) blk (r₀ + 1) r₀))
 
-/-- The gates of the observer: the context, the matroid intersection circuit with `oracleCost`
-gates per query, and the `k` output gates. -/
+/-- The gates of the observer: the context, the matroid intersection circuit with `r₀ + 1`
+rounds and `locCost` gates per exchange test, and the `k` output gates. -/
 def obsCost (m k s r₀ : ℕ) : ℕ :=
-  ctxCost m s + (miCost m k (oracleCost m s) r₀ + k)
+  ctxCost m s + (miCost m k (r₀ + 1) (locCost m s) r₀ + k)
 
 /-- **The observer as an implementation**: from the `m · m` input bits, `obsB` computes
 `obsV M blk r₀` with `obsCost m k s r₀` gates. -/
@@ -80,7 +81,7 @@ theorem obsB_impl
       (obsV M blk r₀) :=
   ((Impl.free (R₁ := vecR (m * m)) (R₂ := relR m) (g := fun x g f => x (finProdFinEquiv (g, f)))
     (F := inputRel) fun _ _ _ hs _ _ => hs _).comp
-    ((ctxB_impl hB).comp (avGuardB_impl (oracleB_impl hB) blk r₀))).cost
+    ((ctxB_impl hB).comp (avGuardB_impl (locB_impl hB) blk (r₀ + 1) r₀))).cost
     (by rw [obsCost, Nat.zero_add])
 
 /-- **The observer circuit** of Lemma `lem:observer`, on the `m · m` inputs `[pairOf i ∈ G]`. -/
@@ -91,50 +92,50 @@ noncomputable def observer (M : Matroid (Fin m)) (C : Circuit BoolOp m) (blk : F
 /-! ### The size -/
 
 /-- **The size of the observer**, an explicit polynomial:
-`obsCost m k s r₀ ≤ (k+1)(m+1)²(ms + 70m² + 10m + 11) + 3ms + 21m³ + 1 + 5⌈log₂(r₀+1)⌉`. -/
+`obsCost m k s r₀ ≤ (r₀+2)(m+1)²(s + 52(m+1)) + 3ms + 17m³ + 3k(m+1) + 1 + 5⌈log₂(r₀+1)⌉`. -/
 theorem obsCost_le (m k s r₀ : ℕ) :
-    obsCost m k s r₀ ≤ (k + 1) * (m + 1) ^ 2 * (m * s + 70 * m ^ 2 + 10 * m + 11) +
-      3 * m * s + 21 * m ^ 3 + 1 + 5 * Nat.size r₀ := by
-  have h₁ := miCost_add_le m k (oracleCost m s) r₀
-  have h₂ : (k + 1) * (m + 1) ^ 2 * (oracleCost m s + 10 * (m + 1)) ≤
-      (k + 1) * (m + 1) ^ 2 * (m * s + 70 * m ^ 2 + 10 * m + 11) :=
-    Nat.mul_le_mul_left _ (by have := oracleCost_le m s; omega)
+    obsCost m k s r₀ ≤ (r₀ + 2) * (m + 1) ^ 2 * (s + 52 * (m + 1)) + 3 * m * s + 17 * m ^ 3 +
+      3 * k * (m + 1) + 1 + 5 * Nat.size r₀ := by
+  have h₁ := miCost_add_le m k (r₀ + 1) (locCost m s) r₀
+  have h₂ : (r₀ + 1 + 1) * (m + 1) ^ 2 * (locCost m s + 10 * (m + 1)) ≤
+      (r₀ + 2) * (m + 1) ^ 2 * (s + 52 * (m + 1)) :=
+    Nat.mul_le_mul_left _ (by have := locCost_le m s; omega)
   have h₃ := ctxCost_le m s
   unfold obsCost
   omega
 
-/-- **The size of the observer is `O(k m³ (s + m))`**: for `m ≥ 1` and `r₀ < k`, at most
-`800 k m³ (s + m)`. -/
-theorem obsCost_le_bigO {m k s r₀ : ℕ} (hm : 1 ≤ m) (hr : r₀ < k) :
-    obsCost m k s r₀ ≤ 800 * (k * m ^ 3 * (s + m)) := by
-  have hk : 1 ≤ k := by omega
-  have hX : 1 ≤ k * m ^ 3 * (s + m) :=
-    Nat.one_le_iff_ne_zero.2 (by positivity)
-  have hm3 : m ≤ m ^ 3 := Nat.le_self_pow (by norm_num) m
-  have h₁ : (k + 1) * (m + 1) ^ 2 * (m * s + 70 * m ^ 2 + 10 * m + 11) ≤
-      728 * (k * m ^ 3 * (s + m)) := by
-    have a : k + 1 ≤ 2 * k := by omega
-    have b : (m + 1) ^ 2 ≤ 4 * m ^ 2 := by nlinarith
-    have c : m * s + 70 * m ^ 2 + 10 * m + 11 ≤ 91 * (m * (s + m)) := by nlinarith
-    calc (k + 1) * (m + 1) ^ 2 * (m * s + 70 * m ^ 2 + 10 * m + 11)
-        ≤ 2 * k * (4 * m ^ 2) * (91 * (m * (s + m))) := Nat.mul_le_mul (Nat.mul_le_mul a b) c
-      _ = 728 * (k * m ^ 3 * (s + m)) := by ring
-  have h₂ : 3 * m * s + 21 * m ^ 3 ≤ 24 * (k * m ^ 3 * (s + m)) := by
-    have a : m * s ≤ k * m ^ 3 * (s + m) := by
-      calc m * s ≤ k * m ^ 3 * s := Nat.mul_le_mul_right s (by nlinarith)
-        _ ≤ k * m ^ 3 * (s + m) := Nat.mul_le_mul_left _ (Nat.le_add_right s m)
-    have b : m ^ 3 ≤ k * m ^ 3 * (s + m) := by
-      calc m ^ 3 = 1 * m ^ 3 * 1 := by ring
-        _ ≤ k * m ^ 3 * (s + m) := Nat.mul_le_mul (Nat.mul_le_mul_right _ hk) (by omega)
-    have c : 3 * m * s = 3 * (m * s) := Nat.mul_assoc 3 m s
+/-- **The size of the observer is `O((r₀ + 2) m² (s + m))`**: for `1 ≤ m`, `k ≤ m` and
+`r₀ < k`, at most `440 (r₀ + 2) m² (s + m)`. -/
+theorem obsCost_le_bigO {m k s r₀ : ℕ} (hm : 1 ≤ m) (hkm : k ≤ m) (hr : r₀ < k) :
+    obsCost m k s r₀ ≤ 440 * ((r₀ + 2) * m ^ 2 * (s + m)) := by
+  have hX : 1 ≤ s + m := by omega
+  have hm2 : m ≤ m ^ 2 := Nat.le_self_pow (by norm_num) m
+  have hY : m ^ 2 ≤ m ^ 2 * (s + m) := Nat.le_mul_of_pos_right _ hX
+  -- the leading term
+  have h₁ : (r₀ + 2) * (m + 1) ^ 2 * (s + 52 * (m + 1)) ≤
+      416 * ((r₀ + 2) * m ^ 2 * (s + m)) := by
+    have a : (m + 1) ^ 2 ≤ 4 * m ^ 2 := by nlinarith
+    have b : s + 52 * (m + 1) ≤ 104 * (s + m) := by omega
+    calc (r₀ + 2) * (m + 1) ^ 2 * (s + 52 * (m + 1))
+        ≤ (r₀ + 2) * (4 * m ^ 2) * (104 * (s + m)) :=
+          Nat.mul_le_mul (Nat.mul_le_mul_left _ a) b
+      _ = 416 * ((r₀ + 2) * m ^ 2 * (s + m)) := by ring
+  -- the other terms are at most `32 m² (s + m) ≤ 16 (r₀ + 2) m² (s + m)`
+  have h₂ : 3 * m * s + 17 * m ^ 3 + 3 * k * (m + 1) + 1 + 5 * Nat.size r₀ ≤
+      32 * (m ^ 2 * (s + m)) := by
+    have a : m * s ≤ m ^ 2 * (s + m) := by
+      calc m * s ≤ m ^ 2 * s := Nat.mul_le_mul_right s hm2
+        _ ≤ m ^ 2 * (s + m) := Nat.mul_le_mul_left _ (Nat.le_add_right s m)
+    have b : m ^ 3 ≤ m ^ 2 * (s + m) := by
+      calc m ^ 3 = m ^ 2 * m := by ring
+        _ ≤ m ^ 2 * (s + m) := Nat.mul_le_mul_left _ (Nat.le_add_left m s)
+    have c : 3 * k * (m + 1) ≤ 6 * m ^ 2 := by nlinarith
+    have d : Nat.size r₀ ≤ m := (size_le_self r₀).trans (by omega)
+    have e : 3 * m * s = 3 * (m * s) := Nat.mul_assoc 3 m s
     omega
-  have h₃ : 5 * Nat.size r₀ ≤ 5 * (k * m ^ 3 * (s + m)) := by
-    have := size_le_self r₀
-    have : k ≤ k * m ^ 3 * (s + m) := by
-      calc k = k * 1 * 1 := by ring
-        _ ≤ k * m ^ 3 * (s + m) :=
-          Nat.mul_le_mul (Nat.mul_le_mul_left _ (Nat.one_le_pow _ _ hm)) (by omega)
-    omega
+  have h₃ : 32 * (m ^ 2 * (s + m)) ≤ 16 * ((r₀ + 2) * m ^ 2 * (s + m)) := by
+    have := Nat.mul_le_mul_right (m ^ 2 * (s + m)) (show 2 ≤ r₀ + 2 by omega)
+    nlinarith
   have := obsCost_le m k s r₀
   omega
 
@@ -145,8 +146,8 @@ the blocks, and let the Boolean circuit `C` of size `s` output the binary digits
 `M`.  For every `r₀`, the Boolean circuit `observer M C blk r₀` on the `m · m` inputs
 `[pairOf i ∈ G]`, `G ⊆ E × E`:
 
-1. has `obsCost m k s r₀ ≤ (k+1)(m+1)²(ms + 70m² + 10m + 11) + 3ms + 21m³ + 1 + 5⌈log₂(r₀+1)⌉`
-   gates (`O(k m³ (s + m))`, `obsCost_le_bigO`);
+1. has `obsCost m k s r₀ ≤ (r₀+2)(m+1)²(s + 52(m+1)) + 3ms + 17m³ + 3k(m+1) + 1 +
+   5⌈log₂(r₀+1)⌉` gates (`O((r₀ + 2) m² (s + m))`, `obsCost_le_bigO`);
 2. has `k` outputs;
 3. for every `v` and every `t ≥ 0`, outputs at `G = G_t` the bits
    `F_b(G_t) = [ν(N_{G_t}) ≤ r₀] ∧ [b ∈ Av(N_{G_t})]`, `b = 0, …, k - 1`;
@@ -156,9 +157,8 @@ theorem lem_observer (hE : M.E = Set.univ)
       (bitsVal (C.eval boolInterp (indicator S)) : ℕ∞) = M.eRk (S : Set (Fin m)))
     (blk : Fin m → Fin k) (r₀ : ℕ) :
     (observer M C blk r₀).size = obsCost m k C.size r₀ ∧
-      (observer M C blk r₀).size ≤ (k + 1) * (m + 1) ^ 2 *
-        (m * C.size + 70 * m ^ 2 + 10 * m + 11) + 3 * m * C.size + 21 * m ^ 3 + 1 +
-          5 * Nat.size r₀ ∧
+      (observer M C blk r₀).size ≤ (r₀ + 2) * (m + 1) ^ 2 * (C.size + 52 * (m + 1)) +
+        3 * m * C.size + 17 * m ^ 3 + 3 * k * (m + 1) + 1 + 5 * Nat.size r₀ ∧
       (observer M C blk r₀).outs.length = k ∧
       (∀ (v : Fin m → ℝ) (t : ℝ), 0 ≤ t →
         (observer M C blk r₀).eval boolInterp (fun i => decide (GapUpdate.pairOf i ∈ Gt v t)) =
@@ -177,8 +177,8 @@ theorem lem_observer (hE : M.E = Set.univ)
     rw [observer, heval]
     congr 1
     funext b
-    rw [obsV, inputRel_pairOf, avGuardV_eq (Fo := fun P => oracleV M P.1 P.2)
-      (a := ctxV M (relBits (Gt v t))) (fun A => oracle_correct hE ht A) r₀ b, Bool.decide_and]
+    rw [obsV, inputRel_pairOf, avGuardV_eq (locV_correct hE ht) (Nat.lt_succ_self r₀) b,
+      Bool.decide_and]
   refine ⟨hsize, hsize.trans_le (obsCost_le _ _ _ _), hlen, hG, fun hM hk hr => ?_⟩
   have hu : Gt (0 : Fin m → ℝ) 0 = univ := Gt_eq_univ fun _ _ => by simp
   have h := hG 0 0 le_rfl

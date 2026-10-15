@@ -4,7 +4,7 @@ import SignedTropical.Rainbow.Potential
 # The stage length
 
 `greedy_intersection.tex`, Section 4.6, Theorem `thm:stagelength`: stage `r` of the PO-SL schedule
-ends after at most `1 + (r - 1) k m` updates.  `M : Matroid (Fin m)` has ground set `univ` (`hE`),
+ends after at most `min(1 + (r - 1) k m, 1 + k (2m - k - 1))` updates.  `M : Matroid (Fin m)` has ground set `univ` (`hE`),
 rank `k` (`hk`) and a rainbow base (`hM`).  At a state `v` of stage `r < k`, `S = S₀ = Av(M^v)`,
 `ρ = |S| - (k - r) = r_{M^v}(E_S)` (Lemma `lem:avoidable`(2)), `a` is the PO-SL update and
 `v' = v - a_blk`.
@@ -25,6 +25,12 @@ rank `k` (`hk`) and a rainbow base (`hM`).  At a state `v` of stage `r < k`, `S 
   every update of the stage (`Phi₂_lt_Phi₂_stageMap`) and stays below `1 + (r - 1) k m`
   (`Phi₂_lt`).  So at most `1 + (r - 1) k m` iterates of the stage map have `ν₀ = r`
   (`lt_of_nu_iterate_eq`).
+* `resolvedPairs`, `resolvedPairs_ssubset`, `le_of_nu_iterate_eq`, **a base fixed for the whole
+  stage**: a base `B` of `M^v` meeting `r` blocks at one state of the stage stays such a base
+  (Theorem `thm:validity`(2)), and the pairs `(x, z)`, `x ≠ z`, one of them in `B`, with
+  `x ∈ E_{S₀}` and `v_x ≤ v_z` gain one at every update and never lose one; there are at most
+  `k (2m - k - 1)` of them, so at most `1 + k (2m - k - 1)` iterates have `ν₀ = r`
+  (`lt_of_nu_iterate_eq_fixed`).
 -/
 
 open Finset
@@ -327,6 +333,19 @@ theorem av_ne_of_rk_eq_zero (hE : M.E = Set.univ) (hk : rank M = k)
   rw [update_eq_tau hr hN (mem_blockSet.1 hyX)] at hlt
   linarith
 
+/-- **Theorem `thm:stagelength`(2)**, in the form `|S₀| = k - r`: by Lemma `lem:avoidable`(2),
+`|S₀| + r = k + r_{M^v}(E_{S₀})`, so `|S₀| = k - r` means `r_{M^v}(E_{S₀}) = 0`
+(`av_ne_of_rk_eq_zero`). -/
+theorem av_ne_of_card_av_eq (hE : M.E = Set.univ) (hk : rank M = k)
+    (hM : ∃ B, IsRainbowBase M blk B) (hr : nu (minBases M v) blk = r) (hrk : r < k)
+    (hS : #(Av (minBases M v) blk) = k - r)
+    (hr' : nu (minBases M (shift blk v (update (POSL.N M v) blk r))) blk = r) :
+    Av (minBases M (shift blk v (update (POSL.N M v) blk r))) blk ≠ Av (minBases M v) blk := by
+  refine av_ne_of_rk_eq_zero hE hk hM hr hrk ?_ hr'
+  have := Exchange.card_av_add_nu (minBases M v) blk
+  rw [hr] at this
+  omega
+
 /-! ### The potential -/
 
 /-- The value of the potential: `0` for `ρ = 0`, and `ρ K + 1 - Q` otherwise. -/
@@ -426,5 +445,139 @@ theorem lt_of_nu_iterate_eq (hE : M.E = Set.univ) (hk : rank M = k)
     (hn : nu (minBases M (shift blk w ((stageMap M blk w r)^[n] p))) blk = r) :
     n < 1 + (r - 1) * (k * m) :=
   (le_Phi₂_iterate hE hk hM hrk hp n hn).trans_lt (Phi₂_lt hE hk hM hn hrk)
+
+/-! ### A base fixed for the whole stage -/
+
+/-- The pairs `(x, z)`, `x ≠ z`, one of them in `B`, with `x ∈ E_{S₀}` (`S₀ = Av(M^v)`) and
+`v_x ≤ v_z`: the pairs of `B` whose first element is fully raised and lies at or below the
+second. -/
+noncomputable def resolvedPairs (M : Matroid (Fin m)) (blk : Fin m → Fin k) (B : Finset (Fin m))
+    (v : Fin m → ℝ) : Finset (Fin m × Fin m) :=
+  univ.filter fun q => q.1 ≠ q.2 ∧ (q.1 ∈ B ∨ q.2 ∈ B) ∧ blk q.1 ∈ Av (minBases M v) blk ∧
+    v q.1 ≤ v q.2
+
+theorem mem_resolvedPairs {x z : Fin m} :
+    (x, z) ∈ resolvedPairs M blk B v ↔
+      x ≠ z ∧ (x ∈ B ∨ z ∈ B) ∧ blk x ∈ Av (minBases M v) blk ∧ v x ≤ v z := by
+  simp [resolvedPairs]
+
+/-- `|resolvedPairs| ≤ |B| (m - 1) + (m - |B|) |B|`: a pair has `x ∈ B` and `z ≠ x`, or `x ∉ B`
+and `z ∈ B`. -/
+theorem card_resolvedPairs_le (M : Matroid (Fin m)) (blk : Fin m → Fin k) (B : Finset (Fin m))
+    (v : Fin m → ℝ) : #(resolvedPairs M blk B v) ≤ #B * (m - 1) + (m - #B) * #B := by
+  have hsub : resolvedPairs M blk B v ⊆
+      B.biUnion (fun x => (univ.erase x).image fun z => (x, z)) ∪ (univ \ B) ×ˢ B := by
+    rintro ⟨x, z⟩ hq
+    rw [mem_resolvedPairs] at hq
+    by_cases hx : x ∈ B
+    · exact mem_union_left _ (mem_biUnion.2
+        ⟨x, hx, mem_image.2 ⟨z, mem_erase.2 ⟨hq.1.symm, mem_univ _⟩, rfl⟩⟩)
+    · exact mem_union_right _
+        (mem_product.2 ⟨mem_sdiff.2 ⟨mem_univ _, hx⟩, hq.2.1.resolve_left hx⟩)
+  have h1 : #(B.biUnion fun x => (univ.erase x).image fun z => (x, z)) ≤ #B * (m - 1) := by
+    refine card_biUnion_le.trans ?_
+    calc ∑ x ∈ B, #((univ.erase x).image fun z => (x, z)) ≤ ∑ _x ∈ B, (m - 1) :=
+          sum_le_sum fun x _ => card_image_le.trans
+            (by rw [card_erase_of_mem (mem_univ x), card_univ, Fintype.card_fin])
+      _ = #B * (m - 1) := by rw [sum_const, smul_eq_mul]
+  have h2 : #((univ \ B) ×ˢ B) = (m - #B) * #B := by
+    rw [card_product, card_univ_sdiff, Fintype.card_fin]
+  calc #(resolvedPairs M blk B v)
+      ≤ #(B.biUnion (fun x => (univ.erase x).image fun z => (x, z)) ∪ (univ \ B) ×ˢ B) :=
+        card_le_card hsub
+    _ ≤ #(B.biUnion fun x => (univ.erase x).image fun z => (x, z)) + #((univ \ B) ×ˢ B) :=
+        card_union_le _ _
+    _ ≤ #B * (m - 1) + (m - #B) * #B := by rw [h2]; exact Nat.add_le_add_right h1 _
+
+/-- **The resolved pairs only accumulate.**  Let `ν₀ = r < k` before and after the PO-SL update,
+and let `B` be a base of `M^v` meeting `r` blocks.  Then `resolvedPairs` grows strictly:
+`S₀` only grows (Theorem `thm:potential`(1)), a fully raised `x` moves down by `τ` and every other
+element by at most `τ`, so no pair leaves; and the pair of `exists_crossing_pair` enters. -/
+theorem resolvedPairs_ssubset (hE : M.E = Set.univ) (hk : rank M = k)
+    (hM : ∃ B, IsRainbowBase M blk B) (hr : nu (minBases M v) blk = r) (hrk : r < k)
+    (hB : (minBases M v).IsBase ↑B) (hBr : #(blocksMet blk B) = r)
+    (hr' : nu (minBases M (shift blk v (update (POSL.N M v) blk r))) blk = r) :
+    resolvedPairs M blk B v ⊂ resolvedPairs M blk B (shift blk v (update (POSL.N M v) blk r)) := by
+  have hN := POSL.isAdmissible hE hM v
+  have hsub := av_subset_av_update hE hr hN hr'
+  obtain ⟨x, z, hx, hz, hxz, hlt, -, hcross⟩ := exists_crossing_pair hE hk hM hr hrk hB hBr
+  refine (ssubset_iff_of_subset fun q hq => ?_).2 ⟨(x, z), ?_, ?_⟩
+  · obtain ⟨y, g⟩ := q
+    rw [mem_resolvedPairs] at hq ⊢
+    refine ⟨hq.1, hq.2.1, hsub hq.2.2.1, ?_⟩
+    have h := hq.2.2.2
+    simp only [shift]
+    rw [update_eq_tau hr hN hq.2.2.1]
+    linarith [update_le_tau (N := POSL.N M v) (blk := blk) (r := r) (b := blk g)]
+  · rw [mem_resolvedPairs]
+    exact ⟨fun h => hz (h ▸ hx), hxz, hsub hx, hcross⟩
+  · rw [mem_resolvedPairs]
+    rintro ⟨-, -, -, h⟩
+    exact (not_le.2 hlt) h
+
+/-- `ν₀` does not decrease along the iterates of the stage-`r` map from a state with `ν₀ ≥ r`. -/
+theorem nu_iterate_mono (hE : M.E = Set.univ) (hM : ∃ B, IsRainbowBase M blk B)
+    (hp : r ≤ nu (minBases M (shift blk w p)) blk) {i j : ℕ} (hij : i ≤ j) :
+    nu (minBases M (shift blk w ((stageMap M blk w r)^[i] p))) blk ≤
+      nu (minBases M (shift blk w ((stageMap M blk w r)^[j] p))) blk := by
+  induction hij with
+  | refl => exact le_rfl
+  | step _ ih =>
+    rw [Function.iterate_succ_apply']
+    exact ih.trans (nu_le_nu_stageMap hE hM (le_nu_iterate hE hM hp _))
+
+/-- **Theorem `thm:stagelength`, a base fixed for the whole stage.**  From a state with `ν₀ ≥ r`,
+if the `n`-th iterate of the stage-`r` map still has `ν₀ = r`, then `n ≤ k (2m - k - 1)`.  Every
+iterate up to the `n`-th has `ν₀ = r` (`nu_iterate_mono`).  A base `B` of `M^v` meeting `r`
+blocks at the first state stays a base of `M^v` at every later one (Theorem
+`thm:validity`(2)); the pairs of `resolvedPairs` for this `B` gain one at every update
+(`resolvedPairs_ssubset`), and they number at most `k (m - 1) + (m - k) k = k (2m - k - 1)`
+(`card_resolvedPairs_le`). -/
+theorem le_of_nu_iterate_eq (hE : M.E = Set.univ) (hk : rank M = k)
+    (hM : ∃ B, IsRainbowBase M blk B) (hrk : r < k)
+    (hp : r ≤ nu (minBases M (shift blk w p)) blk) {n : ℕ}
+    (hn : nu (minBases M (shift blk w ((stageMap M blk w r)^[n] p))) blk = r) :
+    n ≤ k * (2 * m - k - 1) := by
+  have hall : ∀ j, j ≤ n → nu (minBases M (shift blk w ((stageMap M blk w r)^[j] p))) blk = r :=
+    fun j hj => le_antisymm ((nu_iterate_mono hE hM hp hj).trans_eq hn) (le_nu_iterate hE hM hp j)
+  obtain ⟨B, hB, hBr⟩ := exists_isBase_card_blocksMet (minBases M (shift blk w p)) blk
+  rw [show nu (minBases M (shift blk w p)) blk = r from hall 0 (Nat.zero_le n)] at hBr
+  have hBj : ∀ j, j ≤ n → (minBases M (shift blk w ((stageMap M blk w r)^[j] p))).IsBase ↑B := by
+    intro j
+    induction j with
+    | zero => intro _; exact hB
+    | succ j ih =>
+      intro hj
+      rw [Function.iterate_succ_apply', shift_stageMap]
+      exact (isBase_minBases_iff hE).2
+        (isMinBase_update hE (hall j (by omega)) (POSL.isAdmissible hE hM _) (ih (by omega)) hBr)
+  have hgrow : ∀ j, j ≤ n →
+      j ≤ #(resolvedPairs M blk B (shift blk w ((stageMap M blk w r)^[j] p))) := by
+    intro j
+    induction j with
+    | zero => intro _; exact Nat.zero_le _
+    | succ j ih =>
+      intro hj
+      have hr' := hall (j + 1) hj
+      rw [Function.iterate_succ_apply', shift_stageMap] at hr' ⊢
+      exact Nat.succ_le_of_lt ((ih (by omega)).trans_lt (card_lt_card
+        (resolvedPairs_ssubset hE hk hM (hall j (by omega)) hrk (hBj j (by omega)) hBr hr')))
+  have hkm : k ≤ m := hk ▸ rank_le_card M
+  have hcard := card_resolvedPairs_le M blk B (shift blk w ((stageMap M blk w r)^[n] p))
+  rw [card_of_isBase_minBases hE hB, hk] at hcard
+  have heq : k * (m - 1) + (m - k) * k = k * (2 * m - k - 1) := by
+    rw [mul_comm (m - k) k, ← Nat.mul_add]
+    congr 1
+    omega
+  exact (hgrow n le_rfl).trans (hcard.trans_eq heq)
+
+/-- **Theorem `thm:stagelength`, counting form of the fixed base**: the iterates with `ν₀ = r`
+have index below `1 + k (2m - k - 1)`. -/
+theorem lt_of_nu_iterate_eq_fixed (hE : M.E = Set.univ) (hk : rank M = k)
+    (hM : ∃ B, IsRainbowBase M blk B) (hrk : r < k)
+    (hp : r ≤ nu (minBases M (shift blk w p)) blk) {n : ℕ}
+    (hn : nu (minBases M (shift blk w ((stageMap M blk w r)^[n] p))) blk = r) :
+    n < 1 + k * (2 * m - k - 1) :=
+  Nat.lt_one_add_iff.2 (le_of_nu_iterate_eq hE hk hM hrk hp hn)
 
 end SignedTropical.Rainbow.StageLength

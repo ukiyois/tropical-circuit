@@ -2,7 +2,7 @@
 
 Module: `SignedTropical/Rainbow/StageLength.lean` (namespace `SignedTropical.Rainbow.StageLength`),
 written by the coordinator.  Paper: `greedy_intersection.tex`, Section 4.6, Theorem
-`thm:stagelength` and its proof, Steps 1 to 5.
+`thm:stagelength` and its proof, Steps 1 to 7.
 
 Setting.  `M : Matroid (Fin m)` has ground set `univ`, rank `k` and a rainbow base; the blocks are
 the fibres of `blk : Fin m → Fin k`.  At a state `v` with `ν₀ = ν(M^v) = r < k`, `S = Av(M^v)`,
@@ -66,9 +66,12 @@ Proof.  Bounds: a base attaining `Q(v)` has a pair by 1.3, and `|B| = k`.  Decre
 attaining `Q(v)` is a base of `M^{v'}` meeting `r` blocks (Theorem `thm:validity`(2),
 `isMinBase_update`), so `Q(v') ≤ |crossPairs(B, v')| < |crossPairs(B, v)| = Q(v)` by 1.3.
 
-### 1.5 An epoch with `ρ = 0` takes one update (`av_ne_of_rk_eq_zero`)
+### 1.5 An epoch with `ρ = 0` takes one update (`av_ne_of_rk_eq_zero`, `av_ne_of_card_av_eq`)
 
 Statement.  Let `ν₀ = r < k` and `r_{M^v}(X) = 0`.  If `ν(M^{v'}) = r`, then `Av(M^{v'}) ≠ S`.
+`av_ne_of_card_av_eq` states the same for `|S| = k - r`, the form of Theorem
+`thm:stagelength`(2): `|S| + r = k + r_{M^v}(X)` (`Exchange.card_av_add_nu`, Lemma
+`lem:avoidable`(2)), so `|S| = k - r` gives `r_{M^v}(X) = 0`.
 
 Proof.  Step 1.  At `δ`, `r_{N(δ)}(X) > 0`, so some `y ∈ X` lies in a base of `N(δ)`, hence in
 `PO_δ` (`POSL.subset_PO_of_isBase_N`).  Step 2.  If `Av(M^{v'}) = S`, then
@@ -93,9 +96,10 @@ Proof.  Bound: `k - r ≤ |S| ≤ k - 1` (`Potential.card_av_bounds`), so `ρ �
 
 ### 1.7 Components of rank one (`Rainbow/RankOne.lean`, Corollary `cor:rankone`)
 
-Hypothesis `hpar`: every circuit of `M` has at most two elements, that is every component has
-rank at most one (the assignment problem is the case of a partition matroid with unit
-capacities).
+Hypothesis `hcomp : ∀ e, rk M (Conn.comp M e) ≤ 1`: every component of `M` has rank at most
+one (the assignment problem is the case of a partition matroid with unit capacities).  Then every
+circuit has at most two elements (`circuit_encard_le_two`): a circuit `C` through `e` lies in the
+component of `e` (`Conn.isCircuit_subset_comp`), so `|C| = r(C) + 1 ≤ 2`.
 
 Statement (`av_ne_av`).  At `ν₀ = r < k`, if `ν(M^{v'}) = r`, then `Av(M^{v'}) ≠ S`.  Consequently
 (`card_av_lt`, `le_card_av_iterate`, `lt_of_nu_iterate_eq`) the iterates of the stage-`r` map
@@ -103,7 +107,7 @@ with `ν₀ = r` have index `n < r`: stage `r` ends after at most `r` updates
 (`Schedule.validLength_rankOne`).
 
 Proof.  Step 1.  The pair `(x, z)` of `exists_crossing_pair` lies in one component and `x ≠ z`, so
-`{x, z}` is a circuit (`isCircuit_pair`).  Step 2.  If `x ∈ B`, then `z ∉ B`,
+`{x, z}` is a circuit (`isCircuit_pair`, with `circuit_encard_le_two`).  Step 2.  If `x ∈ B`, then `z ∉ B`,
 `C(B, z) = {x, z}` (`IsCircuit.eq_fundCircuit_of_subset`) and `v_x ≤ v_z`
 (`Conn.le_of_mem_fundCircuit`), against `v_z < v_x`.  So `z ∈ B` and `z ∈ C(B, x)`.  Step 3.  `B`
 is a minimum base of `v'` (`isMinBase_update`), and if `Av(M^{v'}) = S` then
@@ -112,6 +116,33 @@ is a minimum base of `v'` (`isMinBase_update`), and if `Av(M^{v'}) = S` then
 stage (`av_subset_av_update`), and `k - r ≤ |S₀| ≤ k - 1` (`card_av_bounds`), so
 `n ≤ |S₀| + r - k ≤ r - 1`.
 
+### 1.8 A base fixed for the whole stage (`resolvedPairs`, `resolvedPairs_ssubset`, `le_of_nu_iterate_eq`)
+
+Definition.  For a base `B` and weights `u`, `resolvedPairs M blk B u` is the set of pairs
+`(x, z)` with `x ≠ z`, `x ∈ B` or `z ∈ B`, `blk x ∈ Av(M^u)` and `u_x ≤ u_z`.  It has at most
+`|B| (m - 1) + (m - |B|) |B|` elements (`card_resolvedPairs_le`): a pair has `x ∈ B` and `z ≠ x`,
+or `x ∉ B` and `z ∈ B`.
+
+Statement (`resolvedPairs_ssubset`, Theorem `thm:stagelength`(3)).  Let `ν₀ = r < k`, `B` a base
+of `M^v` meeting `r` blocks, and `ν(M^{v'}) = r` after the PO-SL update.  Then
+`resolvedPairs M blk B v ⊂ resolvedPairs M blk B v'`.
+
+Proof.  Step 1.  `Av(M^v) ⊆ Av(M^{v'})` (`av_subset_av_update`).  Step 2.  For a pair of
+`resolvedPairs` at `v`, `a_{blk x} = τ` (`update_eq_tau`) and `a_{blk z} ≤ τ` (`update_le_tau`), so
+`v'_x - v'_z ≤ v_x - v_z ≤ 0`: the pair stays.  Step 3.  The pair `(x, z)` of
+`exists_crossing_pair` has `blk x ∈ Av(M^v)`, `blk z ∉ Av(M^v)` (so `x ≠ z`), one of them in `B`,
+`v_z < v_x` (so it is not in the set at `v`) and `v'_x ≤ v'_z` (so it is in the set at `v'`).
+
+Statement (`le_of_nu_iterate_eq`, `lt_of_nu_iterate_eq_fixed`).  From a state `p` with
+`ν₀ ≥ r`, if the `n`-th iterate of the stage-`r` map has `ν₀ = r`, then `n ≤ k (2m - k - 1)`.
+
+Proof.  Step 1.  Every iterate `j ≤ n` has `ν₀ = r`: `ν₀ ≥ r` (`le_nu_iterate`) and `ν₀` does not
+decrease along the iterates (`nu_iterate_mono`).  Step 2.  Take a base `B` of `M^v` at `p` meeting
+`r` blocks (`exists_isBase_card_blocksMet`); by `isMinBase_update` and induction it is a base of
+`M^v` at every iterate `j ≤ n`.  Step 3.  By `resolvedPairs_ssubset` at the iterates `j < n`,
+`j ≤ |resolvedPairs|` at iterate `j`, by induction.  Step 4.  `|resolvedPairs| ≤ k (m - 1) +
+(m - k) k = k (2m - k - 1)`, as `|B| = k` and `k ≤ m`.
+
 ## 2. Correspondence
 
 | Paper | Lean | Status |
@@ -119,13 +150,14 @@ stage (`av_subset_av_update`), and `k - r ≤ |S₀| ≤ k - 1` (`card_av_bounds
 | `thm:stagelength`, Step 1 | `card_inter_eq_rk`, `Potential.exists_tie_of_isBase`, `Potential.lt_of_mem_fundCircuit` | proved |
 | `thm:stagelength`, Step 2 | `exists_pair` | proved |
 | `thm:stagelength`(1), Step 3 | `exists_crossing_pair`, `crossPairs_ssubset` | proved |
-| `cor:rankone` | `RankOne.isCircuit_pair`, `RankOne.av_ne_av`, `RankOne.lt_of_nu_iterate_eq`, `Schedule.validLength_rankOne` | proved |
-| `thm:stagelength`(2), Step 4 | `av_ne_of_rk_eq_zero` | proved |
+| `cor:rankone` | `RankOne.circuit_encard_le_two`, `RankOne.isCircuit_pair`, `RankOne.av_ne_av`, `RankOne.lt_of_nu_iterate_eq`, `Schedule.validLength_rankOne` | proved |
+| `thm:stagelength`(2), Step 4 | `av_ne_of_rk_eq_zero`, `av_ne_of_card_av_eq` | proved |
 | `thm:stagelength`, Step 5 (counting) | `card_crossPairs_le`, `minCross_bounds`, `minCross_lt`, `Phi₂_lt`, `Phi₂_lt_Phi₂_stageMap`, `lt_of_nu_iterate_eq`, `Schedule.stage_bound` | proved |
+| `thm:stagelength`(3), Steps 6 and 7 | `resolvedPairs`, `card_resolvedPairs_le`, `resolvedPairs_ssubset`, `nu_iterate_mono`, `le_of_nu_iterate_eq`, `lt_of_nu_iterate_eq_fixed`, `Schedule.validLength_stageLength` | proved |
 
 The paper counts epochs; the proof here packs the epochs and the pairs into one potential, as
 `Potential.lean` does for Theorem `thm:potential`.
 
 ## 3. Module size
 
-`StageLength.lean`: 430 lines; `RankOne.lean`: 137 lines.
+`StageLength.lean`: 583 lines; `RankOne.lean`: 153 lines.

@@ -18,7 +18,7 @@ are usually solved by comparing and branching.
 | Source | Title | Main results |
 |---|---|---|
 | `paper/signed_assignment.tex` | Polynomial-Size Signed Tropical Circuits for the Assignment Problem | The minimum weight of a perfect matching, with an optimal dual pair, in `O(n^8)` gates (dense case); circuits without subtraction need `2^Ω(n)` gates |
-| `paper/greedy_intersection.tex` | Greedy and Matroid Intersection without Branching | Weighted bases of a matroid in `3ms + O(m^2)` gates from a Boolean rank circuit of size `s`, and a converse of size `O(S^2)`; rainbow bases in `O(k^4 m^6 (s+m))`; weighted matroid intersection in `O(m^10 (s_1+s_2+m))` |
+| `paper/greedy_intersection.tex` | Greedy and Matroid Intersection without Branching | Weighted bases of a matroid in `3ms + O(m^2)` gates from a Boolean rank circuit of size `s`, and a converse of size `O(S^2)`; rainbow bases in `O(k^3 m^5 (s+m))`; weighted matroid intersection in `O(m^8 (s_1+s_2+m))` |
 
 Neither paper depends on the other: `greedy_intersection.tex` proves the compiler it
 uses. To build one:
@@ -96,7 +96,7 @@ MIT, see `LICENSE`.
 | 源文件 | 标题 | 主要结果 |
 |---|---|---|
 | `paper/signed_assignment.tex` | Polynomial-Size Signed Tropical Circuits for the Assignment Problem | 完美匹配的最小权重连同一组最优对偶解，`O(n^8)` 个门（稠密情形）；不允许减法的电路需要 `2^Ω(n)` 个门 |
-| `paper/greedy_intersection.tex` | Greedy and Matroid Intersection without Branching | 由规模为 `s` 的布尔秩电路得到拟阵加权基的 `3ms + O(m^2)` 门电路，反方向得到规模 `O(S^2)` 的布尔秩电路；彩虹基（rainbow base）`O(k^4 m^6 (s+m))`；加权拟阵交 `O(m^10 (s_1+s_2+m))` |
+| `paper/greedy_intersection.tex` | Greedy and Matroid Intersection without Branching | 由规模为 `s` 的布尔秩电路得到拟阵加权基的 `3ms + O(m^2)` 门电路，反方向得到规模 `O(S^2)` 的布尔秩电路；彩虹基（rainbow base）`O(k^3 m^5 (s+m))`；加权拟阵交 `O(m^8 (s_1+s_2+m))` |
 
 两篇论文互不依赖：`greedy_intersection.tex` 自行证明了它所用的编译器。编译方法：
 

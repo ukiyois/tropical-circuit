@@ -10,8 +10,6 @@ the independent sets of `M` with at most `j` elements (Mathlib has no truncation
 * `rk_truncate`: its rank function is `min(r, j)`.
 * `isBase_truncate_iff`: for `j ≤ r(M)`, its bases are the independent sets of `M` with `j`
   elements.
-* `isBase_truncate_both_iff`: for `j ≤ r(M₁), r(M₂)`, the common bases of the truncations at `j`
-  are the common independent sets of size `j`.
 -/
 
 open Finset
@@ -78,14 +76,5 @@ theorem isBase_truncate_iff (hE : M.E = Set.univ) (hj : j ≤ rank M) (B : Finse
   refine hBi.isBase_of_eRk_ge (Set.toFinite _) ?_
   rw [hBi.eRk_eq_encard, Set.encard_coe_eq_coe_finsetCard, hcard]
   exact hr.le
-
-/-- **Common bases of truncations.**  For `j ≤ r(M₁)` and `j ≤ r(M₂)`, a set is a common base of
-the truncations at `j` iff it is a common independent set of `M₁` and `M₂` with `j` elements. -/
-theorem isBase_truncate_both_iff {M₁ M₂ : Matroid (Fin m)} (hE₁ : M₁.E = Set.univ)
-    (hE₂ : M₂.E = Set.univ) (hj₁ : j ≤ rank M₁) (hj₂ : j ≤ rank M₂) (X : Finset (Fin m)) :
-    ((truncate M₁ j).IsBase (X : Set (Fin m)) ∧ (truncate M₂ j).IsBase (X : Set (Fin m))) ↔
-      M₁.Indep (X : Set (Fin m)) ∧ M₂.Indep (X : Set (Fin m)) ∧ #X = j := by
-  rw [isBase_truncate_iff hE₁ hj₁, isBase_truncate_iff hE₂ hj₂]
-  tauto
 
 end SignedTropical.Rainbow.Trunc

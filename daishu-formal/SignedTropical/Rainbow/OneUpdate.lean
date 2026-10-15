@@ -25,8 +25,8 @@ The ordered pairs `(e, f)` are indexed by `Fin (m * m)` (`GapUpdate.pairOf`).
   `a_b`.
 * `oneUpdate` (Lemma `lem:oneupdate`): a circuit of size at most
   `3 m² s_O + k m² + 6 m⁴ + 2 m² + m + k` maps `(w, p)` to `p + a` at every state of stage `r`;
-  `oneUpdate_bigO`: with `s_O ≤ c k m³ (s + m)`, the order of Lemma `lem:observer`, the size is
-  at most `(3 c + 11) k m⁵ (s + m)`, the paper's `O(k m⁵ (s + m))`.
+  `oneUpdate_bigO`: with `s_O ≤ c (r + 2) m² (s + m)`, the order of Lemma `lem:observer`, the
+  size is at most `(3 c + 11)(r + 2) m⁴ (s + m)`, the paper's `O(k m⁴ (s + m))`.
 
 The builders are composed with the representations and implementations of `BoolAlg/Impl.lean`
 (`Rep`, `Impl`), which serve any gate set.
@@ -226,39 +226,49 @@ theorem pow_mul_pow_le {k m a i j i' j' : ℕ} (hk : 1 ≤ k) (hm : 1 ≤ m) (ha
   (Nat.mul_le_mul (Nat.pow_le_pow_right hk hi) (Nat.pow_le_pow_right hm hj)).trans
     (Nat.le_mul_of_pos_right _ ha)
 
-/-- The bound of `oneUpdate` with an observer of size at most `c k m³ (s + m)` is at most
-`(3 c + 11) k m⁵ (s + m)`, for `k, m ≥ 1`. -/
-theorem updSize_le {m k s c : ℕ} (hk : 1 ≤ k) (hm : 1 ≤ m) :
-    3 * m ^ 2 * (c * (k * m ^ 3 * (s + m))) + k * m ^ 2 + 6 * m ^ 4 + 2 * m ^ 2 + m + k ≤
-      (3 * c + 11) * (k * m ^ 5 * (s + m)) := by
-  have ha : 1 ≤ s + m := by omega
-  have e1 := pow_mul_pow_le (i := 1) (j := 2) (i' := 1) (j' := 5) hk hm ha le_rfl (by norm_num)
-  have e2 := pow_mul_pow_le (i := 0) (j := 4) (i' := 1) (j' := 5) hk hm ha (by norm_num)
-    (by norm_num)
-  have e3 := pow_mul_pow_le (i := 0) (j := 2) (i' := 1) (j' := 5) hk hm ha (by norm_num)
-    (by norm_num)
-  have e4 := pow_mul_pow_le (i := 0) (j := 1) (i' := 1) (j' := 5) hk hm ha (by norm_num)
-    (by norm_num)
-  have e5 := pow_mul_pow_le (i := 1) (j := 0) (i' := 1) (j' := 5) hk hm ha le_rfl (by norm_num)
-  simp only [pow_zero, pow_one, one_mul, mul_one] at e1 e2 e3 e4 e5
-  nlinarith
+/-- The bound of `oneUpdate` with an observer of size at most `c (r + 2) m² (s + m)` is at most
+`3 c (r + 2) m⁴ (s + m) + 11 m⁴`, for `k ≤ m`. -/
+theorem updSize_le {m k s c r : ℕ} (hkm : k ≤ m) :
+    3 * m ^ 2 * (c * ((r + 2) * m ^ 2 * (s + m))) + k * m ^ 2 + 6 * m ^ 4 + 2 * m ^ 2 + m + k ≤
+      3 * c * ((r + 2) * (m ^ 4 * (s + m))) + 11 * m ^ 4 := by
+  have e0 : 3 * m ^ 2 * (c * ((r + 2) * m ^ 2 * (s + m))) =
+      3 * c * ((r + 2) * (m ^ 4 * (s + m))) := by ring
+  rcases Nat.eq_zero_or_pos m with rfl | hm
+  · obtain rfl : k = 0 := by omega
+    simp
+  have h1 : k * m ^ 2 ≤ m ^ 4 :=
+    calc k * m ^ 2 ≤ m * m ^ 2 := Nat.mul_le_mul_right _ hkm
+      _ = m ^ 3 := by ring
+      _ ≤ m ^ 4 := Nat.pow_le_pow_right hm (by norm_num)
+  have h2 : m ^ 2 ≤ m ^ 4 := Nat.pow_le_pow_right hm (by norm_num)
+  have h3 : m ≤ m ^ 4 := Nat.le_self_pow (by norm_num) m
+  rw [e0]
+  omega
 
 /-- **Lemma `lem:oneupdate`, the order of the size.**  Under the hypotheses of `oneUpdate`, with
-an observer of size at most `c k m³ (s + m)` (the order `O(k m³ (s + m))` of Lemma
+an observer of size at most `c (r + 2) m² (s + m)` (the order `O((r + 2) m² (s + m))` of Lemma
 `lem:observer`, `s` the size of a Boolean rank circuit), the circuit has at most
-`(3 c + 11) k m⁵ (s + m)` gates: the paper's `O(k m⁵ (s + m))`. -/
+`(3 c + 11)(r + 2) m⁴ (s + m)` gates: the paper's `O(k m⁴ (s + m))`. -/
 theorem oneUpdate_bigO {M : Matroid (Fin m)} {blk : Fin m → Fin k} {r : ℕ}
     {O : Circuit BoolOp (m * m)} (hE : M.E = Set.univ) (hk : rank M = k)
     (hM : ∃ B, IsRainbowBase M blk B) (hrk : r < k) (hO : IsObserver M blk r O) {s c : ℕ}
-    (hs : O.size ≤ c * (k * m ^ 3 * (s + m))) :
-    ∃ U : Circuit STOp (m + k), U.size ≤ (3 * c + 11) * (k * m ^ 5 * (s + m)) ∧
+    (hs : O.size ≤ c * ((r + 2) * m ^ 2 * (s + m))) :
+    ∃ U : Circuit STOp (m + k), U.size ≤ (3 * c + 11) * ((r + 2) * m ^ 4 * (s + m)) ∧
       ∀ w p, r ≤ nu (minBases M (shift blk w p)) blk →
         U.eval (stInterp ℝ) (Fin.append w p) =
           List.ofFn (p + Validity.update (POSL.N M (shift blk w p)) blk r) := by
   obtain ⟨U, hU, hUe⟩ := oneUpdate hE hk hM hrk hO
-  have hm : 1 ≤ m := (show 1 ≤ k by omega).trans (hk ▸ rank_le_card M)
-  refine ⟨U, hU.trans ((?_ : _ ≤ _).trans (updSize_le (s := s) (c := c) (by omega) hm)), hUe⟩
-  have := Nat.mul_le_mul_left (3 * m ^ 2) hs
+  have hkm : k ≤ m := hk ▸ rank_le_card M
+  have hm : 1 ≤ m := (show 1 ≤ k by omega).trans hkm
+  refine ⟨U, hU.trans ?_, hUe⟩
+  have h1 := Nat.mul_le_mul_left (3 * m ^ 2) hs
+  have h2 := updSize_le (s := s) (c := c) (r := r) hkm
+  have h3 : m ^ 4 ≤ (r + 2) * m ^ 4 * (s + m) :=
+    calc m ^ 4 = 1 * m ^ 4 * 1 := by ring
+      _ ≤ (r + 2) * m ^ 4 * (s + m) :=
+        Nat.mul_le_mul (Nat.mul_le_mul_right _ (by omega)) (by omega)
+  have e : 3 * c * ((r + 2) * (m ^ 4 * (s + m))) + 11 * ((r + 2) * m ^ 4 * (s + m)) =
+      (3 * c + 11) * ((r + 2) * m ^ 4 * (s + m)) := by ring
   omega
 
 end SignedTropical.Rainbow.TheoremC

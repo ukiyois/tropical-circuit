@@ -21,13 +21,14 @@ hypothesis of Theorem A (`theoremA`).  Gate counts are exact; `W = ⌈log₂(m+1
   circuit of `N` on the `m + m` inputs `E × {1, 2}`, computing
   `r_N(A × {1} ∪ B × {2}) = r₁(A) + |B| + r₂(E \ B) - r₂(E)` (`Doubling.rk_pair_eq_sub`), with
   exactly `s₁ + s₂ + m + popCost m + 35 W + 15 ≤ s₁ + s₂ + 58 m + 15` gates.
-* **Step 4** (`truncRankCircuit`, `truncRankCircuit_rank`, `truncate_rankCircuit`): the rank
-  circuit of the truncation at `j`, whose rank function is `min(r, j)` (`Trunc.rk_truncate`): a
-  rank query, a comparison with `j` and a selection on `W` bits, exactly `s + 8 W + 3` gates for
-  `j ≤ m`.
-* **Steps 2 and 4 together** (`doubleTruncRankCircuit`, `doubleTruncRankCircuit_rank`,
-  `double_truncate_rankCircuit`): the rank circuit of the doubled matroid of the truncations at
-  `j ≤ m`, with exactly `s₁ + s₂ + m + popCost m + 51 W + 21 ≤ s₁ + s₂ + 74 m + 21` gates.
+* The truncation (`truncRankCircuit`, `truncRankCircuit_rank`): the rank circuit of the
+  truncation at `j`, whose rank function is `min(r, j)` (`Trunc.rk_truncate`): a rank query, a
+  comparison with `j` and a selection on `W` bits, exactly `s + 8 W + 3` gates for `j ≤ m`.
+* **Step 4, the padded matroid** (`pad`, `isBase_pad_iff`, `padRankCircuit`,
+  `padRankCircuit_rank`): `pad M = (M ⊕ U_{m,m})|_{≤m}` on `E × {1, 2}`, written
+  `truncate (double M (loops m)) m` with `loops m` the matroid of loops, whose dual is free.  Its
+  bases are the sets of `m` elements whose first copies are independent in `M`, and its rank
+  circuit `min(r(A) + |B|, m)` has at most `s + 74 m + 18` gates.
 -/
 
 open Finset
@@ -49,11 +50,6 @@ theorem bitsVal_eq_rk {M : Matroid (Fin m)} {C : Circuit BoolOp m}
       (bitsVal (C.eval boolInterp (indicator S)) : ℕ∞) = M.eRk (S : Set (Fin m)))
     (S : Finset (Fin m)) : bitsVal (C.eval boolInterp (indicator S)) = rk M S :=
   Nat.cast_injective ((hC S).trans (coe_rk M S).symm)
-
-/-- The rank of the truncation at `j` is `min(r(E), j)`. -/
-theorem rank_truncate_eq_min {M : Matroid (Fin m)} (hE : M.E = Set.univ) (j : ℕ) :
-    rank (truncate M j) = min (rank M) j := by
-  rw [← rk_univ _ truncate_E, rk_truncate hE, rk_univ M hE]
 
 /-! ### Rank queries -/
 
@@ -243,76 +239,84 @@ theorem truncRankCircuit_rank (hE : M.E = Set.univ)
   rw [(truncRankCircuit_spec C j).2.2, bitsVal_eq_rk hC, Nat.mod_eq_of_lt (rk_lt_two_pow M S),
     ← rk_truncate hE, coe_rk]
 
-/-- **Theorem `thm:D`, Step 4, one truncation.**  Let `M` be a matroid on `E = Fin m` (ground
-set `univ`) and let a Boolean circuit `C` of size `s` output `r(S)` in binary from the indicator
-vector of every `S ⊆ E`.  For `j ≤ m`, a Boolean circuit of size `s + 8 ⌈log₂(m+1)⌉ + 3` outputs
-in binary the rank `min(r(S), j)` of every `S` in the truncation of `M` at `j`. -/
-theorem truncate_rankCircuit (hE : M.E = Set.univ)
-    (hC : ∀ S : Finset (Fin m),
-      (bitsVal (C.eval boolInterp (indicator S)) : ℕ∞) = M.eRk (S : Set (Fin m)))
-    {j : ℕ} (hj : j ≤ m) :
-    ∃ C' : Circuit BoolOp m, C'.size = C.size + 8 * Nat.size m + 3 ∧
-      ∀ S : Finset (Fin m), (bitsVal (C'.eval boolInterp (indicator S)) : ℕ∞)
-        = (truncate M j).eRk (S : Set (Fin m)) :=
-  ⟨truncRankCircuit C j, truncRankCircuit_size hj C, truncRankCircuit_rank hE hC j⟩
+/-! ### Step 4: the padded matroids -/
 
-/-! ### Steps 2 and 4 together: the doubled matroid of the truncations -/
+/-- The matroid on `E` whose elements are all loops; its dual is free. -/
+noncomputable def loops (m : ℕ) : Matroid (Fin m) := Matroid.loopyOn Set.univ
 
-/-- **The rank circuit of the doubled matroid of the truncations at `j`** (Theorem `thm:D`,
-Steps 2 and 4), for rank circuits `C₁`, `C₂` of `M₁`, `M₂` and the rank `k₂ = r₂(E)`; the
-truncation of `M₂` at `j` has rank `min(k₂, j)`. -/
-def doubleTruncRankCircuit (C₁ C₂ : Circuit BoolOp m) (k₂ j : ℕ) : Circuit BoolOp (m + m) :=
-  doubleRankCircuit (truncRankCircuit C₁ j) (truncRankCircuit C₂ j) (min k₂ j)
+@[simp] theorem loops_E : (loops m).E = Set.univ := rfl
 
-/-- For `j ≤ m`, `doubleTruncRankCircuit` has `s₁ + s₂ + m + popCost m + 51 ⌈log₂(m+1)⌉ + 21`
-gates. -/
-theorem doubleTruncRankCircuit_size {j : ℕ} (hj : j ≤ m) (C₁ C₂ : Circuit BoolOp m) (k₂ : ℕ) :
-    (doubleTruncRankCircuit C₁ C₂ k₂ j).size
-      = C₁.size + C₂.size + m + popCost m + 51 * Nat.size m + 21 := by
-  rw [doubleTruncRankCircuit, doubleRankCircuit_size ((min_le_right _ _).trans hj),
-    truncRankCircuit_size hj, truncRankCircuit_size hj]
-  ring
+/-- `loops m` has rank `0`. -/
+theorem rank_loops : rank (loops m) = 0 := by
+  simp [rank, loops]
 
-/-- For `j ≤ m`, `doubleTruncRankCircuit` has at most `s₁ + s₂ + 74 m + 21` gates. -/
-theorem doubleTruncRankCircuit_size_le {j : ℕ} (hj : j ≤ m) (C₁ C₂ : Circuit BoolOp m)
-    (k₂ : ℕ) : (doubleTruncRankCircuit C₁ C₂ k₂ j).size ≤ C₁.size + C₂.size + 74 * m + 21 := by
-  rw [doubleTruncRankCircuit_size hj]
-  have h₁ := popCost_le m
-  have h₂ := size_le_self m
+/-- **The padded matroid** of `M` on `E × {1, 2}`: `M` on the first copies, every set of second
+copies independent (`double M (loops m)`, as `(loops m)✶` is free), truncated at `m`.  At
+`A × {1} ∪ B × {2}` its rank is `min(r(A) + |B|, m)`. -/
+noncomputable def pad (M : Matroid (Fin m)) : Matroid (Fin (m + m)) :=
+  truncate (double M (loops m)) m
+
+/-- A set of `M ⊕ U_{m,m}` is independent iff its first copies are independent in `M`. -/
+theorem indep_double_loops (S : Finset (Fin (m + m))) :
+    (double M (loops m)).Indep (S : Set (Fin (m + m))) ↔ M.Indep (fst S : Set (Fin m)) := by
+  rw [double, Matroid.mapEquiv_indep_iff, Matroid.sum_indep_iff, preimage_inl_image_symm,
+    preimage_inr_image_symm, loops, Matroid.loopyOn_dual_eq, Matroid.freeOn_indep_iff, coe_fst]
+  simp
+
+/-- `M ⊕ U_{m,m}` has rank `r(E) + m`. -/
+theorem rank_double_loops (hE : M.E = Set.univ) : rank (double M (loops m)) = rank M + m := by
+  have h := rank_double (M₂ := loops m) hE loops_E
+  rw [rank_loops] at h
   omega
 
-/-- **`doubleTruncRankCircuit` computes the rank function of the doubled matroid of the
-truncations at `j`** (Theorem `thm:D`, Steps 2 and 4). -/
-theorem doubleTruncRankCircuit_rank (hE₁ : M₁.E = Set.univ) (hE₂ : M₂.E = Set.univ)
-    (hC₁ : ∀ S : Finset (Fin m),
-      (bitsVal (C₁.eval boolInterp (indicator S)) : ℕ∞) = M₁.eRk (S : Set (Fin m)))
-    (hC₂ : ∀ S : Finset (Fin m),
-      (bitsVal (C₂.eval boolInterp (indicator S)) : ℕ∞) = M₂.eRk (S : Set (Fin m)))
-    (j : ℕ) (S : Finset (Fin (m + m))) :
-    (bitsVal ((doubleTruncRankCircuit C₁ C₂ (rank M₂) j).eval boolInterp (indicator S)) : ℕ∞)
-      = (double (truncate M₁ j) (truncate M₂ j)).eRk (S : Set (Fin (m + m))) := by
-  rw [doubleTruncRankCircuit, ← rank_truncate_eq_min hE₂ j]
-  exact doubleRankCircuit_rank truncate_E truncate_E (truncRankCircuit_rank hE₁ hC₁ j)
-    (truncRankCircuit_rank hE₂ hC₂ j) S
+/-- **The bases of the padded matroid** are the sets of `m` elements whose first copies are
+independent in `M`. -/
+theorem isBase_pad_iff (hE : M.E = Set.univ) (S : Finset (Fin (m + m))) :
+    (pad M).IsBase (S : Set (Fin (m + m))) ↔ M.Indep (fst S : Set (Fin m)) ∧ #S = m := by
+  rw [pad, isBase_truncate_iff (double_ground hE loops_E)
+    (by rw [rank_double_loops hE]; omega), indep_double_loops]
 
-/-- **Theorem `thm:D`, Steps 2 and 4.**  Let `M₁`, `M₂` be matroids on `E = Fin m` (ground set
-`univ`) and let Boolean circuits `C₁`, `C₂` of sizes `s₁`, `s₂` output `r₁(S)`, `r₂(S)` in
-binary from the indicator vector of every `S ⊆ E`.  For `j ≤ m`, a Boolean circuit of size
-`s₁ + s₂ + m + popCost m + 51 ⌈log₂(m+1)⌉ + 21 ≤ s₁ + s₂ + 74 m + 21` outputs in binary the rank
-in `N_j = T₁ ⊕ T₂✶` of every `S ⊆ E × {1, 2}` from its indicator vector, where `T₁`, `T₂` are
-the truncations of `M₁`, `M₂` at `j`, of rank functions `min(r₁, j)`, `min(r₂, j)`. -/
-theorem double_truncate_rankCircuit (hE₁ : M₁.E = Set.univ) (hE₂ : M₂.E = Set.univ)
-    (hC₁ : ∀ S : Finset (Fin m),
-      (bitsVal (C₁.eval boolInterp (indicator S)) : ℕ∞) = M₁.eRk (S : Set (Fin m)))
-    (hC₂ : ∀ S : Finset (Fin m),
-      (bitsVal (C₂.eval boolInterp (indicator S)) : ℕ∞) = M₂.eRk (S : Set (Fin m)))
-    {j : ℕ} (hj : j ≤ m) :
-    ∃ C : Circuit BoolOp (m + m),
-      C.size = C₁.size + C₂.size + m + popCost m + 51 * Nat.size m + 21 ∧
-      C.size ≤ C₁.size + C₂.size + 74 * m + 21 ∧
-      ∀ S : Finset (Fin (m + m)), (bitsVal (C.eval boolInterp (indicator S)) : ℕ∞)
-        = (double (truncate M₁ j) (truncate M₂ j)).eRk (S : Set (Fin (m + m))) :=
-  ⟨doubleTruncRankCircuit C₁ C₂ (rank M₂) j, doubleTruncRankCircuit_size hj C₁ C₂ _,
-    doubleTruncRankCircuit_size_le hj C₁ C₂ _, doubleTruncRankCircuit_rank hE₁ hE₂ hC₁ hC₂ j⟩
+/-- The rank circuit of `loops m`: no gates and no outputs, which read as the number `0`. -/
+def zeroCircuit (m : ℕ) : Circuit BoolOp m := ⟨[], []⟩
+
+/-- `zeroCircuit m` outputs the rank `0` of every set in `loops m`. -/
+theorem zeroCircuit_rank (S : Finset (Fin m)) :
+    (bitsVal ((zeroCircuit m).eval boolInterp (indicator S)) : ℕ∞) =
+      (loops m).eRk (S : Set (Fin m)) := by
+  simp [zeroCircuit, Circuit.eval, loops]
+
+/-- **The rank circuit of the padded matroid** (Theorem `thm:D`, Step 4), for a rank circuit `C`
+of `M`: the rank circuit of `double M (loops m)` (`r(A) + |B|`), then the truncation at `m`. -/
+def padRankCircuit (C : Circuit BoolOp m) : Circuit BoolOp (m + m) :=
+  truncRankCircuit (doubleRankCircuit C (zeroCircuit m) 0) m
+
+/-- `padRankCircuit C` has `s + m + popCost m + 35 ⌈log₂(m+1)⌉ + 8 ⌈log₂(2m+1)⌉ + 18` gates. -/
+theorem padRankCircuit_size (C : Circuit BoolOp m) :
+    (padRankCircuit C).size =
+      C.size + m + popCost m + 35 * Nat.size m + 8 * Nat.size (m + m) + 18 := by
+  rw [padRankCircuit, truncRankCircuit_size (by omega), doubleRankCircuit_size (Nat.zero_le m)]
+  simp only [zeroCircuit, Circuit.size, List.length_nil]
+  ring
+
+/-- `padRankCircuit C` has at most `s + 74 m + 18` gates. -/
+theorem padRankCircuit_size_le (C : Circuit BoolOp m) :
+    (padRankCircuit C).size ≤ C.size + 74 * m + 18 := by
+  rw [padRankCircuit_size]
+  have h₁ := popCost_le m
+  have h₂ := size_le_self m
+  have h₃ := size_le_self (m + m)
+  omega
+
+/-- **`padRankCircuit` computes the rank function of the padded matroid** (Theorem `thm:D`,
+Step 4). -/
+theorem padRankCircuit_rank (hE : M.E = Set.univ)
+    (hC : ∀ S : Finset (Fin m),
+      (bitsVal (C.eval boolInterp (indicator S)) : ℕ∞) = M.eRk (S : Set (Fin m)))
+    (S : Finset (Fin (m + m))) :
+    (bitsVal ((padRankCircuit C).eval boolInterp (indicator S)) : ℕ∞)
+      = (pad M).eRk (S : Set (Fin (m + m))) :=
+  truncRankCircuit_rank (double_ground hE loops_E) (fun S => by
+    have h := doubleRankCircuit_rank hE loops_E hC zeroCircuit_rank S
+    rwa [rank_loops] at h) m S
 
 end SignedTropical.Rainbow.TheoremD

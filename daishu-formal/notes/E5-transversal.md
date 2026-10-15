@@ -139,9 +139,9 @@ the edges at `e` in increasing order (`mem_edgesAt`); every edge is at one eleme
    that `A` meets costs `p + m + popCost m` gates, on `⌈log₂(m+1)⌉` bits.
 4. `rkQueryV_eq`: at `x = 1_S` and the indicator vector of a set `F` of edges, this number is
    `r_{N_S}(F)`.
-5. `oracleB_impl`: the oracle `oracleB col = indepOfRankB (rkQueryB col)` of P6b computes
-   `indepOfRankV (rkQueryV col)` with `oracleCost m p = p + m + popCost m + popCost p +
-   5⌈log₂(p+1)⌉ + 1` gates.
+5. The oracle `indepOfRankB (rkQueryB col)` (`indepOfRankB_impl` of `BoolAlg/Count.lean` on
+   `rkQueryB_impl`) computes `indepOfRankV (rkQueryV col)` with `oracleCost m p = p + m +
+   popCost m + popCost p + 5⌈log₂(p+1)⌉ + 1` gates.
 
 *Proof.*  Step 1, item 1: one `∨` gate per entry of the list with the context `A` kept
 (`Impl.foldCtx`), and the left fold of `∨` is `a ∨ (some entry)` (`foldl_or`, induction on the
@@ -154,15 +154,17 @@ bits (`vecPopcountB_impl`, `popCost m` gates).  Step 4, item 4: the elements cou
 
 **Theorem 10 (the rank circuit), `rankCircuit`, `rankCircuit_spec`, `rankCircuit_eRk`,
 `rankCost_le`.**  Let `(col, blk)` present `A` with `p` edges.  The Boolean circuit
-`rankCircuit col blk = nuCircuit (oracleB col) blk` has exactly
+`rankCircuit col blk = nuCircuit (fun _ => indepOfRankB (rkQueryB col)) blk`, the same
+independence oracle as the exchange test of every `y`, has exactly
 `n · roundCost p (oracleCost m p) + popCost p` gates, at most `36 (n+1)(p+1)²(p+m+1)`, and
 outputs `r(S)` in binary for every `S ⊆ E`.
 
 *Proof.*  Step 1, `nuCircuit_spec` (P6b) with the oracle of Lemma 9(5): the size is
 `n · roundCost p (oracleCost m p) + popCost p` (`n` rounds, one for each block), and at every
-input `x` at which the oracle answers independence in a matroid `N`, the output is `ν(N)` in
-binary.  Step 2, at `x = 1_S` the oracle answers independence in `N_S`: `indepOfRank_correct`
-(P6b) with Lemma 9(4).  Step 3, `ν(N_S) = r(S)` by Theorem 8; in `ℕ∞` by `coe_rk`.  Step 4, the
+input `x` at which the tests answer the exchange questions of a matroid `N` (`ExchOracle`), the
+output is `ν(N)` in binary.  Step 2, at `x = 1_S` the oracle answers independence in `N_S`
+(`indepOfRank_correct` with Lemma 9(4)), hence every exchange question
+(`ExchOracle.of_indep`).  Step 3, `ν(N_S) = r(S)` by Theorem 8; in `ℕ∞` by `coe_rk`.  Step 4, the
 bound: `oracleCost m p ≤ 28p + 23m + 1` (`popCost r ≤ 22r`, `⌈log₂(p+1)⌉ ≤ p`), so
 `roundCost p (oracleCost m p) ≤ 36p³ + 23mp² + 13p² + 12p + 4`, and `36 (n+1)(p+1)²(p+m+1)`
 equals `n(36p³ + 23mp² + 13p² + 12p + 4) + 22p` plus an explicit polynomial in `m, n, p` with
@@ -452,8 +454,9 @@ SignedTropical.Rainbow.MI SignedTropical.Classes.Transversal`.  Variables
 * `exists_insert hA hX hY hXY : ∃ y ∈ Y, y ∉ X ∧ IsPartialTransversal A ↑(insert y X)`.
 * `nu_edgeMatroid hA hX : nu (edgeMatroid col X) blk = X.card`;
   `rk_eq_nu hA S : rk (transversal A) S = nu (edgeMatroid col S) blk`.
-* `oracleB col`, `oracleCost m p`, `oracleB_impl col : Impl ((vecR m).prod (vecR p)) bitR
-  (oracleB col) (oracleCost m p) (indepOfRankV (rkQueryV col))`;
+* `oracleCost m p`; `indepOfRankB_impl (rkQueryB_impl col) : Impl ((vecR m).prod (vecR p))
+  bitR (indepOfRankB (rkQueryB col)) (oracleCost m p) (indepOfRankV (rkQueryV col))` (up to the
+  form of the cost);
   `rkQueryV_eq col S F : rkQueryV col (indicator S, indicator F) = rk (edgeMatroid col S) F`.
 * `rankCircuit col blk : Circuit BoolOp m`; `rankCircuit_spec hA : size = n * roundCost p
   (oracleCost m p) + popCost p ∧ ∀ S, bitsVal (eval (indicator S)) = rk (transversal A) S`;

@@ -77,14 +77,15 @@ gammoids and the duals of all of these.
 
 For weighted matroid intersection, two matroids on $m$ elements with Boolean
 rank circuits of sizes $s_1$ and $s_2$ have a signed tropical circuit of size
-$O(m^{10}(s_1+s_2+m))$ for the minimum weight of a common base, exact at every
+$O(m^{8}(s_1+s_2+m))$ for the minimum weight of a common base, exact at every
 real weight vector.  Special cases include rainbow spanning trees, whose
 generating polynomial specializes to the permanent, arborescences and the
 assignment problem.  The circuit applies a fixed schedule of updates to the
 block potentials of a Lagrangian, and each update is a threshold integral of a
 Boolean observable of the pairwise weight differences.  The observable that
-extends the assignment case exactly, the family of bases that stay optimal under
-perturbations of size $t/2$, is not a matroid and is NP-hard to query.  We
+extends the assignment case exactly, the family of bases that are optimal for some
+weight within $t/2$ of the current one in every coordinate, is not a matroid and is
+NP-hard to query.  We
 replace it by a matroid that contains it and is read from the same data.
 Containment alone makes every update gain exactly the deficiency times its
 length, and a potential that counts raised elements reaching unraised ones
@@ -241,7 +242,7 @@ matroid.
 \label{thm:C}
 If a Boolean circuit of size $s$ outputs the binary digits of $r(S)$ from the
 indicator vector of $S\subseteq E$, and $M$ has a rainbow base, then a uniform
-signed tropical circuit of size $O(k^{4}m^{6}(s+m))$ computes $\Opt(w)$ at every
+signed tropical circuit of size $O(k^{3}m^{5}(s+m))$ computes $\Opt(w)$ at every
 $w\in\R^{E}$.
 \end{mainthm}
 
@@ -249,14 +250,15 @@ $w\in\R^{E}$.
 \label{thm:D}
 Let $M_1$ and $M_2$ be matroids on $E$, $|E|=m$, with Boolean rank circuits of
 sizes $s_1$ and $s_2$.  If they have a common base, a uniform signed tropical
-circuit of size $O(m^{10}(s_1+s_2+m))$ computes the minimum weight of a common base
-at every $w\in\R^{E}$.  In every case, one of size $O(m^{11}(s_1+s_2+m))$ computes
+circuit of size $O(m^{8}(s_1+s_2+m))$ computes the minimum weight of a common base
+at every $w\in\R^{E}$.  In every case, one of size $O(m^{8}(s_1+s_2+m))$ computes
 the maximum weight of a common independent set.
 \end{mainthm}
 
 Theorem~\ref{thm:D} follows from Theorem~\ref{thm:C} through the classical
 correspondence between common bases of $M_1,M_2$ and rainbow bases of
-$M_1\oplus M_2^{*}$ on two copies of $E$ (Section~\ref{sec:two}).
+$M_1\oplus M_2^{*}$ on two copies of $E$, and common independent sets become
+common bases once $m$ free elements are added (Section~\ref{sec:two}).
 
 \paragraph{The update.}
 The circuit maintains block potentials $p\in\R^{k}$ and the Lagrangian
@@ -295,9 +297,10 @@ Theorem~\ref{thm:potential} shows that each update still brings some element of
 a fully raised block to or below an element of another block that was above it,
 while the set of fully raised blocks never shrinks within a stage, and this
 bounds a stage by $r(\lfloor m^{2}/4\rfloor+1)$ updates.  One element of the pair
-can be taken in a fixed minimum base, which bounds a stage by $1+(r-1)km$
-updates (Theorem~\ref{thm:stagelength}); no bound in terms of $r$ and $k$ alone
-holds (Proposition~\ref{prop:ladder}).
+can be taken in a minimum base fixed for the whole stage, and a pair that has
+crossed does not cross back, which bounds a stage by
+$\min\bigl(1+(r-1)km,\,1+k(2m-k-1)\bigr)$ updates (Theorem~\ref{thm:stagelength});
+no bound in terms of $r$ and $k$ alone holds (Proposition~\ref{prop:ladder}).
 
 \paragraph{Related work.}
 Besides the works above, Hertrich and Loho~\cite{hertrich-loho26} relate circuit
@@ -620,12 +623,16 @@ so the output bits are the binary digits of $r(T)$.
 
 \begin{corollary}[Equivalence]
 \label{cor:equiv}
-Let $\STrop(h_M)$ and $\Bool(r)$ denote the least sizes in
-Theorems~\ref{thm:A} and~\ref{thm:B}.  Then
+Let $\STrop(h_M)$ be the least size of a signed tropical circuit that computes $h_M$
+at every $w\in\R^{E}$, and $\Bool(r)$ the least size of a Boolean circuit that
+outputs the binary digits of $r(S)$ from the indicator vector of $S\subseteq E$.
+Then
 \begin{align*}
   \STrop(h_M)&\le3m\,\Bool(r)+mL+9m^{2}+4m+4L+1,\\
-  \Bool(r)&\le15\,\STrop(h_M)^{2}+40\,\STrop(h_M).
+  \Bool(r)&\le15\,\STrop(h_M)^{2}+40\,\STrop(h_M),
 \end{align*}
+and the second inequality holds also with the least size of a circuit that
+computes $h_M$ on $\{0,1\}^{E}$ only.
 \end{corollary}
 
 \begin{corollary}[Linear and graphic matroids, duals]
@@ -666,9 +673,10 @@ processes column $e$ with its input bit $x_e$ by
   &\ell_p=v_p\wedge\neg\textstyle\bigvee_{q<p}v_q,\qquad f_p\leftarrow f_p\vee\ell_p,\qquad
    b_{p,i}\leftarrow(\ell_p\wedge v_i)\vee(\neg\ell_p\wedge b_{p,i}).
 \end{align*}
-By induction on the columns, the occupied slots span the selected columns and
-$b_p$ has its first $1$ in position $p$: after the second line $v_p=0$ at every
-occupied $p$, so the third line stores the reduced column in an empty slot.
+By induction on the columns, the vectors $b_p$ of the occupied slots lie in the
+span of the selected columns and span it, and $b_p$ has its first $1$ in position
+$p$: after the second line $v$ is the column plus a combination of stored vectors
+and $v_p=0$ at every occupied $p$, so the third line stores it in an empty slot.
 Hence the number of occupied slots is the rank, and the size is
 \[
   m(9r^{2}+5r)+11r\lceil\log_2(r+1)\rceil,
@@ -839,10 +847,10 @@ if and only if $\pi$ is injective, that is, $\{\pi(j)j:j\in R\}$ is a perfect
 matching of $H$, of weight $w(T_\pi)$.  With variable weights $x_{ij}$,
 \[
   \sum_{T_\pi\text{ rainbow}}\ \prod_{j\in R}x_{\pi(j)j}
-  =\sum_{\pi:R\to L\text{ bijective}}\ \prod_{j\in R}x_{\pi(j)j}=\operatorname{per}(X),
+  =\sum_{\pi:R\to L\text{ bijective}}\ \prod_{j\in R}X_{\pi(j)j}=\operatorname{per}(X),
 \]
-where $X$ is the biadjacency matrix with entries $x_{ij}$ on the edges and $0$
-elsewhere.
+where $X$ is the biadjacency matrix with $X_{ij}=x_{ij}$ on the edges and
+$X_{ij}=0$ elsewhere, so that a bijection using a non-edge contributes $0$.
 \end{proof}
 
 \begin{figure}[t]
@@ -959,8 +967,8 @@ $u_f\le u_e$ for all such $e,f$, and $u_f-u_e=v_f-v_e-t$.
 \emph{(3)$\Rightarrow$(1).}  For the base $B'=B-f+e$,
 $v_f-v_e=v(B)-v(B')\le t\,|B\setminus B'|=t$.
 
-\emph{(1)$\Leftrightarrow$(4).}  For $e\in B$, (4) holds trivially, and for
-$e\notin B$,
+\emph{(1)$\Leftrightarrow$(4).}  For $e\in B$, (4) holds as
+$e\in B\cap\{g:v_g\le v_e+t\}$, and for $e\notin B$,
 \[
   e\in\cl\bigl(B\cap\{g:v_g\le v_e+t\}\bigr)\iff C(B,e)-e\subseteq\{g:v_g\le v_e+t\}.
 \]
@@ -984,7 +992,7 @@ $t\ge\max v-\min v$.
 \begin{proposition}[Assignment]
 \label{prop:assign-pos}
 If $M$ is the partition matroid of the columns of a bipartite graph and the blocks
-are its rows, then $\theta(B)=\max_{f\in B}D_f$ with
+are its rows, then every nonempty base $B$ has $\theta(B)=\max_{f\in B}D_f$, with
 $D_{ij}=v_{ij}-\min_{i'}v_{i'j}$, so $\Pos_t$ is the set of bases inside the
 threshold graph $\{D\le t\}$ of the companion paper~\cite{wang26-assign}, read
 along the trajectory in which the column potentials equal the column minima.
@@ -1132,8 +1140,7 @@ its exactness.
 
 \begin{definition}[Admissible family]
 \label{def:admissible}
-Let $\nu_0=r<k$.  A family of matroids $N(t)$ on $E$, $t\ge0$, is
-\emph{admissible} if
+A family of matroids $N(t)$ on $E$, $t\ge0$, is \emph{admissible} if
 \begin{enumerate}
   \item[(F1)] $N(0)=M^{v}$;
   \item[(F2)] every base of $N(t)$ is a base of $N(t')$ whenever $t\le t'$;
@@ -1146,19 +1153,19 @@ Let $\nu_0=r<k$.  A family of matroids $N(t)$ on $E$, $t\ge0$, is
 
 \begin{definition}[The update]
 \label{def:update}
-For an admissible family let $\nu(t)=\nu(N(t))$,
+Let $r<k$ and $\nu_0\ge r$.  For an admissible family let $\nu(t)=\nu(N(t))$,
 \[
   \tau=\min\{t:\nu(t)\ge r+1\},\qquad
   \lambda_b=\min\{t:\text{some base of }N(t)\text{ meeting exactly }r\text{ blocks misses }b\},
 \]
 with $\lambda_b=\infty$ if there is none, and $a_b=(\tau-\lambda_b)_+$.  The
-update is $p\mapsto p+a$.  If $\nu_0>r$ we set $a=0$.
+update of stage $r$ is $p\mapsto p+a$.  If $\nu_0>r$, then $\tau=0$ and $a=0$.
 \end{definition}
 
 The minima exist: by (F2) independent sets of $N(t)$ stay independent in $N(t')$
 for $t\le t'$, so
 \[
-  r=\nu(0)\le\nu(t)\le\nu(t')\qquad(t\le t'),
+  r\le\nu(0)\le\nu(t)\le\nu(t')\qquad(t\le t'),
 \]
 by (F1); $\nu(t)=k>r$ for large $t$ by (F4); and by (F5) both sets of levels are
 unions of intervals $[c_i,c_{i+1})$ and $[c_q,\infty)$.  For $t<\tau$ we have
@@ -1233,12 +1240,12 @@ $|I|=\nu$, and let $D_I$ be the directed graph on $E$ with arcs
 \]
 sources the $y\notin I$ in blocks missed by $I$, and sinks the $y\notin I$ with
 $I+y$ independent.  As $I$ is maximum, no path leads from a source to a
-sink~\cite{lawler75,schrijver03}.  Let $R$ be the set reachable from the sources
-and $A'=\{b:b\text{ missed by }I\}\cup\blk(I\cap R)$, so
-$|A'|=(k-\nu)+|I\cap R|$.
+sink~\cite{lawler75,schrijver03}.  Let $Z$ be the set reachable from the sources
+and $A'=\{b:b\text{ missed by }I\}\cup\blk(I\cap Z)$, so
+$|A'|=(k-\nu)+|I\cap Z|$.
 
 \emph{Step 3, $A'\subseteq\Av(N)$.}  Blocks missed by $I$ are avoidable.  For
-$x\in I\cap R$ and a shortest path $y_0\to x_1\to y_1\to\cdots\to y_{j-1}\to x_j=x$
+$x\in I\cap Z$ and a shortest path $y_0\to x_1\to y_1\to\cdots\to y_{j-1}\to x_j=x$
 from a source $y_0$, the set
 \[
   I-\{x_1,\ldots,x_j\}+\{y_0,\ldots,y_{j-1}\}
@@ -1246,12 +1253,12 @@ from a source $y_0$, the set
 is rainbow, has $\nu$ elements, misses $\blk(x)$, and is independent by the
 exchange lemma for shortest paths~\cite{schrijver03}.
 
-\emph{Step 4, $r_N(E_{A'})\le|I\cap R|$.}  Let $y\in E_{A'}\setminus I$.  Either
-$y$ is a source or $x\to y$ for some $x\in I\cap R$, so $y\in R$ is not a sink
+\emph{Step 4, $r_N(E_{A'})\le|I\cap Z|$.}  Let $y\in E_{A'}\setminus I$.  Either
+$y$ is a source or $x\to y$ for some $x\in I\cap Z$, so $y\in Z$ is not a sink
 and $y\in\cl_N(I)$.  Each $x'\ne y$ in the circuit of $y$ in $I+y$ gives an arc
-$y\to x'$, so $x'\in R$.  Since also $I\cap E_{A'}\subseteq I\cap R$,
+$y\to x'$, so $x'\in Z$.  Since also $I\cap E_{A'}\subseteq I\cap Z$,
 \[
-  E_{A'}\subseteq\cl_N(I\cap R),\qquad r_N(E_{A'})\le|I\cap R|.
+  E_{A'}\subseteq\cl_N(I\cap Z),\qquad r_N(E_{A'})\le|I\cap Z|.
 \]
 
 \emph{Step 5, item 3.}  Let $Q$ attain equality in item 1, and let
@@ -1264,7 +1271,7 @@ so $J$ meets all $k-|Q|$ blocks outside $Q$, $b$ among them, a contradiction.
 
 \emph{Step 6, item 2.}  By item 1 and Steps 2 and 4,
 \[
-  k-\nu\ge|A'|-r_N(E_{A'})\ge(k-\nu)+|I\cap R|-|I\cap R|=k-\nu,
+  k-\nu\ge|A'|-r_N(E_{A'})\ge(k-\nu)+|I\cap Z|-|I\cap Z|=k-\nu,
 \]
 so $A'$ attains equality, $\Av(N)\subseteq A'$ by Step 5, and $A'=\Av(N)$ by
 Step 3.
@@ -1432,14 +1439,15 @@ are not ordered.  Write $G_t=\{(e,f)\in E\times E:v_f-v_e\le t\}$.
 For every $v$, the family $N(t)$ of Definition~\ref{def:posl}
 satisfies (F1)--(F5) with levels $\{0\}\cup\{|v_e-v_f|:e,f\in E\}$.  It is
 determined by $G_t$.  For the partition matroid of the columns of a bipartite
-graph, $N(t)$ is the column matroid restricted to the threshold graph
-$\{D\le t\}$ of Proposition~\ref{prop:assign-pos}.
+graph, the bases of $N(t)$ are those of the column matroid restricted to the
+threshold graph $\{D\le t\}$ of Proposition~\ref{prop:assign-pos}.
 \end{proposition}
 
 \begin{proof}
-\emph{Step 1, (F1).}  By Lemma~\ref{lem:minbases}(2), $\PO_0$ is the set of
-elements of minimum bases of $v$, and at scale $0$ clusters are classes of equal
-values, so within a component
+\emph{Step 1, (F1).}  Every minimum base $B$ of $v$ lies in $\PO_0$: for $f\in B$,
+Lemma~\ref{lem:minbases}(2) gives $\cl\{g:v_g<v_f\}=\cl(B\cap\{v<v_f\})\subseteq\cl(B-f)$,
+which misses $f$.  At scale $0$ clusters are classes of equal values, so within a
+component
 \[
   u_0(x)\le u_0(y)\iff v_x\le v_y\qquad(x,y\in\PO_0).
 \]
@@ -1487,13 +1495,18 @@ Lemma~\ref{lem:minbases}(1).
   \item $e\notin\PO_{t'}$: $u_{t'}(e)=m+1$.
   \item $e\in\PO_t$: $u_t(f)\le u_t(e)$, and this persists at $t'$.
   \item $e\in\PO_{t'}\setminus\PO_t$, $v_f\le v_e$: the order at scale $t'$.
-  \item $e\in\PO_{t'}\setminus\PO_t$, $v_f>v_e$.  Every $g\in K$ lies in
-        $\cl\{h\in B\cap K:u_t(h)\le u_t(x_g)\}$ for some $x_g\in\PO_t\cap K$ with
-        $v_{x_g}\le v_g$: take $x_g=g$ if $g\in\PO_t$, by
-        Lemma~\ref{lem:minbases}(1), and if $g\notin\PO_t$ use
-        $g\in\cl\{h\in K:v_h<v_g-t\}$ (Lemma~\ref{lem:minbases}(4)) and induction
-        on $v_g$.  Since $e\notin\PO_t$, the same argument gives $x^{*}\in\PO_t\cap K$
-        with
+  \item $e\in\PO_{t'}\setminus\PO_t$, $v_f>v_e$.  The component $K$ contains the
+        circuit $C(B,e)\ni f\ne e$, so it has no loop.  By induction on $v_g$, every
+        $g\in K$ lies in $\cl\{h\in B\cap K:u_t(h)\le u_t(x_g)\}$ for some
+        $x_g\in\PO_t\cap K$ with $v_{x_g}\le v_g$.  If $g\in\PO_t$, take $x_g=g$, by
+        Lemma~\ref{lem:minbases}(1).  If $g\notin\PO_t$, then $g\in\cl H_g$ for
+        $H_g=\{h\in K:v_h<v_g-t\}$ by Lemma~\ref{lem:minbases}(4), a nonempty set as
+        $g$ is not a loop; take for $x_g$ a witness $x_h$, $h\in H_g$, of largest
+        $u_t$, so that $v_{x_g}<v_g-t$ and
+        \[
+          g\in\cl H_g\subseteq\cl\bigl\{h\in B\cap K:u_t(h)\le u_t(x_g)\bigr\}.
+        \]
+        For $g=e\notin\PO_t$ this gives $x^{*}=x_e$ with
         \[
           e\in\cl\bigl\{h\in B\cap K:u_t(h)\le u_t(x^{*})\bigr\},\qquad v_{x^{*}}<v_e-t,
         \]
@@ -1522,8 +1535,8 @@ for $f$ in column $j$,
 \[
   f\in\PO_t\iff v_f-\min_{i'}v_{i'j}\le t\iff D_f\le t,
 \]
-and these edges lie within $t$ of the column minimum, in one cluster.  Hence
-$N(t)$ is the column matroid restricted to $\{D\le t\}$.
+and these edges lie within $t$ of the column minimum, in one cluster.  Hence the
+bases of $N(t)$ are those of the column matroid restricted to $\{D\le t\}$.
 \end{proof}
 
 \subsection{Termination}
@@ -1536,8 +1549,11 @@ length $\tau$ of the update, and the others by less.  Let
   \Pi(v)=\bigl\{(y,g):y\in E_{S_0},\ g\notin E_{S_0},\ v_y\le v_g\bigr\},
 \]
 the pairs in which an element of a fully raised block lies at or below an
-element of another block, ties included.  The ties matter: with strict
-inequality, item 3 below fails on the cycle matroid of $K_4$.
+element of another block, ties included.  The ties matter.  On the cycle matroid
+of $K_4$ with the edges $01,02,03,12,13,23$ in the blocks $R_1,R_1,R_1,R_1,R_2,R_3$
+and $v=(0,0,3,1,2,2)$, where $\nu_0=2$, $S_0=\{2,3\}$, $\tau=1$ and $a=(0,1,1)$, the
+update adds the pairs $(13,12)$ and $(23,12)$ to $\Pi$, both with equality, and with
+strict inequality item 3 below would fail.
 
 \begin{theorem}[Potential]
 \label{thm:potential}
@@ -1572,7 +1588,7 @@ since $\Av(N(t))=S_0$ for $t<\delta$, every $b\notin S_0$ has
 \]
 
 \emph{Step 4, a rank jump.}  By Lemma~\ref{lem:avoidable}(2) for $M^{v}$,
-$r_{M^{v}}(E_{S_0})=|S_0|-(k-r)$, and we claim
+$r_{M^{v}}(E_{S_0})=|S_0|-(k-r)$, and
 \begin{equation}
   r_{N(\delta)}(E_{S_0})>|S_0|-(k-r).
   \label{eq:jump}
@@ -1668,17 +1684,25 @@ So a stage has at most $r(\lfloor m^{2}/4\rfloor+1)$ updates.
 The pairs of Theorem~\ref{thm:potential} range over all of
 $E_{S_0}\times(E\setminus E_{S_0})$.  A fixed minimum base confines them: at every
 update some pair with an element in the base crosses, and there are at most $km$
-such pairs.
+such pairs.  The same base serves for the whole stage, and a pair whose first
+element is fully raised stays at or below the second once it gets there, which
+bounds a stage independently of $r$.
 
 \begin{theorem}[Stage length]
 \label{thm:stagelength}
-Let $B$ be a base of $M^{v}$ meeting exactly $r$ blocks.
+Let $B$ be a base of $M^{v}$ meeting exactly $r$ blocks, and for $u\in\R^{E}$ let
+\[
+  R_B(u)=\bigl\{(x,z)\in E\times E:x\ne z,\ x\in B\text{ or }z\in B,\
+  \blk(x)\in\Av(M^{u}),\ u_x\le u_z\bigr\}.
+\]
 \begin{enumerate}
   \item Some $x\in E_{S_0}$ and $z\notin E_{S_0}$ in one connected component of $M$,
         one of them in $B$, satisfy $v_x>v_z$ and $v'_x\le v'_z$.
   \item If $|S_0|=k-r$ and $\nu(M^{v'})=r$, then $\Av(M^{v'})\ne S_0$.
+  \item If $\nu(M^{v'})=r$, then $R_B(v)\subsetneq R_B(v')$.
 \end{enumerate}
-Consequently stage $r$ ends after at most $1+(r-1)km$ updates.
+Consequently stage $r$ ends after at most $\min\bigl(1+(r-1)km,\,1+k(2m-k-1)\bigr)$
+updates.
 \end{theorem}
 
 \begin{proof}
@@ -1692,19 +1716,20 @@ Lemma~\ref{lem:avoidable}(2),
   \rho\le|B\cap E_{S_0}|\le r_{M^{v}}(E_{S_0})=\rho.
 \]
 So Step 5 of the proof of Theorem~\ref{thm:potential} applies to $B$: it gives
-$g\in B\setminus E_{S_0}$ and $y\in E_{S_0}\setminus B$ in one cluster $C$ at scale
-$\delta$ with $v_g<v_y$, and its last argument gives, for $f\in E_{S_0}\setminus B$,
+$g\in B\setminus E_{S_0}$ and $y\in E_{S_0}\setminus B$ in one cluster $\Gamma$ at
+scale $\delta$ with $v_g<v_y$, and its last argument gives, for
+$f\in E_{S_0}\setminus B$,
 \[
-  v_b<v_f\qquad\bigl(b\in C(B,f)\setminus E_{S_0}\bigr).
+  v_c<v_f\qquad\bigl(c\in C(B,f)\setminus E_{S_0}\bigr).
 \]
 
 \emph{Step 2, a pair within $\delta$.}  Let
 \[
-  v_{z_2}=\min\{v_z:z\in C\cap E_{S_0},\ v_z>v_g\},\qquad
-  v_{z_1}=\max\{v_z:z\in C\setminus E_{S_0},\ v_z<v_{z_2}\},
+  v_{z_2}=\min\{v_z:z\in\Gamma\cap E_{S_0},\ v_z>v_g\},\qquad
+  v_{z_1}=\max\{v_z:z\in\Gamma\setminus E_{S_0},\ v_z<v_{z_2}\},
 \]
 the sets being nonempty by $y$ and $g$.  Then $v_g\le v_{z_1}<v_{z_2}$, no value
-of $C$ lies in $(v_{z_1},v_{z_2})$, and as in Step 6 of the proof of
+of $\Gamma$ lies in $(v_{z_1},v_{z_2})$, and as in Step 6 of the proof of
 Theorem~\ref{thm:potential}, $v_{z_2}-v_{z_1}\le\delta$.  We find $x\in E_{S_0}$ and
 $z\notin E_{S_0}$, one of them in $B$, with
 \begin{equation}
@@ -1713,23 +1738,23 @@ $z\notin E_{S_0}$, one of them in $B$, with
 \end{equation}
 If $z_2\in B$, take $(x,z)=(z_2,z_1)$.  Otherwise $z_2\in\PO_\delta$ lies in
 $\cl(C(B,z_2)-z_2)$ but not in $\cl\{f:v_f<v_{z_2}-\delta\}$, so by the minimality
-of $B$ some $b\in C(B,z_2)-z_2$ has
+of $B$ some $c\in C(B,z_2)-z_2$ has
 \[
-  v_{z_2}-\delta\le v_b\le v_{z_2}.
+  v_{z_2}-\delta\le v_c\le v_{z_2}.
 \]
-As $b\in B\subseteq\PO_\delta$ lies in the component of $z_2$ and within $\delta$
-of it, $b\in C$, and \eqref{eq:pair} holds, with $x$ and $z$ in the cluster $C$ and so
-in one component, for
+As $c\in B\subseteq\PO_\delta$ lies in the component of $z_2$ and within $\delta$
+of it, $c\in\Gamma$, and \eqref{eq:pair} holds, with $x$ and $z$ in the cluster
+$\Gamma$ and so in one component, for
 \[
   (x,z)=
   \begin{cases}
-    (z_2,b),&b\notin E_{S_0},\ \text{where }v_b<v_{z_2}\text{ by Step 1},\\
-    (b,z_1),&b\in E_{S_0},\ v_b=v_{z_2},\\
-    (z_2,g),&b\in E_{S_0},\ v_b<v_{z_2},
+    (z_2,c),&c\notin E_{S_0},\ \text{where }v_c<v_{z_2}\text{ by Step 1},\\
+    (c,z_1),&c\in E_{S_0},\ v_c=v_{z_2},\\
+    (z_2,g),&c\in E_{S_0},\ v_c<v_{z_2},
   \end{cases}
 \]
-in the last case because $v_b\le v_g$ by the choice of $z_2$, so that
-$0<v_{z_2}-v_g\le v_{z_2}-v_b\le\delta$.
+in the last case because $v_c\le v_g$ by the choice of $z_2$, so that
+$0<v_{z_2}-v_g\le v_{z_2}-v_c\le\delta$.
 
 \emph{Step 3, item 1.}  By Steps 2 and 3 of the proof of
 Theorem~\ref{thm:potential} and \eqref{eq:pair},
@@ -1750,7 +1775,8 @@ Theorem~\ref{thm:potential},
 so $y\in\cl\bigl(C(B',y)-y\bigr)\subseteq\cl\{f:v_f<v_y-\delta\}$, against
 $y\in\PO_\delta$.
 
-\emph{Step 5, counting.}  Call a maximal run of updates of stage $r$ that start
+\emph{Step 5, counting within epochs.}  Call a maximal run of updates of stage $r$
+that start
 from states with the same $S_0$ an \emph{epoch}.  By Theorem~\ref{thm:potential}(1)
 and Step 8 of its proof, $S_0$ grows strictly from one epoch to the next and
 $0\le\rho\le r-1$, so the epochs have distinct values of $\rho$, and by item 2 the
@@ -1770,6 +1796,28 @@ $v'_x\le v'_z$, so $Q$ drops by at least one at every update, while
 \]
 So an epoch with $\rho\ge1$ has at most $km$ updates, and stage $r$ has at most
 $1+(r-1)km$.
+
+\emph{Step 6, item 3.}  Let $\nu(M^{v'})=r$ and $(x,z)\in R_B(v)$.  By
+Theorem~\ref{thm:potential}(1), $\blk(x)\in S_0\subseteq\Av(M^{v'})$, and by Step 2
+of its proof, $a_{\blk(x)}=\tau\ge a_{\blk(z)}$, so
+\[
+  v'_x-v'_z=(v_x-\tau)-\bigl(v_z-a_{\blk(z)}\bigr)\le v_x-v_z\le0,
+\]
+and $(x,z)\in R_B(v')$.  The pair $(x,z)$ of item 1 has $x\ne z$, as $\blk(x)\in S_0$
+and $\blk(z)\notin S_0$; it lies outside $R_B(v)$, as $v_x>v_z$, and in $R_B(v')$,
+as $\blk(x)\in S_0\subseteq\Av(M^{v'})$ and $v'_x\le v'_z$.
+
+\emph{Step 7, counting across epochs.}  Let stage $r$ consist of the updates
+$v^{j}\to v^{j+1}$, $j<n$, so that $\nu(M^{v^{j}})=r$ for $j<n$, and let $B$ be a base
+of $M^{v^{0}}$ meeting exactly $r$ blocks.  By Theorem~\ref{thm:validity}(2) and
+induction on $j$, $B$ is a base of $M^{v^{j}}$ meeting exactly $r$ blocks for every
+$j<n$, so item 3 applies with this $B$ at every update $v^{j}\to v^{j+1}$ with
+$j<n-1$.  As $R_B(v^{n-1})$ consists of pairs $(x,z)$ with $x\ne z$ and $x$ or $z$
+in $B$, and $|B|=k$,
+\[
+  n-1\le\bigl|R_B(v^{n-1})\bigr|-\bigl|R_B(v^{0})\bigr|\le k(m-1)+(m-k)k=k(2m-k-1).
+\]
+With Step 5, stage $r$ has at most $\min\bigl(1+(r-1)km,\,1+k(2m-k-1)\bigr)$ updates.
 \end{proof}
 
 When the components are as small as possible, the pair of item 1 ends the epoch at
@@ -1822,25 +1870,33 @@ weights.
 
 \begin{lemma}[Augmenting paths by a circuit]
 \label{lem:augment}
-Let a Boolean circuit of size $q$ decide, from input bits $x$ and the indicator
-vector of a set $J\subseteq E$, whether $J$ is independent in a matroid $N_x$ on
-$E$.  Then a Boolean circuit with at most $k(m^{2}q+8m^{3}+12m^{2}+12m+4)$ gates
-computes from $x$ the indicator vector of a rainbow independent set of $N_x$ of
-size $\nu(N_x)$.  For every $r_0\ge0$, a Boolean circuit of size at most
-$(k+1)(m+1)^{2}(q+10(m+1))+5\lceil\log_2(r_0+1)\rceil$ computes from $x$ the binary
-digits of $\nu(N_x)$ and the $k$ bits
+Let $N_x$ be a matroid on $E$ for every vector $x$ of input bits, and for each
+$y\in E$ let a Boolean circuit of size $q$ decide, from $x$ and the indicator
+vector of a set $J$ with $y\in J$ and $J-y$ independent in $N_x$, whether $J$ is
+independent in $N_x$.  For $j\ge0$, a Boolean circuit with
+$j(m^{2}q+8m^{3}+12m^{2}+12m+4)$ gates computes from $x$ the indicator vector of
+a rainbow independent set of $N_x$ with at least $\min(j,\nu(N_x))$ elements, and
+with $\nu(N_x)$ elements for $j=k$.  For $r_0\ge0$, a Boolean circuit of size at
+most
+\[
+  (r_0+2)(m+1)^{2}\bigl(q+10(m+1)\bigr)+3k(m+1)+5\lceil\log_2(r_0+1)\rceil
+\]
+computes from $x$ the $k$ bits
 $\mathbf 1[\nu(N_x)\le r_0]\wedge\mathbf 1[b\in\Av(N_x)]$.
 \end{lemma}
 
 \begin{proof}
 \emph{Step 1, one round.}  From the indicator vector of a rainbow independent set
 $I$, a round builds the exchange graph $D_I$ of the proof of
-Lemma~\ref{lem:avoidable} with $m(m-1)+m=m^{2}$ independence tests, of $I-x'+y$
-for the arcs $y\to x'$ and of $I+y$ for the sinks, reading sources and arcs inside
-blocks from $I$.  A breadth-first search from the sources, the sink of least index
-in the first layer containing a sink, the predecessors of least index and the
-exchange along this shortest path cost $8m^{3}+12m^{2}+12m+4$ gates, so a round
-costs
+Lemma~\ref{lem:avoidable} with $m(m-1)+m=m^{2}$ tests, of $I-x'+y$ for the arcs
+$y\to x'$ by the circuit of $y$ and of $I+y$ for the sinks by the circuit of $y$,
+reading sources and arcs inside blocks from $I$.  An answer is used only when
+$y\notin I$, and for an arc only when $x'\in I$; the other answers are masked by
+the bits of $I$.  The sets of the used answers contain $y$, and removing $y$
+leaves $I-x'$ or $I$, which are independent, so the circuits answer them.  A
+breadth-first search from the sources, the sink of least index in the first
+layer containing a sink, the predecessors of least index and the exchange along
+this shortest path cost $8m^{3}+12m^{2}+12m+4$ gates, so a round costs
 \[
   m^{2}q+8m^{3}+12m^{2}+12m+4.
 \]
@@ -1848,24 +1904,35 @@ By the exchange lemma for shortest paths~\cite{schrijver03} the new set is
 rainbow, independent and has $|I|+1$ elements, and if no sink is reachable, $I$
 is maximum and is kept~\cite{lawler75,schrijver03}.
 
-\emph{Step 2, $k$ rounds.}  From $I=\varnothing$, $|I|$ grows by one per round
-until $|I|=\nu(N_x)\le k$, so $k$ rounds give $|I|=\nu(N_x)$.
+\emph{Step 2, $j$ rounds.}  From $I=\varnothing$, $|I|$ grows by one per round
+until $|I|=\nu(N_x)\le k$, so $j$ rounds give
+\[
+  \min\bigl(j,\nu(N_x)\bigr)\le|I|\le\nu(N_x),
+\]
+and $k$ rounds give $|I|=\nu(N_x)$.
 
-\emph{Step 3, the bits.}  One more exchange graph ($m(m-1)$ tests) and its
-reachable set $R$ ($2m^{3}$ gates) give, by Steps 2 to 6 of the proof of
+\emph{Step 3, the bits.}  Run $j=r_0+1$ rounds.  If $\nu(N_x)\le r_0$, then
+$|I|=\nu(N_x)$ by Step 2, and one more exchange graph ($m(m-1)$ tests) and its
+reachable set $Z$ ($2m^{3}$ gates) give, by Steps 2 to 6 of the proof of
 Lemma~\ref{lem:avoidable},
 \[
-  \Av(N_x)=\{b:b\text{ missed by }I\}\cup\blk(I\cap R).
+  \Av(N_x)=\{b:b\text{ missed by }I\}\cup\blk(I\cap Z).
+\]
+If $\nu(N_x)>r_0$, then $|I|\ge r_0+1$ by Step 2.  In both cases
+\[
+  \mathbf 1\bigl[|I|\le r_0\bigr]\wedge\mathbf 1\bigl[b\in\{b:b\text{ missed by }I\}\cup\blk(I\cap Z)\bigr]
+  =\mathbf 1\bigl[\nu(N_x)\le r_0\bigr]\wedge\mathbf 1\bigl[b\in\Av(N_x)\bigr].
 \]
 A population count of $I$, a comparison with $r_0$ and $k$ conjunctions complete
-the outputs, within $(k+1)(m+1)^{2}(q+10(m+1))+5\lceil\log_2(r_0+1)\rceil$ gates.
+the outputs, within
+$(r_0+2)(m+1)^{2}(q+10(m+1))+3k(m+1)+5\lceil\log_2(r_0+1)\rceil$ gates.
 \end{proof}
 
 \begin{lemma}[Observer]
 \label{lem:observer}
 Let a Boolean circuit of size $s$ output the binary digits of $r(S)$ from the
 indicator vector of $S\subseteq E$, and fix $r_0\in\{1,\ldots,k-1\}$.  A Boolean
-circuit of size $O(km^{3}(s+m))$ reads a relation $G\subseteq E\times E$ and
+circuit of size $O(r_0m^{2}(s+m))$ reads a relation $G\subseteq E\times E$ and
 outputs $k$ bits $F_b(G)$, $b\in[k]$, such that
 \[
   F_b(G_t)=\mathbf 1\bigl[\nu(N(t))\le r_0\bigr]\wedge\mathbf 1\bigl[b\in\Av(N(t))\bigr]
@@ -1897,27 +1964,45 @@ one component
   u(x)<u(y)\iff\bigl[x\in\PO,\ y\notin\PO\bigr]\vee
   \bigl[x,y\in\PO\text{ in different clusters},\ (x,y)\notin G\bigr],
 \]
-and the representative of a cluster is its element of least index, at $O(m^{2})$
-gates.
+at $O(m^{2})$ gates.
 
-\emph{Step 3, rank queries.}  Let $\mathrm{Lev}(x)$ be the cluster of a
-representative $x$ and $\mathrm{Below}(x)$ the set of elements of its component
-with smaller $u$.  By \eqref{eq:rank-mu} within components,
+\emph{Step 3, exchange tests.}  For $y\in\PO$ let $\mathrm{Lev}(y)$ be the
+cluster of $y$ and $\mathrm{Below}(y)$ the set of elements of its component with
+smaller $u$; both depend only on the cluster.  By \eqref{eq:rank-mu} within
+components,
 \[
-  r_{N_G}(A)=\sum_{x}\Bigl(r\bigl(\mathrm{Below}(x)\cup(A\cap\mathrm{Lev}(x))\bigr)
-  -r\bigl(\mathrm{Below}(x)\bigr)\Bigr),
+  r_{N_G}(A)=\sum_{x}T_x(A),\qquad
+  T_x(A)=r\bigl(\mathrm{Below}(x)\cup(A\cap\mathrm{Lev}(x))\bigr)-r\bigl(\mathrm{Below}(x)\bigr),
 \]
-the sum over the representatives; the top level $E\setminus\PO$ contributes $0$,
-as $\PO\supseteq\PO_0$ spans $E$.  The ranks $r(\mathrm{Below}(x))$ cost $ms$
-gates once, and then an independence test $[r_{N_G}(J)=|J|]$ costs
-$q=ms+O(m^{2})$ gates.
+the sum over one element $x$ of each cluster; the top level $E\setminus\PO$
+contributes $0$, as $\PO\supseteq\PO_0$ spans $E$.  Each term satisfies
+$T_x(A)\le|A\cap\mathrm{Lev}(x)|$, and the clusters partition $\PO$, so
+\[
+  r_{N_G}(A)\le\sum_x|A\cap\mathrm{Lev}(x)|=|A\cap\PO|\le|A|,
+\]
+and $A$ is independent in $N_G$ if and only if $A\subseteq\PO$ and
+$T_x(A)=|A\cap\mathrm{Lev}(x)|$ for every $x$.  Let $y\in A$ with $A-y$
+independent.  Then $A-y\subseteq\PO$, every term of $A-y$ is tight, and the
+terms of $A$ and $A-y$ agree outside the cluster of $y$, so
+\[
+  A\text{ independent in }N_G\iff y\in\PO\ \text{and}\
+  r\bigl(\mathrm{Below}(y)\cup(A\cap\mathrm{Lev}(y))\bigr)
+  =r\bigl(\mathrm{Below}(y)\bigr)+|A\cap\mathrm{Lev}(y)|.
+\]
+The ranks $r(\mathrm{Below}(y))$ cost $ms$ gates once, and then this test costs
+$q=s+O(m)$ gates: the sets $A\cap\mathrm{Lev}(y)$ and
+$\mathrm{Below}(y)\cup(A\cap\mathrm{Lev}(y))$, one rank evaluation, a
+subtraction, a population count, a comparison and a conjunction with
+$\mathbf 1[y\in\PO]$.
 
-\emph{Step 4, the intersection.}  Lemma~\ref{lem:augment} with input $G$, the
-matroids $N_G$ and these tests gives the bits $F_b(G)$ with
+\emph{Step 4, the intersection.}  Lemma~\ref{lem:augment}, with the bits of $G$
+and of the data of Steps 1 to 3 as its input, the matroids $N_G$ and the tests of
+Step 3, gives the bits $F_b(G)$ from $r_0+1$ rounds with
 \[
-  (k+1)(m+1)^{2}\bigl(q+10(m+1)\bigr)+5\lceil\log_2(r_0+1)\rceil=O\bigl(km^{3}(s+m)\bigr)
+  (r_0+2)(m+1)^{2}\bigl(q+10(m+1)\bigr)+3k(m+1)+5\lceil\log_2(r_0+1)\rceil
+  =O\bigl(r_0m^{2}(s+m)\bigr)
 \]
-gates, and Steps 1 to 3 cost $O(m^{2}s+m^{3})$.
+gates, as $k\le m$, and Steps 1 to 3 cost $O(ms+m^{3})$.
 
 \emph{Step 5, the top level.}  $E\times E=G_t$ for $t\ge\max v-\min v$, where
 $N(t)=M$ by Step 4 of the proof of Proposition~\ref{prop:posl}, so
@@ -1926,7 +2011,7 @@ $\nu(N(t))=k>r_0$ and $F_b(E\times E)=0$.
 
 \begin{lemma}[One update]
 \label{lem:oneupdate}
-For each stage $r$, a signed tropical circuit of size $O(km^{5}(s+m))$ maps
+For each stage $r$, a signed tropical circuit of size $O(rm^{4}(s+m))$ maps
 $(w,p)$ to $p+a$, with $a$ the PO-SL update at $v=w-p_{\blk}$, at every state
 with $\nu_0\ge r$.
 \end{lemma}
@@ -1950,7 +2035,7 @@ $\CC_{F_b}(D^{+})=0=a_b$.  The gap sum reads $F_b$ only at sublevel sets of
 $D^{+}$, where the observer is correct, so Theorem~\ref{thm:compiler} on the
 $m^{2}$ pairs with $N=k$ gives $a$ with at most
 \[
-  3m^{2}\cdot O\bigl(km^{3}(s+m)\bigr)+km^{2}+6m^{4}=O\bigl(km^{5}(s+m)\bigr)
+  3m^{2}\cdot O\bigl(rm^{2}(s+m)\bigr)+km^{2}+6m^{4}=O\bigl(rm^{4}(s+m)\bigr)
 \]
 gates.
 
@@ -1962,7 +2047,7 @@ gates.
 base of $w$ meets some block.  For $r=1,\ldots,k-1$ apply the circuit of
 Lemma~\ref{lem:oneupdate} for stage $r$
 \[
-  \ell_r=\min\bigl(r(\lfloor m^{2}/4\rfloor+1),\,1+(r-1)km\bigr)
+  \ell_r=\min\bigl(r(\lfloor m^{2}/4\rfloor+1),\,1+(r-1)km,\,1+k(2m-k-1)\bigr)
 \]
 times; at $\nu_0>r$ it is the identity, as $a=0$.
 
@@ -1980,17 +2065,26 @@ at $O(ms+m^{2})$ further gates the circuit outputs
 
 \emph{Step 4, the size.}  The number of updates is at most
 \[
-  \sum_{r=1}^{k-1}\ell_r\le\sum_{r=1}^{k-1}\bigl(1+(r-1)km\bigr)
-  \le(k-1)\bigl(1+(k-2)km\bigr)\le k^{3}m,
+  \sum_{r=1}^{k-1}\ell_r\le(k-1)\bigl(1+k(2m-k-1)\bigr)\le(k-1)(1+2km)
+  =2k^{2}m-(2km-k+1)\le2k^{2}m.
 \]
-each of size $O(km^{5}(s+m))$ by Lemma~\ref{lem:oneupdate}, so the size is
-$O(k^{4}m^{6}(s+m))$.  If every connected component of $M$ has rank at most one,
-Corollary~\ref{cor:rankone} allows $\ell_r=r$ in Step 1, and
+An update of stage $r$ has $O(rm^{4}(s+m))$ gates by Lemma~\ref{lem:oneupdate},
+and $\ell_r\le1+k(2m-k-1)\le2km$, so
 \[
-  \sum_{r=1}^{k-1}r=\frac{k(k-1)}2\le k^{2}
+  \sum_{r=1}^{k-1}r\,\ell_r\le2km\sum_{r=1}^{k-1}r=k^{2}(k-1)m\le k^{3}m
 \]
-updates give the size $O(k^{3}m^{5}(s+m))$.  The circuit depends only on $M$, the
-blocks and the rank circuit, so the family is uniform.
+and the size is $O(k^{3}m^{5}(s+m))$.  If every connected component of $M$ has
+rank at most one, Corollary~\ref{cor:rankone} allows $\ell_r=r$ in Step 1, and
+\[
+  \sum_{r=1}^{k-1}r\,\ell_r=\sum_{r=1}^{k-1}r^{2}\le k^{3}
+\]
+gives the size $O(k^{3}m^{4}(s+m))$.  The circuit depends only on $M$, the
+blocks and the rank circuit.  Besides them it uses the rank $k=r(E)$ and the
+connected components of $M$, which a polynomial-time algorithm obtains from the
+rank circuit: $k$ by one evaluation, a base $B_0$ by the greedy algorithm, each
+fundamental circuit $C(B_0,e)$ by $k$ evaluations, and the components as the
+classes of the transitive closure of ``$e$ and $f$ lie in a common fundamental
+circuit of $B_0$''~\cite{oxley11}.  So the family is uniform.
 \end{proof}
 
 \section{Two matroids}
@@ -2070,23 +2164,31 @@ $r_2(E)$ on $O(\log m)$ bits, at $s_1+s_2+O(m)$ gates.
 blocks and the weights of Lemma~\ref{lem:doubling} gives the minimum weight of a
 common base with
 \[
-  O\bigl(m^{4}(2m)^{6}(s_1+s_2+m)\bigr)=O\bigl(m^{10}(s_1+s_2+m)\bigr)
+  O\bigl(m^{3}(2m)^{5}(s_1+s_2+m)\bigr)=O\bigl(m^{8}(s_1+s_2+m)\bigr)
 \]
 gates.
 
-\emph{Step 4, common independent sets.}  Let $\nu_{12}$ be the largest size of a
-common independent set.  For $j\le\nu_{12}$ the truncations $M_i^{(j)}$, with rank
-functions $\min(r_i,j)$ and rank circuits of size $s_i+O(\log m)$, satisfy
+\emph{Step 4, common independent sets.}  Let $Z$ be a set of $m$ new elements, and
+for $i=1,2$ let $M_i'$ be the matroid on $E\cup Z$ whose independent sets are the
+sets $X\cup Y$ with $X$ independent in $M_i$, $Y\subseteq Z$ and
+$|X|+|Y|\le m$: the truncation at $m$ of the direct sum of $M_i$ and the free
+matroid on $Z$.  It has rank $m$ and the rank function
 \[
-  \Bases\bigl(M_1^{(j)}\bigr)\cap\Bases\bigl(M_2^{(j)}\bigr)
-  =\{X:X\text{ common independent},\ |X|=j\}.
+  r_i'(S)=\min\bigl(r_i(S\cap E)+|S\cap Z|,\,m\bigr),
 \]
-So Step 3 for the truncations and the weights $-w$ gives
+which the rank circuit of $M_i$, a population count, an addition and a
+comparison with $m$ compute at $s_i+O(m)$ gates.  Its bases are the sets
+$X\cup Y$ with $X$ independent in $M_i$ and $|X|+|Y|=m$, so the common bases of
+$M_1'$ and $M_2'$ are the sets $X\cup Y$ with $X$ common independent and
+$|Y|=m-|X|$, and $Z$ is one of them.  At the weight $w'$ equal to $-w$ on $E$ and
+$0$ on $Z$, the set $X\cup Y$ has weight $-w(X)$, and every common independent
+$X$ has such a $Y$, so
 \[
-  c_j=-\max\{w(X):X\text{ common independent},\ |X|=j\},
+  \max\{w(X):X\text{ common independent}\}
+  =-\min\{w'(B):B\in\Bases(M_1')\cap\Bases(M_2')\}.
 \]
-and $\max\{w(X):X\text{ common independent}\}=\max(0,-c_1,\ldots,-c_{\nu_{12}})$, at
-$O(m^{11}(s_1+s_2+m))$ gates.
+Step 3 for $M_1'$ and $M_2'$ on $2m$ elements, $m$ negations for $-w$ and one
+for the output give this value with $O(m^{8}(s_1+s_2+m))$ gates.
 \end{proof}
 
 \paragraph{Transversal matroids and gammoids.}
@@ -2215,8 +2317,10 @@ Propositions~\ref{prop:star}, \ref{prop:pos}, \ref{prop:assign-pos},
 Definition~\ref{def:update} with \eqref{eq:update-integral},
 Theorems~\ref{thm:validity}, \ref{thm:potential} and~\ref{thm:stagelength},
 Corollary~\ref{cor:rankone}, Theorem~\ref{thm:C} with the size
-$2436\,k^{4}m^{6}(s+m)+2$, and $2436\,k^{3}m^{5}(s+m)+2$ when every component of $M$
-has rank at most one, Theorem~\ref{thm:D} with explicit constants, and
+$1664\,k^{3}m^{5}(s+m)+2$, and $696\,k^{3}m^{4}(s+m)+2$ when every component of $M$
+has rank at most one, Theorem~\ref{thm:D} with the sizes
+$1664\cdot2400\,m^{8}(s_1+s_2+m)+2$ for common bases and
+$1664\cdot2613249\,m^{8}(s_1+s_2+m)+3$ for common independent sets, and
 Corollary~\ref{cor:transversal}.  For
 Proposition~\ref{prop:nphard} it proves the reduction, Steps 2 to 4, for every
 multigraph $H$ and every $h\ge|V(H)|,|C|$; the complexity classes are not
@@ -2259,8 +2363,8 @@ the proofs.
 \label{sec:scope}
 
 \paragraph{Stage length.}  Theorems~\ref{thm:potential} and~\ref{thm:stagelength}
-bound stage $r$ by $\min\bigl(r(\lfloor m^{2}/4\rfloor+1),\,1+(r-1)km\bigr)$
-updates.  The companion paper's bound of $r+1$ updates per stage does not hold
+bound stage $r$ by
+$\min\bigl(r(\lfloor m^{2}/4\rfloor+1),\,1+(r-1)km,\,1+k(2m-k-1)\bigr)$ updates.  The companion paper's bound of $r+1$ updates per stage does not hold
 for PO-SL, and no bound in terms of $r$ and $k$ alone does, while the exact
 family $\Pos_t$, which is not admissible, needs one update on the same input.
 
@@ -2345,20 +2449,20 @@ and $\lambda_2=\infty$, so the update lowers $h,h',y$ by $2^{L}+1$, to
 where $T$ is minimum, as in Step 4, and $\nu_0=3$.
 \end{proof}
 
-Two questions are open.  Does a stage of PO-SL take $O(rm)$ updates, or can it
-take $\Theta(rkm)$?  Is there an admissible family, read from $G_t$, whose stages
+Two questions are open.  Does a stage of PO-SL take $O(m)$ updates, or can it
+take $\Theta(km)$?  Is there an admissible family, read from $G_t$, whose stages
 take $O(r)$ updates?
 
 \paragraph{Size.}  The bounds of Theorems~\ref{thm:C} and \ref{thm:D} are not
 tuned.  For the assignment problem, a partition matroid whose components have
-rank one, Theorem~\ref{thm:C} with Corollary~\ref{cor:rankone} gives $O(n^{15})$
+rank one, Theorem~\ref{thm:C} with Corollary~\ref{cor:rankone} gives $O(n^{13})$
 against the $O(n^{8})$ of the companion paper, whose specialized schedule and
 observer we do not reuse.
 
 \paragraph{The exact family.}  Proposition~\ref{prop:nphard} concerns
 arbitrary states.  Whether rainbow questions about $\Pos_t$ stay NP-hard on the
-states a schedule reaches is open; on such states the family still lacks a
-min-max formula of Rado type, as small graphic examples show.
+states a schedule reaches is open, and so is a min-max formula of Rado type for
+the family on such states.
 
 \paragraph{Beyond matroid intersection.}  Weighted matching in general graphs is
 an instance of matroid parity, where the dual has no fixed index set; whether a

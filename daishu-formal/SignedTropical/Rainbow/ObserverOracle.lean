@@ -1,47 +1,45 @@
 import SignedTropical.Rainbow.POSLRank
-import SignedTropical.BoolAlg.Count
+import SignedTropical.Rainbow.MICircuit
 import SignedTropical.BoolAlg.Rel
 
 /-!
-# The observer, Steps 1 to 3: an independence oracle for `N_G`
+# The observer, Steps 1 to 3: exchange tests for `N_G`
 
 `greedy_intersection.tex`, Lemma `lem:observer`, Steps 1 to 3.  A Boolean circuit reads a
 relation `G ⊆ E × E` (`relR m`, entry `(g, f)` the bit `[(g, f) ∈ G]`, `relBits`) and computes once
-a *context* (`Ctx`, `ctxR`), from which a second circuit, the *oracle*, tests independence in
-`N_G` for any set `A` (`vecR m`).  The rank circuit of `M` (size `s`, the hypothesis of
-Theorem `thm:A`) is run on computed wires (`runB`, `rankB`).
+a *context* (`Ctx`, `ctxR`), from which a second circuit for each `y`, the *exchange test* of `y`,
+decides independence in `N_G` of the sets `A ∋ y` with `A - y` independent, the only sets on which
+the matroid intersection circuit (`Rainbow/MICircuit.lean`) uses the test of `y`.  The rank
+circuit of `M` (size `s`, the hypothesis of Theorem `thm:A`) is run on computed wires (`runB`,
+`rankB`).
 
-**The context** (`ctxB`, `ctxB_impl`, `ctxCost m s = 2m³ + 12m² + m(3s + 5⌈log₂(m+1)⌉ + 2) + 1`
+**The context** (`ctxB`, `ctxB_impl`, `ctxCost m s = 2m³ + 8m² + m(3s + 5⌈log₂(m+1)⌉ + 2) + 1`
 gates), with its value `ctxV`:
 
 * Step 1 (`poB`): `f ∈ PO_G` iff `r({g : (g, f) ∉ G}) < r({g : (g, f) ∉ G} + f)` (`poV_relBits`),
   two rank runs and a comparison for each `f`;
 * Step 2: the links `(x, y), (y, x) ∈ G` for `x, y ∈ PO_G` in one component (`linksB`; the
   components are fixed, so this choice costs no gate), Warshall's algorithm for the clusters
-  (`clB`, `clV_relBits`), the order bits `ordV` (`ordB`), which at `G = G_t`, `t ≥ 0`, are
-  `[u_G(x) < u_G(y)]` within components (`ordP_iff`), the representatives, the elements of
-  least index of the clusters (`repB`, `repV_eq`), and the clusters of the representatives
-  (`levB`, `levV_eq`);
-* Step 3, the part independent of `A`: the ranks `r(Below(x))` (`rkbB`), where `Below(x)` is the
-  set of elements below `x` in the order (`belowP`, equal to `Below_G(x)` of `rk_NG` for
-  `x ∈ PO_G`, `belowP_eq_belowG`).
+  (`clB`, `clV_relBits`), and the order bits `ordV` (`ordB`), which at `G = G_t`, `t ≥ 0`, are
+  `[u_G(x) < u_G(y)]` within components (`ordP_iff`);
+* Step 3, the part independent of the set: the ranks `r(Below(y))` (`rkbB`), where `Below(y)` is
+  the set of elements below `y` in the order (`belowP`, equal to `Below_G(x)` of `rk_NG` for the
+  representative `x` of the cluster of `y`, `belowP_eq_of_mem_clusterG`, `belowP_eq_belowG`).
 
 For every relation `G`, the context computed from `G` is `ctxOf M G` (`ctxV_relBits`), whose
 fields are the sets above, read from `G`.
 
-**The rank query** (Step 3; `rankNB`, `rankNB_impl`,
-`rankNCost m s = m(2m + s + 13⌈log₂(m+1)⌉ + 1) + 22m⌈log₂(m+1)⌉ ≤ ms + 38m²` gates): for each
-`x`, one rank run on `Below(x) ∪ (A ∩ Lev(x))`, with `Lev(x)` the cluster of `x` if `x` is a
-representative and `∅` otherwise, minus `r(Below(x))`, and the sum of these terms (`rankNV`),
-which is `r_{N_G}(A)` at `G = G_t`, `t ≥ 0` (`rankNV_ctxOf`, `rankNV_correct`, from `rk_NG`).
-
-**The oracle** (`oracleB`, `oracleB_impl`,
-`oracleCost m s = rankNCost m s + popCost m + 5⌈log₂(m+1)⌉ + 1 ≤ ms + 70m² + 1` gates per
-query) compares the rank query with `|A|`; it is the independence oracle from a rank query of
-`BoolAlg/Count.lean` (`indepOfRankB`, `indepOfRank_correct`).  Its value is `decide (N_G.Indep A)` at the context of
-`G_t` for every `v` and `t ≥ 0` (`oracle_correct`), in particular at `G = E × E = G_t` for
-`t ≥ max v - min v` (`Gt_eq_univ_of_le`), where `N_{E × E} = M` (`NG_univ`, `oracle_univ`).
-`lem_observer_oracle` collects the two implementations, their sizes and the correctness.
+**The exchange test of `y`** (Step 3; `locB`, `locB_impl`,
+`locCost m s = s + 2m + 18⌈log₂(m+1)⌉ + popCost m + 3 ≤ s + 42(m + 1)` gates per test):
+`[y ∈ PO]` and `r(Below(y) ∪ (A ∩ Lev(y))) - r(Below(y)) = |A ∩ Lev(y)|`, with `Lev(y)` the
+cluster of `y` (`locV`), one rank run.  By the rank formula `rk_NG`, `r_{N_G}(A)` is the sum of
+these terms over the representatives `x` of the clusters, each term is at most `|A ∩ Lev(x)|`
+(`rk_union_le_add_card`), and the clusters partition `PO_G` (`clusterG_eq`, `eq_of_mem_clusterG`,
+`exists_repsG`, `sum_card_inter_clusterG_le`).  So `A` is independent iff `A ⊆ PO_G` and every
+term is tight, and when `A - y` is independent only the term of the cluster of `y` can fail:
+the test answers every exchange question of `N_{G_t}` at the context of `G_t`, `t ≥ 0`
+(`locV_exchOracle`, `locV_correct`).  `lem_observer_oracle` collects the two implementations,
+their sizes and the correctness.
 -/
 
 open Finset
@@ -70,35 +68,25 @@ noncomputable def belowP (M : Matroid (Fin m)) (G : Finset (Fin m × Fin m)) (x 
     Finset (Fin m) :=
   univ.filter fun y => OrdP M G y x
 
-/-- A context: the data computed once from `G` and read by every query of the oracle. -/
+/-- A context: the data computed once from `G` and read by every exchange test. -/
 @[ext]
 structure Ctx (m : ℕ) where
-  /-- The bits of `G`. -/
-  rel : Fin m → Fin m → Bool
   /-- The bits of `PO_G`. -/
   po : Fin m → Bool
   /-- The cluster bits: `x` and `y` lie in one cluster. -/
   cl : Fin m → Fin m → Bool
   /-- The order bits of Step 2. -/
   ord : Fin m → Fin m → Bool
-  /-- The representatives: the element of least index of each cluster. -/
-  rep : Fin m → Bool
-  /-- The clusters of the representatives: `lev x y` iff `x` is a representative and `y` lies
-  in its cluster. -/
-  lev : Fin m → Fin m → Bool
   /-- The ranks `r(Below(x))`. -/
   rkb : Fin m → ℕ
 
 open Classical in
-/-- **The context of a relation `G`**: `G`, `PO_G`, the clusters, the order of Step 2, the
-representatives, their clusters, and the ranks of the sets `Below(x)`. -/
+/-- **The context of a relation `G`**: `PO_G`, the clusters, the order of Step 2, and the ranks of
+the sets `Below(x)`. -/
 noncomputable def ctxOf (M : Matroid (Fin m)) (G : Finset (Fin m × Fin m)) : Ctx m where
-  rel := relBits G
   po f := decide (f ∈ POG M G)
   cl x y := decide (SameCluster M (POG M G) (linkG G) x y)
   ord x y := decide (OrdP M G x y)
-  rep x := decide (x ∈ repsG M G)
-  lev x y := decide (x ∈ repsG M G ∧ y ∈ clusterG M G x)
   rkb x := rk M (belowP M G x)
 
 /-! ### The values computed by the circuits -/
@@ -129,14 +117,6 @@ noncomputable def ordV (M : Matroid (Fin m)) (R : Fin m → Fin m → Bool) (P :
     (Cl : Fin m → Fin m → Bool) (x y : Fin m) : Bool :=
   if connRel M x y then P x && !(P y && (Cl x y || R x y)) else false
 
-/-- Step 2, the representative bits: `x` is the element of least index of its row of `Cl`. -/
-def repV (Cl : Fin m → Fin m → Bool) (x : Fin m) : Bool :=
-  leadV (Cl x) x
-
-/-- Step 2, the clusters of the representatives. -/
-def levV (Cl : Fin m → Fin m → Bool) (x y : Fin m) : Bool :=
-  repV Cl x && Cl x y
-
 /-- Step 3, the ranks of the sets `{y : Ord y x}`. -/
 noncomputable def rkbV (M : Matroid (Fin m)) (Ord : Fin m → Fin m → Bool) (x : Fin m) : ℕ :=
   rk M (univ.filter fun y => Ord y x = true)
@@ -146,18 +126,19 @@ noncomputable def ctxV (M : Matroid (Fin m)) (R : Fin m → Fin m → Bool) : Ct
   let P := poV M R
   let Cl := clV M R P
   let Ord := ordV M R P Cl
-  ⟨R, P, Cl, Ord, repV Cl, levV Cl, rkbV M Ord⟩
+  ⟨P, Cl, Ord, rkbV M Ord⟩
 
-/-- Step 3, the rank query at a context `D` and a set `A`:
-`Σ_x (r({y : D.ord y x} ∪ (A ∩ {y : D.lev x y})) - D.rkb x)`, which is `r_{N_G}(A)` at the
-context of `G = G_t`, `t ≥ 0` (`rankNV_correct`). -/
-noncomputable def rankNV (M : Matroid (Fin m)) (D : Ctx m) (A : Fin m → Bool) : ℕ :=
-  ∑ x, (rk M (univ.filter fun y => (D.ord y x || (A y && D.lev x y)) = true) - D.rkb x)
+/-- Step 3, the rank query of the exchange test of `y`, at a context `D` and a set `A'`:
+`r({z : D.ord z y} ∪ A') - D.rkb y`. -/
+noncomputable def locRankV (M : Matroid (Fin m)) (y : Fin m) (P : Ctx m × (Fin m → Bool)) : ℕ :=
+  rk M (univ.filter fun z => (P.1.ord z y || P.2 z) = true) - P.1.rkb y
 
-/-- The value of the oracle at a context `D` and a set `A`: the rank query, fitted to
-`⌈log₂(m+1)⌉` bits, equals `|A|` (`indepOfRankV` of `BoolAlg/Count.lean`). -/
-noncomputable def oracleV (M : Matroid (Fin m)) (D : Ctx m) (A : Fin m → Bool) : Bool :=
-  indepOfRankV (fun P : Ctx m × (Fin m → Bool) => rankNV M P.1 P.2) (D, A)
+/-- **Step 3, the exchange test of `y`** at a context `D` and a set `A`: `[y ∈ PO]` and the rank
+query at `A' = A ∩ {z : D.cl y z}`, fitted to `⌈log₂(m+1)⌉` bits, equals `|A'|`
+(`indepOfRankV` of `BoolAlg/Count.lean`).  At the context of `G_t`, `t ≥ 0`, this is
+`[y ∈ PO_G] ∧ [r(Below(y) ∪ (A ∩ Lev(y))) - r(Below(y)) = |A ∩ Lev(y)|]` (`locV_ctxOf`). -/
+noncomputable def locV (M : Matroid (Fin m)) (y : Fin m) (P : Ctx m × (Fin m → Bool)) : Bool :=
+  P.1.po y && indepOfRankV (locRankV M y) (P.1, fun z => P.2 z && P.1.cl y z)
 
 /-! ### Steps 1 and 2: the context computed from `G` is the context of `G` -/
 
@@ -241,24 +222,6 @@ theorem ordV_relBits : ordV M (relBits G) (fun f => decide (f ∈ POG M G))
     tauto
 
 open Classical in
-/-- **Step 2, the representatives**: the element of least index of each cluster. -/
-theorem repV_eq : repV (fun x y => decide (SameCluster M (POG M G) (linkG G) x y)) =
-    fun x => decide (x ∈ repsG M G) := by
-  funext x
-  rw [Bool.eq_iff_iff, repV, leadV_eq_true_iff]
-  simp only [decide_eq_true_eq, decide_eq_false_iff_not, mem_repsG, clusterG, mem_cluster]
-  refine ⟨fun ⟨hx, h⟩ => ⟨hx.mem_left, fun y hy => not_lt.1 fun hlt => h y hlt hy⟩,
-    fun ⟨hx, h⟩ => ⟨.refl hx, fun y hlt hy => absurd (h y hy) (not_le.2 hlt)⟩⟩
-
-open Classical in
-/-- **Step 2, the clusters of the representatives.** -/
-theorem levV_eq : levV (fun x y => decide (SameCluster M (POG M G) (linkG G) x y)) =
-    fun x y => decide (x ∈ repsG M G ∧ y ∈ clusterG M G x) := by
-  funext x y
-  rw [levV, repV_eq, Bool.eq_iff_iff]
-  simp [clusterG, mem_cluster]
-
-open Classical in
 /-- The ranks read from the order bits are the ranks of the sets `Below(x)`. -/
 theorem rkbV_eq : rkbV M (fun x y => decide (OrdP M G x y)) = fun x => rk M (belowP M G x) := by
   funext x
@@ -270,7 +233,7 @@ theorem rkbV_eq : rkbV M (fun x y => decide (OrdP M G x y)) = fun x => rk M (bel
 /-- **Steps 1 and 2**: for every relation `G`, the context computed from the bits of `G` is the
 context of `G`. -/
 theorem ctxV_relBits (hE : M.E = Set.univ) : ctxV M (relBits G) = ctxOf M G := by
-  simp only [ctxV, poV_relBits G hE, clV_relBits G, ordV_relBits G, repV_eq G, levV_eq G, rkbV_eq G]
+  simp only [ctxV, poV_relBits G hE, clV_relBits G, ordV_relBits G, rkbV_eq G]
   rfl
 
 end Context
@@ -312,11 +275,80 @@ theorem belowP_eq_belowG (hx : x ∈ POG M G) : belowP M G x = belowG M G x := b
 
 end Order
 
-/-! ### Step 3: the rank of `N_G` and independence, read from the context -/
+/-! ### Step 3: the exchange tests -/
 
-section Oracle
+section Clusters
+
+variable {G : Finset (Fin m × Fin m)} {x x' y : Fin m}
+
+/-- Two clusters that share an element are equal. -/
+theorem clusterG_eq (h : y ∈ clusterG M G x) : clusterG M G y = clusterG M G x := by
+  have hxy : SameCluster M (POG M G) (linkG G) x y := mem_cluster.1 h
+  ext z
+  simp only [clusterG, mem_cluster]
+  exact ⟨fun hyz => hxy.trans hyz, fun hxz => (hxy.symm linkG_comm).trans hxz⟩
+
+/-- Distinct representatives have disjoint clusters. -/
+theorem eq_of_mem_clusterG (hx : x ∈ repsG M G) (hx' : x' ∈ repsG M G)
+    (hy : y ∈ clusterG M G x) (hy' : y ∈ clusterG M G x') : x = x' := by
+  have h1 : clusterG M G x = clusterG M G x' := (clusterG_eq hy).symm.trans (clusterG_eq hy')
+  have h2 : x' ∈ clusterG M G x := by rw [h1]; exact mem_cluster.2 (.refl (mem_repsG.1 hx').1)
+  have h3 : x ∈ clusterG M G x' := by rw [← h1]; exact mem_cluster.2 (.refl (mem_repsG.1 hx).1)
+  exact le_antisymm ((mem_repsG.1 hx).2 x' h2) ((mem_repsG.1 hx').2 x h3)
+
+/-- Every element of `PO_G` lies in the cluster of a representative. -/
+theorem exists_repsG (hy : y ∈ POG M G) : ∃ x ∈ repsG M G, y ∈ clusterG M G x := by
+  have hne : (clusterG M G y).Nonempty := ⟨y, mem_cluster.2 (.refl hy)⟩
+  have hx : (clusterG M G y).min' hne ∈ clusterG M G y := min'_mem _ hne
+  have hcl := clusterG_eq hx
+  refine ⟨_, mem_repsG.2 ⟨(mem_cluster.1 hx).mem_right, fun z hz => ?_⟩, ?_⟩
+  · rw [hcl] at hz
+    exact min'_le _ _ hz
+  · rw [hcl]
+    exact mem_cluster.2 (.refl hy)
+
+/-- The clusters of the representatives are disjoint, so their parts of `A` add to at most
+`|A|`. -/
+theorem sum_card_inter_clusterG_le (A : Finset (Fin m)) :
+    ∑ x ∈ repsG M G, #(A ∩ clusterG M G x) ≤ #A := by
+  classical
+  rw [← card_biUnion]
+  · exact card_le_card (biUnion_subset.2 fun x _ => inter_subset_left)
+  · intro x hx x' hx' hne
+    exact disjoint_left.2 fun z hz hz' =>
+      hne (eq_of_mem_clusterG (mem_coe.1 hx) (mem_coe.1 hx') (mem_inter.1 hz).2 (mem_inter.1 hz').2)
+
+/-- `A ∩ cluster(x) = (A - y) ∩ cluster(x)` for `y` outside the cluster. -/
+theorem inter_clusterG_erase (A : Finset (Fin m)) (h : y ∉ clusterG M G x) :
+    A ∩ clusterG M G x = A.erase y ∩ clusterG M G x := by
+  rw [erase_inter, erase_eq_of_notMem fun hy => h (mem_inter.1 hy).2]
+
+end Clusters
+
+section Local
 
 variable {v : Fin m → ℝ} {t : ℝ}
+
+/-- `r(S ∪ B) ≤ r(S) + |B|`. -/
+theorem rk_union_le_add_card (S B : Finset (Fin m)) : rk M (S ∪ B) ≤ rk M S + #B := by
+  have h := M.eRk_union_le_eRk_add_encard (S : Set (Fin m)) (B : Set (Fin m))
+  rw [← coe_union, ← coe_rk, ← coe_rk, Set.encard_coe_eq_coe_finsetCard] at h
+  exact_mod_cast h
+
+/-- At `G = G_t`, `t ≥ 0`, the elements of one cluster have the same set `Below` (`u_G` is
+constant on clusters). -/
+theorem belowP_eq_of_mem_clusterG (ht : 0 ≤ t) {x y : Fin m} (h : y ∈ clusterG M (Gt v t) x) :
+    belowP M (Gt v t) y = belowP M (Gt v t) x := by
+  have hxy : SameCluster M (POG M (Gt v t)) (linkG (Gt v t)) x y := mem_cluster.1 h
+  have hc : connRel M x y := hxy.conn
+  have hu : uG M (Gt v t) y = uG M (Gt v t) x := by
+    rw [← PO_eq_POG, ← near_eq_linkG] at hxy
+    rw [← u_eq_uG ht]
+    exact (clusterRank_eq_of_sameCluster ht hxy).symm
+  ext z
+  rw [mem_belowP_Gt ht, mem_belowP_Gt ht, hu]
+  exact and_congr_left fun _ =>
+    ⟨fun h => Conn.connRel_trans hc h, fun h => Conn.connRel_trans (Conn.connRel_symm hc) h⟩
 
 /-- A finite set is independent iff its rank is its size. -/
 theorem indep_iff_rk_eq_card (N : Matroid (Fin m)) (S : Finset (Fin m)) :
@@ -325,62 +357,92 @@ theorem indep_iff_rk_eq_card (N : Matroid (Fin m)) (S : Finset (Fin m)) :
     Set.encard_coe_eq_coe_finsetCard, Nat.cast_inj]
 
 open Classical in
-/-- The set of the rank query of `x`: `Below(x) ∪ (A ∩ cluster(x))` if `x` is a representative,
-and `Below(x)` otherwise. -/
-theorem filter_term_ctxOf (G : Finset (Fin m × Fin m)) (A : Fin m → Bool) (x : Fin m) :
-    (univ.filter fun y => ((ctxOf M G).ord y x || (A y && (ctxOf M G).lev x y)) = true) =
-      belowP M G x ∪
-        if x ∈ repsG M G then (univ.filter fun y => A y = true) ∩ clusterG M G x else ∅ := by
-  ext y
-  by_cases hx : x ∈ repsG M G <;> simp [ctxOf, belowP, hx]
-
-/-- **Step 3, the rank of `N_G`** (Lemma `lem:observer`, Step 3): at the context of
-`G = G_t`, `t ≥ 0`, the sum over all `x` of `r(Below(x) ∪ (A ∩ Lev(x))) - r(Below(x))`, with
-`Lev(x)` the cluster of `x` for a representative and `∅` otherwise, is `r_{N_G}(A)`
-(`rk_NG`). -/
-theorem rankNV_ctxOf (hE : M.E = Set.univ) (ht : 0 ≤ t) (A : Fin m → Bool) :
-    rankNV M (ctxOf M (Gt v t)) A = rk (NG M (Gt v t)) (univ.filter fun y => A y = true) := by
-  classical
-  have h : ∀ x, rk M (univ.filter fun y =>
-      ((ctxOf M (Gt v t)).ord y x || (A y && (ctxOf M (Gt v t)).lev x y)) = true) -
-        (ctxOf M (Gt v t)).rkb x = if x ∈ repsG M (Gt v t) then
-          rk M (belowG M (Gt v t) x ∪ ((univ.filter fun y => A y = true) ∩
-            clusterG M (Gt v t) x)) - rk M (belowG M (Gt v t) x) else 0 := fun x => by
-    rw [filter_term_ctxOf, show (ctxOf M (Gt v t)).rkb x = rk M (belowP M (Gt v t) x) from rfl]
-    split_ifs with hx
-    · rw [belowP_eq_belowG (mem_repsG.1 hx).1]
-    · rw [union_empty, Nat.sub_self]
-  rw [rankNV, sum_congr rfl fun x _ => h x, sum_ite_mem, univ_inter, rk_NG hE ht]
-
-/-- **Lemma `lem:observer`, Step 3, the rank queries**: for every `v` and `t ≥ 0`, the rank query
-at the context computed from the bits of `G_t` is `r_{N_{G_t}}(A)`. -/
-theorem rankNV_correct (hE : M.E = Set.univ) (ht : 0 ≤ t) (A : Fin m → Bool) :
-    rankNV M (ctxV M (relBits (Gt v t))) A = rk (NG M (Gt v t)) (univ.filter fun y => A y = true) :=
-  by rw [ctxV_relBits _ hE, rankNV_ctxOf hE ht]
+/-- **The exchange test at the context of `G`**: `[y ∈ PO_G]` and
+`r(Below(y) ∪ (A ∩ Lev(y))) - r(Below(y)) = |A ∩ Lev(y)|`. -/
+theorem locV_ctxOf (G : Finset (Fin m × Fin m)) (y : Fin m) (A : Finset (Fin m)) :
+    locV M y (ctxOf M G, indicator A) = (decide (y ∈ POG M G) &&
+      decide (rk M (belowP M G y ∪ (A ∩ clusterG M G y)) - rk M (belowP M G y) =
+        #(A ∩ clusterG M G y))) := by
+  have h1 : (univ.filter fun z => ((ctxOf M G).ord z y ||
+      (indicator A z && (ctxOf M G).cl y z)) = true) = belowP M G y ∪ (A ∩ clusterG M G y) := by
+    ext z
+    simp [ctxOf, belowP, clusterG, mem_cluster, indicator]
+  have h2 : (univ.filter fun z => (indicator A z && (ctxOf M G).cl y z) = true) =
+      A ∩ clusterG M G y := by
+    ext z
+    simp [ctxOf, clusterG, mem_cluster, indicator]
+  have h3 : rk M (belowP M G y ∪ (A ∩ clusterG M G y)) - rk M (belowP M G y) < 2 ^ Nat.size m :=
+    lt_of_le_of_lt (Nat.sub_le _ _) (rk_lt_two_pow M _)
+  simp only [locV, indepOfRankV, locRankV]
+  rw [h1, h2, Nat.mod_eq_of_lt (by rw [show (ctxOf M G).rkb y = rk M (belowP M G y) from rfl]; exact h3)]
+  rfl
 
 open Classical in
-/-- **The oracle is correct at the context of `G_t`**: for `t ≥ 0`, its value is
-`[A independent in N_{G_t}]`. -/
-theorem oracleV_ctxOf (hE : M.E = Set.univ) (ht : 0 ≤ t) (A : Fin m → Bool) :
-    oracleV M (ctxOf M (Gt v t)) A =
-      decide ((NG M (Gt v t)).Indep ((univ.filter fun i => A i = true : Finset (Fin m)) :
-        Set (Fin m))) :=
-  indepOfRank_correct (fun S => by rw [rankNV_ctxOf hE ht, filter_indicator]) A
+/-- **Lemma `lem:observer`, Step 3, the exchange tests are correct**: at the context of `G_t`,
+`t ≥ 0`, for every `y` and every set `A ∋ y` with `A - y` independent in `N_{G_t}`, the test of
+`y` answers `[A independent in N_{G_t}]`.  By `rk_NG`, `r_{N_G}(B)` is the sum over the
+representatives `x` of `T_x(B) = r(Below(x) ∪ (B ∩ Lev(x))) - r(Below(x)) ≤ |B ∩ Lev(x)|`, and
+the clusters are disjoint, so `B` is independent iff every term is tight and
+`Σ_x |B ∩ Lev(x)| = |B|`.  If `y ∉ PO_G`, then `y` lies in no cluster and the parts of `A` add to
+`|A - y| < |A|`.  If `y ∈ Lev(x₀)`, the terms of `A` and `A - y` agree at every `x ≠ x₀`, and the
+test is the tightness of the term of `x₀`. -/
+theorem locV_exchOracle (hE : M.E = Set.univ) (ht : 0 ≤ t) :
+    MI.ExchOracle (fun y => locV M y) (NG M (Gt v t)) (ctxOf M (Gt v t)) := by
+  intro y A hyA hA
+  set G := Gt v t with hG
+  set R := repsG M G with hR
+  have hrk : ∀ B : Finset (Fin m), rk (NG M G) B = ∑ x ∈ R,
+      (rk M (belowG M G x ∪ (B ∩ clusterG M G x)) - rk M (belowG M G x)) :=
+    fun B => rk_NG hE ht B
+  have hT : ∀ x B, rk M (belowG M G x ∪ (B ∩ clusterG M G x)) - rk M (belowG M G x) ≤
+      #(B ∩ clusterG M G x) := fun x B => by
+    have := rk_union_le_add_card (M := M) (belowG M G x) (B ∩ clusterG M G x)
+    omega
+  have tight : ∀ B : Finset (Fin m), (NG M G).Indep (B : Set (Fin m)) →
+      (∀ x ∈ R, rk M (belowG M G x ∪ (B ∩ clusterG M G x)) - rk M (belowG M G x) =
+        #(B ∩ clusterG M G x)) ∧ ∑ x ∈ R, #(B ∩ clusterG M G x) = #B := fun B hB => by
+    rw [indep_iff_rk_eq_card, hrk] at hB
+    have h1 := sum_le_sum fun x (_ : x ∈ R) => hT x B
+    have h2 : ∑ x ∈ R, #(B ∩ clusterG M G x) ≤ #B := sum_card_inter_clusterG_le B
+    exact ⟨(sum_eq_sum_iff_of_le fun x _ => hT x B).1 (by omega), by omega⟩
+  obtain ⟨hT', hc'⟩ := tight _ hA
+  have hcard : #(A.erase y) + 1 = #A := card_erase_add_one hyA
+  dsimp only
+  rw [locV_ctxOf]
+  by_cases hy : y ∈ POG M G
+  · obtain ⟨x₀, hx₀, hyx₀⟩ := exists_repsG hy
+    have hB : belowP M G y = belowG M G x₀ :=
+      (belowP_eq_of_mem_clusterG ht hyx₀).trans (belowP_eq_belowG (mem_repsG.1 hx₀).1)
+    rw [hB, clusterG_eq hyx₀]
+    simp only [hy, decide_true, Bool.true_and]
+    refine decide_eq_decide.2 ⟨fun h => ?_, fun h => (tight A h).1 x₀ hx₀⟩
+    have hoth : ∀ x ∈ R.erase x₀, rk M (belowG M G x ∪ (A ∩ clusterG M G x)) -
+        rk M (belowG M G x) = #(A.erase y ∩ clusterG M G x) := fun x hx => by
+      have hyx : y ∉ clusterG M G x := fun h' =>
+        (mem_erase.1 hx).1 (eq_of_mem_clusterG (mem_erase.1 hx).2 hx₀ h' hyx₀)
+      rw [inter_clusterG_erase A hyx]
+      exact hT' x (mem_erase.1 hx).2
+    have h0 : #(A.erase y ∩ clusterG M G x₀) + 1 = #(A ∩ clusterG M G x₀) := by
+      rw [erase_inter]
+      exact card_erase_add_one (mem_inter.2 ⟨hyA, hyx₀⟩)
+    rw [indep_iff_rk_eq_card, hrk, ← add_sum_erase R _ hx₀, sum_congr rfl hoth, h]
+    rw [← add_sum_erase R _ hx₀] at hc'
+    omega
+  · simp only [hy, decide_false, Bool.false_and]
+    refine (decide_eq_false fun hind => ?_).symm
+    have h1 := (tight A hind).2
+    have h2 : ∀ x ∈ R, #(A ∩ clusterG M G x) = #(A.erase y ∩ clusterG M G x) := fun x _ => by
+      rw [inter_clusterG_erase A fun h' => hy (mem_cluster.1 h').mem_right]
+    rw [sum_congr rfl h2, hc'] at h1
+    omega
 
-open Classical in
-/-- **Lemma `lem:observer`, Steps 1 to 3, correctness**: for every `v` and `t ≥ 0`, the oracle
-read at the context computed from the bits of `G_t` decides independence in `N_{G_t}`. -/
-theorem oracle_correct (hE : M.E = Set.univ) (ht : 0 ≤ t) (A : Fin m → Bool) :
-    oracleV M (ctxV M (relBits (Gt v t))) A =
-      decide ((NG M (Gt v t)).Indep ((univ.filter fun i => A i = true : Finset (Fin m)) :
-        Set (Fin m))) := by
-  rw [ctxV_relBits _ hE, oracleV_ctxOf hE ht]
-
-/-- `rankNV_correct` at the indicator vector of a set `S` (the hypothesis `hFr` of
-`indepOfRank_correct`). -/
-theorem rankNV_correct_indicator (hE : M.E = Set.univ) (ht : 0 ≤ t) (S : Finset (Fin m)) :
-    rankNV M (ctxV M (relBits (Gt v t))) (indicator S) = rk (NG M (Gt v t)) S := by
-  rw [rankNV_correct hE ht, filter_indicator]
+/-- **Lemma `lem:observer`, Steps 1 to 3, correctness**: for every `v` and `t ≥ 0`, the exchange
+tests read at the context computed from the bits of `G_t` answer every exchange question of
+`N_{G_t}`. -/
+theorem locV_correct (hE : M.E = Set.univ) (ht : 0 ≤ t) :
+    MI.ExchOracle (fun y => locV M y) (NG M (Gt v t)) (ctxV M (relBits (Gt v t))) := by
+  rw [ctxV_relBits _ hE]
+  exact locV_exchOracle hE ht
 
 /-! ### Step 5: the full relation -/
 
@@ -395,59 +457,37 @@ theorem Gt_eq_univ_of_le (ht : (⨆ e, v e) - (⨅ e, v e) ≤ t) : Gt v t = uni
   Gt_eq_univ fun e f => (sub_le_sub (le_ciSup (Set.finite_range v).bddAbove f)
     (ciInf_le (Set.finite_range v).bddBelow e)).trans ht
 
-open Classical in
-/-- **Lemma `lem:observer`, Step 5**: at `G = E × E` the oracle decides independence in
-`N_{E × E} = M` (`NG_univ`). -/
-theorem oracle_univ (hE : M.E = Set.univ) (A : Fin m → Bool) :
-    oracleV M (ctxV M (relBits univ)) A =
-      decide (M.Indep ((univ.filter fun i => A i = true : Finset (Fin m)) : Set (Fin m))) := by
-  have h := oracle_correct (M := M) (v := 0) (t := 0) hE le_rfl A
-  rwa [Gt_eq_univ fun _ _ => by simp, NG_univ hE] at h
-
-end Oracle
+end Local
 
 /-! ### The representation of a context -/
 
 /-- The operands of a context. -/
 structure CtxA (m n : ℕ) where
-  /-- The bits of `G`. -/
-  rel : Fin m → Fin m → Arg n
   /-- The bits of `PO_G`. -/
   po : Fin m → Arg n
   /-- The cluster bits. -/
   cl : Fin m → Fin m → Arg n
   /-- The order bits. -/
   ord : Fin m → Fin m → Arg n
-  /-- The representative bits. -/
-  rep : Fin m → Arg n
-  /-- The clusters of the representatives. -/
-  lev : Fin m → Fin m → Arg n
   /-- The ranks `r(Below(x))`, on `⌈log₂(m+1)⌉` bits each. -/
   rkb : Fin m → List (Arg n)
 
 /-- In the gate list `gs`, every field of `s` carries the corresponding field of `T`. -/
 structure CtxRep (gs : List (Gate BoolOp n)) (s : CtxA m n) (T : (Fin n → Bool) → Ctx m) :
     Prop where
-  /-- The bits of `G`. -/
-  rel : (relR m).rep gs s.rel fun x => (T x).rel
   /-- The bits of `PO_G`. -/
   po : (vecR m).rep gs s.po fun x => (T x).po
   /-- The cluster bits. -/
   cl : (relR m).rep gs s.cl fun x => (T x).cl
   /-- The order bits. -/
   ord : (relR m).rep gs s.ord fun x => (T x).ord
-  /-- The representative bits. -/
-  rep : (vecR m).rep gs s.rep fun x => (T x).rep
-  /-- The clusters of the representatives. -/
-  lev : (relR m).rep gs s.lev fun x => (T x).lev
   /-- The ranks `r(Below(x))`. -/
   rkb : (Rep.pi (Fin m) (numR (Nat.size m))).rep gs s.rkb fun x => (T x).rkb
 
 /-- **The representation of contexts**: bits for the relations and sets, `⌈log₂(m+1)⌉` bits for
 each rank. -/
 def ctxR (m : ℕ) : Rep BoolOp Bool n (CtxA m n) (Ctx m) :=
-  ⟨CtxRep, fun hp h => ⟨(relR m).mono hp h.rel, (vecR m).mono hp h.po, (relR m).mono hp h.cl,
-    (relR m).mono hp h.ord, (vecR m).mono hp h.rep, (relR m).mono hp h.lev,
+  ⟨CtxRep, fun hp h => ⟨(vecR m).mono hp h.po, (relR m).mono hp h.cl, (relR m).mono hp h.ord,
     (Rep.pi (Fin m) (numR (Nat.size m))).mono hp h.rkb⟩⟩
 
 /-! ### The circuits -/
@@ -530,54 +570,38 @@ noncomputable def ordB :
       Bld BoolOp n (Fin m → Fin m → Arg n) :=
   connMaskB M fun q => tabB fun x => tabB fun y => ordOneB x y q
 
-/-- Step 2, the representative bits, from `Cl`: least-index selection in every row, and the
-diagonal. -/
-def repB (Cl : Fin m → Fin m → Arg n) : Bld BoolOp n (Fin m → Arg n) := fun gs =>
-  ((tabB (fun x => vecFirstB (Cl x)) gs).1, fun x => (tabB (fun x => vecFirstB (Cl x)) gs).2 x x)
-
-/-- Step 2, the clusters of the representatives, from `(Rep, Cl)`. -/
-def levB (q : (Fin m → Arg n) × (Fin m → Fin m → Arg n)) : Bld BoolOp n (Fin m → Fin m → Arg n) :=
-  tabB fun x => vecMaskB (q.1 x, q.2 x)
-
 /-- Step 3, the ranks of the sets `{y : Ord y x}`, from `Ord`. -/
 def rkbB (Ord : Fin m → Fin m → Arg n) : Bld BoolOp n (Fin m → List (Arg n)) :=
   tabB fun x => rankB C fun y => Ord y x
 
-/-- **The context**, from the bits `R` of `G`: Step 1, then Step 2 (clusters, order,
-representatives, their clusters), then the ranks of the sets `Below(x)`. -/
+/-- **The context**, from the bits `R` of `G`: Step 1, then Step 2 (clusters and order), then the
+ranks of the sets `Below(x)`. -/
 noncomputable def ctxB (R : Fin m → Fin m → Arg n) : Bld BoolOp n (CtxA m n) := fun gs =>
   let p₁ := poB C R gs
   let p₂ := clB M (R, p₁.2) p₁.1
   let p₃ := ordB M (R, p₁.2, p₂.2) p₂.1
-  let p₄ := repB p₂.2 p₃.1
-  let p₅ := levB (p₄.2, p₂.2) p₄.1
-  let p₆ := rkbB C p₃.2 p₅.1
-  (p₆.1, ⟨R, p₁.2, p₂.2, p₃.2, p₄.2, p₅.2, p₆.2⟩)
+  let p₄ := rkbB C p₃.2 p₃.1
+  (p₄.1, ⟨p₁.2, p₂.2, p₃.2, p₄.2⟩)
 
-/-- The gates of the context: `2m³ + 12m² + m(3s + 5⌈log₂(m+1)⌉ + 2) + 1`. -/
-def ctxCost (m s : ℕ) : ℕ := 2 * m ^ 3 + 12 * m ^ 2 + m * (3 * s + 5 * Nat.size m + 2) + 1
+/-- The gates of the context: `2m³ + 8m² + m(3s + 5⌈log₂(m+1)⌉ + 2) + 1`. -/
+def ctxCost (m s : ℕ) : ℕ := 2 * m ^ 3 + 8 * m ^ 2 + m * (3 * s + 5 * Nat.size m + 2) + 1
 
-/-! #### Step 3, the oracle -/
+/-! #### Step 3, the exchange tests -/
 
-/-- The term of `x`, from `(D, A)`: `r({y : D.ord y x} ∪ (A ∩ {y : D.lev x y})) - D.rkb x`. -/
-def rankTermB (x : Fin m) : CtxA m n × (Fin m → Arg n) → Bld BoolOp n (List (Arg n)) :=
-  seqB (pairB (seqB (seqB (pairB (pureB fun p y => p.1.ord y x) fun p => vecAndB (p.2, p.1.lev x))
-    vecOrB) (rankB C)) (pureB fun p => p.1.rkb x)) numSubB
+/-- The rank query of the test of `y`, from `(D, A')`: `r({z : D.ord z y} ∪ A') - D.rkb y`. -/
+def locRankB (y : Fin m) : CtxA m n × (Fin m → Arg n) → Bld BoolOp n (List (Arg n)) :=
+  seqB (pairB (seqB (seqB (pairB (pureB fun p z => p.1.ord z y) (pureB Prod.snd)) vecOrB)
+    (rankB C)) (pureB fun p => p.1.rkb y)) numSubB
 
-/-- **The rank query**, from `(D, A)`: the terms of all `x` and their sum. -/
-def rankNB : CtxA m n × (Fin m → Arg n) → Bld BoolOp n (List (Arg n)) :=
-  seqB (fun p => tabB fun x => rankTermB C x p) (numSumB (Nat.size m))
+/-- **The exchange test of `y`**, from `(D, A)`: `A' = A ∩ {z : D.cl y z}` (`m` gates), the rank
+query compared with `|A'|` (`indepOfRankB`), and the conjunction with `D.po y`. -/
+def locB (y : Fin m) : CtxA m n × (Fin m → Arg n) → Bld BoolOp n (Arg n) :=
+  seqB (pairB (pureB fun p => p.1.po y)
+    (seqB (pairB (pureB Prod.fst) fun p => vecAndB (p.2, p.1.cl y)) (indepOfRankB (locRankB C y))))
+    fun q => emit .and q.1 q.2
 
-/-- **The oracle**, from `(D, A)`: the rank query compared with the size of `A`
-(`indepOfRankB` of `BoolAlg/Count.lean`). -/
-def oracleB : CtxA m n × (Fin m → Arg n) → Bld BoolOp n (Arg n) :=
-  indepOfRankB (rankNB C)
-
-/-- The gates of one rank query: `m(2m + s + 13⌈log₂(m+1)⌉ + 1) + 22m⌈log₂(m+1)⌉`. -/
-def rankNCost (m s : ℕ) : ℕ := m * (2 * m + s + 13 * Nat.size m + 1) + 22 * m * Nat.size m
-
-/-- The gates of one query of the oracle: `rankNCost m s + popCost m + 5⌈log₂(m+1)⌉ + 1`. -/
-def oracleCost (m s : ℕ) : ℕ := rankNCost m s + popCost m + (5 * Nat.size m + 1)
+/-- The gates of one exchange test: `s + 2m + 18⌈log₂(m+1)⌉ + popCost m + 3`. -/
+def locCost (m s : ℕ) : ℕ := s + 2 * m + 18 * Nat.size m + popCost m + 3
 
 /-! #### The implementations -/
 
@@ -674,19 +698,6 @@ theorem ordB_impl :
       (fun Q => ordV M Q.1 Q.2.1 Q.2.2) :=
   connMask_impl M (Impl.tab fun x => Impl.tab fun y => ordOneB_impl x y)
 
-/-- **Step 2, the representatives** (Lemma `lem:observer`): least-index selection in every row,
-`3m²` gates. -/
-theorem repB_impl : Impl (relR m) (vecR (n := n) m) repB (m * (3 * m)) repV :=
-  (vecFirstB_impl.map m).post (g := fun L x => L x x) (G := fun L x => L x x)
-    fun _ _ _ hs x => hs x x
-
-/-- **Step 2, the clusters of the representatives**, `m²` gates. -/
-theorem levB_impl :
-    Impl ((vecR m).prod (relR m)) (relR (n := n) m) levB (m * m)
-      (fun Q x y => Q.1 x && Q.2 x y) :=
-  Impl.tab fun x => vecMaskB_impl.pre (R := (vecR m).prod (relR m)) (g := fun q => (q.1 x, q.2 x))
-    (G := fun Q => (Q.1 x, Q.2 x)) fun _ _ _ hs => ⟨hs.1 x, hs.2 x⟩
-
 include hB
 
 /-- **Step 3, the ranks of the sets `Below(x)`**, `ms` gates. -/
@@ -697,8 +708,8 @@ theorem rkbB_impl :
     (G := fun O y => O y x) fun _ _ _ hs y => hs y x
 
 /-- **The context** (Lemma `lem:observer`, Steps 1 and 2, and the part of Step 3 independent of
-`A`): from the bits of `G`, `ctxB` computes `ctxV`, the context of `G` (`ctxV_relBits`), with
-`ctxCost m s = 2m³ + 12m² + m(3s + 5⌈log₂(m+1)⌉ + 2) + 1` gates. -/
+the set): from the bits of `G`, `ctxB` computes `ctxV`, the context of `G` (`ctxV_relBits`), with
+`ctxCost m s = 2m³ + 8m² + m(3s + 5⌈log₂(m+1)⌉ + 2) + 1` gates. -/
 theorem ctxB_impl : Impl (relR m) (ctxR (n := n) m) (ctxB M C) (ctxCost m C.size) (ctxV M) := by
   intro gs R T hR
   obtain ⟨hp₁, hl₁, hr₁⟩ := poB_impl hB hR
@@ -708,41 +719,42 @@ theorem ctxB_impl : Impl (relR m) (ctxR (n := n) m) (ctxB M C) (ctxCost m C.size
     (s := (R, (poB C R gs).2, (clB M (R, (poB C R gs).2) (poB C R gs).1).2))
     (T := fun x => (T x, poV M (T x), clV M (T x) (poV M (T x))))
     ⟨(relR m).mono (hp₁.trans hp₂) hR, (vecR m).mono hp₂ hr₁, hr₂⟩
-  obtain ⟨hp₄, hl₄, hr₄⟩ := repB_impl ((relR m).mono hp₃ hr₂)
-  obtain ⟨hp₅, hl₅, hr₅⟩ := levB_impl (s := (_, (clB M (R, (poB C R gs).2) (poB C R gs).1).2))
-    (T := fun x => (repV (clV M (T x) (poV M (T x))), clV M (T x) (poV M (T x))))
-    ⟨hr₄, (relR m).mono (hp₃.trans hp₄) hr₂⟩
-  obtain ⟨hp₆, hl₆, hr₆⟩ := rkbB_impl hB ((relR m).mono (hp₄.trans hp₅) hr₃)
+  obtain ⟨hp₄, hl₄, hr₄⟩ := rkbB_impl hB hr₃
   -- the results of the stages persist to the end
-  have q₄ := hp₅.trans hp₆
-  have q₃ := hp₄.trans q₄
-  have q₂ := hp₃.trans q₃
+  have q₂ := hp₃.trans hp₄
   have q₁ := hp₂.trans q₂
-  refine ⟨hp₁.trans q₁, ?_, (⟨(relR m).mono (hp₁.trans q₁) hR, (vecR m).mono q₁ hr₁,
-    (relR m).mono q₂ hr₂, (relR m).mono q₃ hr₃, (vecR m).mono q₄ hr₄, (relR m).mono hp₆ hr₅,
-    hr₆⟩ : CtxRep _ _ _)⟩
-  refine hl₆.trans ?_
-  rw [hl₅, hl₄, hl₃, hl₂, hl₁, ctxCost]
+  refine ⟨hp₁.trans q₁, ?_, (⟨(vecR m).mono q₁ hr₁, (relR m).mono q₂ hr₂, (relR m).mono hp₄ hr₃,
+    hr₄⟩ : CtxRep _ _ _)⟩
+  refine hl₄.trans ?_
+  rw [hl₃, hl₂, hl₁, ctxCost]
   ring
 
-/-- The term of `x`: `2m + s + 13⌈log₂(m+1)⌉ + 1` gates. -/
-theorem rankTermB_impl (x : Fin m) :
-    Impl ((ctxR m).prod (vecR m)) (numR (n := n) (Nat.size m)) (rankTermB C x)
-      (2 * m + C.size + 13 * Nat.size m + 1)
-      (fun P => rk M (univ.filter fun y => (P.1.ord y x || (P.2 y && P.1.lev x y)) = true) -
-        P.1.rkb x) :=
-  (((((Impl.free (R₁ := (ctxR m).prod (vecR m)) (R₂ := vecR m) (g := fun p y => p.1.ord y x)
-      (F := fun P y => P.1.ord y x) fun _ _ _ hs y => hs.1.ord y x).pair
-    (vecAndB_impl.pre (R := (ctxR m).prod (vecR m)) (g := fun p => (p.2, p.1.lev x))
-      (G := fun P => (P.2, P.1.lev x)) fun _ _ _ hs => ⟨hs.2, hs.1.lev x⟩)).comp vecOrB_impl).comp
-    (rankB_impl hB)).pair
+/-- The rank query of the test of `y`: `m + s + 13⌈log₂(m+1)⌉ + 1` gates. -/
+theorem locRankB_impl (y : Fin m) :
+    Impl ((ctxR m).prod (vecR m)) (numR (n := n) (Nat.size m)) (locRankB C y)
+      (m + C.size + 13 * Nat.size m + 1) (locRankV M y) :=
+  (((((Impl.free (R₁ := (ctxR m).prod (vecR m)) (R₂ := vecR m) (g := fun p z => p.1.ord z y)
+      (F := fun P z => P.1.ord z y) fun _ _ _ hs z => hs.1.ord z y).pair Impl.snd).comp
+      vecOrB_impl).comp (rankB_impl hB)).pair
     (Impl.free (R₁ := (ctxR m).prod (vecR m)) (R₂ := numR (Nat.size m))
-      (g := fun p => p.1.rkb x) (F := fun P => P.1.rkb x) fun _ _ _ hs => hs.1.rkb x)).comp
+      (g := fun p => p.1.rkb y) (F := fun P => P.1.rkb y) fun _ _ _ hs => hs.1.rkb y)).comp
     (numSubB_impl _ _) |>.cost (by rw [max_self]; ring)
 
+/-- **The exchange test of `y`** (Lemma `lem:observer`, Step 3): from a context `D` and a set `A`,
+`locB` computes `locV M y (D, A)` with `locCost m s` gates (`locCost_le`). -/
+theorem locB_impl (y : Fin m) :
+    Impl ((ctxR m).prod (vecR m)) (bitR (n := n)) (locB C y) (locCost m C.size) (locV M y) :=
+  (((Impl.free (R₁ := (ctxR m).prod (vecR m)) (R₂ := bitR) (g := fun p => p.1.po y)
+      (F := fun P => P.1.po y) fun _ _ _ hs => hs.1.po y).pair
+    ((Impl.fst.pair (vecAndB_impl.pre (R := (ctxR m).prod (vecR m))
+      (g := fun p => (p.2, p.1.cl y)) (G := fun P => (P.2, P.1.cl y))
+      fun _ _ _ hs => ⟨hs.2, hs.1.cl y⟩)).comp
+      (indepOfRankB_impl (locRankB_impl hB y)))).comp emitAnd_impl).cost
+    (by unfold locCost; ring)
+
 omit hB in
-/-- The context costs `O(m(s + log m) + m³)` gates; explicitly at most `3ms + 21m³ + 1`. -/
-theorem ctxCost_le (m s : ℕ) : ctxCost m s ≤ 3 * m * s + 21 * m ^ 3 + 1 := by
+/-- The context costs `O(m(s + log m) + m³)` gates; explicitly at most `3ms + 17m³ + 1`. -/
+theorem ctxCost_le (m s : ℕ) : ctxCost m s ≤ 3 * m * s + 17 * m ^ 3 + 1 := by
   have hW : m * Nat.size m ≤ m * m := Nat.mul_le_mul_left m (size_le_self m)
   have h₁ : m ≤ m ^ 3 := Nat.le_self_pow (by norm_num) m
   have h₂ : m ^ 2 ≤ m ^ 3 := by
@@ -753,67 +765,33 @@ theorem ctxCost_le (m s : ℕ) : ctxCost m s ≤ 3 * m * s + 21 * m ^ 3 + 1 := b
   nlinarith
 
 omit hB in
-/-- One rank query costs `ms + O(m²)` gates; explicitly at most `ms + 38m²`. -/
-theorem rankNCost_le (m s : ℕ) : rankNCost m s ≤ m * s + 38 * m ^ 2 := by
-  have hW : m * Nat.size m ≤ m * m := Nat.mul_le_mul_left m (size_le_self m)
-  have h₁ : m ≤ m ^ 2 := Nat.le_self_pow (by norm_num) m
-  unfold rankNCost
-  nlinarith
-
-omit hB in
-/-- One query of the oracle costs `ms + O(m²)` gates; explicitly at most `ms + 70m² + 1`. -/
-theorem oracleCost_le (m s : ℕ) : oracleCost m s ≤ m * s + 70 * m ^ 2 + 1 := by
-  have hR := rankNCost_le m s
+/-- One exchange test costs `s + O(m)` gates; explicitly at most `s + 42(m + 1)`. -/
+theorem locCost_le (m s : ℕ) : locCost m s ≤ s + 42 * (m + 1) := by
   have hW := size_le_self m
   have hp := popCost_le m
-  have h₁ : m ≤ m ^ 2 := Nat.le_self_pow (by norm_num) m
-  unfold oracleCost
+  unfold locCost
   omega
 
-/-- **The rank query** (Lemma `lem:observer`, Step 3): from a context `D` and a set `A`,
-`rankNB` computes `rankNV M D A` on `2⌈log₂(m+1)⌉` bits with `rankNCost m s ≤ ms + 38m²` gates
-(`rankNCost_le`); at the context of `G = G_t`, `t ≥ 0`, this is `r_{N_G}(A)`
-(`rankNV_correct`). -/
-theorem rankNB_impl :
-    Impl ((ctxR m).prod (vecR m)) (numR (n := n) (Nat.size m + Nat.size m)) (rankNB C)
-      (rankNCost m C.size) (fun P => rankNV M P.1 P.2) :=
-  ((Impl.tab fun x => rankTermB_impl hB x).comp (numSumB_impl (Nat.size m))).cost
-    (by rw [rankNCost]; ring)
-
-/-- **The oracle** (Lemma `lem:observer`, Step 3 and the independence tests of Step 4): from a
-context `D` and a set `A`, `oracleB` computes `oracleV M D A` with
-`oracleCost m s ≤ ms + 70m² + 1` gates (`oracleCost_le`).  Its value is `[A independent in N_G]`
-at the context of `G = G_t`, `t ≥ 0` (`oracle_correct`). -/
-theorem oracleB_impl :
-    Impl ((ctxR m).prod (vecR m)) (bitR (n := n)) (oracleB C) (oracleCost m C.size)
-      (fun P => oracleV M P.1 P.2) :=
-  indepOfRankB_impl (rankNB_impl hB)
-
 open Classical in
-/-- **Lemma `lem:observer`, Steps 1 to 3, and the fact used in Step 5.**  Let `M` have ground set
-`E = Fin m`, and let the Boolean circuit `C` of size `s` output the binary digits of the rank of
-`M`.  Then:
+/-- **Lemma `lem:observer`, Steps 1 to 3.**  Let `M` have ground set `E = Fin m`, and let the
+Boolean circuit `C` of size `s` output the binary digits of the rank of `M`.  Then:
 
-1. a circuit of `ctxCost m s ≤ 3ms + 21m³ + 1` gates computes, from the bits of a relation
+1. a circuit of `ctxCost m s ≤ 3ms + 17m³ + 1` gates computes, from the bits of a relation
    `G ⊆ E × E`, the context `ctxV M`, which is the context of `G` (`ctxV_relBits`);
-2. a circuit of `oracleCost m s ≤ ms + 70m² + 1` gates computes, from a context `D` and a set
-   `A ⊆ E`, the bit `oracleV M D A`;
-3. at the context of `G_t`, for every `v`, every `t ≥ 0` and every `A`, this bit is
-   `[A independent in N_{G_t}]`;
-4. at the context of `E × E`, it is `[A independent in M]`. -/
+2. for each `y`, a circuit of `locCost m s ≤ s + 42(m + 1)` gates computes, from a context `D`
+   and a set `A ⊆ E`, the bit `locV M y (D, A)`;
+3. at the context of `G_t`, for every `v` and every `t ≥ 0`, these tests answer the exchange
+   questions of `N_{G_t}`: for `y ∈ A` with `A - y` independent, the bit is
+   `[A independent in N_{G_t}]`. -/
 theorem lem_observer_oracle (hE : M.E = Set.univ) :
     Impl (relR m) (ctxR (n := n) m) (ctxB M C) (ctxCost m C.size) (ctxV M) ∧
-      Impl ((ctxR m).prod (vecR m)) (bitR (n := n)) (oracleB C) (oracleCost m C.size)
-        (fun P => oracleV M P.1 P.2) ∧
-      ctxCost m C.size ≤ 3 * m * C.size + 21 * m ^ 3 + 1 ∧
-      oracleCost m C.size ≤ m * C.size + 70 * m ^ 2 + 1 ∧
-      (∀ (v : Fin m → ℝ) (t : ℝ), 0 ≤ t → ∀ A : Fin m → Bool,
-        oracleV M (ctxV M (relBits (Gt v t))) A = decide ((NG M (Gt v t)).Indep
-          ((univ.filter fun i => A i = true : Finset (Fin m)) : Set (Fin m)))) ∧
-      ∀ A : Fin m → Bool, oracleV M (ctxV M (relBits univ)) A =
-        decide (M.Indep ((univ.filter fun i => A i = true : Finset (Fin m)) : Set (Fin m))) :=
-  ⟨ctxB_impl hB, oracleB_impl hB, ctxCost_le _ _, oracleCost_le _ _,
-    fun _ _ ht A => oracle_correct hE ht A, oracle_univ hE⟩
+      (∀ y, Impl ((ctxR m).prod (vecR m)) (bitR (n := n)) (locB C y) (locCost m C.size)
+        (locV M y)) ∧
+      ctxCost m C.size ≤ 3 * m * C.size + 17 * m ^ 3 + 1 ∧
+      locCost m C.size ≤ C.size + 42 * (m + 1) ∧
+      ∀ (v : Fin m → ℝ) (t : ℝ), 0 ≤ t →
+        MI.ExchOracle (fun y => locV M y) (NG M (Gt v t)) (ctxV M (relBits (Gt v t))) :=
+  ⟨ctxB_impl hB, locB_impl hB, ctxCost_le _ _, locCost_le _ _, fun _ _ ht => locV_correct hE ht⟩
 
 end Circuits
 

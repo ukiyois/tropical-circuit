@@ -401,7 +401,7 @@ algorithm on `N_x` with the blocks `blk⁻¹(i)`, one for each set of the family
 count), whose context is the input `x` and whose independence oracle compares the rank query
 `rkQueryB col` with `|A|` (`indepOfRankB`). -/
 def rankCircuit (col : Fin p → Fin m) (blk : Fin p → Fin n) : Circuit BoolOp m :=
-  nuCircuit (indepOfRankB (rkQueryB col)) blk
+  nuCircuit (fun _ => indepOfRankB (rkQueryB col)) blk
 
 /-- **The rank circuit** has `n · roundCost p (oracleCost m p) + popCost p` gates and outputs in
 binary, for every `S ⊆ E`, the rank of `S` in the transversal matroid. -/
@@ -409,10 +409,12 @@ theorem rankCircuit_spec (hA : Presents A col blk) :
     (rankCircuit col blk).size = n * roundCost p (oracleCost m p) + popCost p ∧
       ∀ S : Finset (Fin m),
         bitsVal ((rankCircuit col blk).eval boolInterp (indicator S)) = rk (transversal A) S := by
-  obtain ⟨hs, -, he⟩ := nuCircuit_spec (indepOfRankB_impl (rkQueryB_impl (q := m) col)) blk
+  obtain ⟨hs, -, he⟩ :=
+    nuCircuit_spec (fun _ => indepOfRankB_impl (rkQueryB_impl (q := m) col)) blk
   refine ⟨hs, fun S => ?_⟩
   exact (he (indicator S) (edgeMatroid col S)
-    (indepOfRank_correct fun F => rkQueryV_eq col S F)).trans (rk_eq_nu hA S).symm
+    (ExchOracle.of_indep (indepOfRank_correct fun F => rkQueryV_eq col S F))).trans
+    (rk_eq_nu hA S).symm
 
 /-- The rank circuit satisfies the hypothesis of Theorem A. -/
 theorem rankCircuit_eRk (hA : Presents A col blk) (S : Finset (Fin m)) :

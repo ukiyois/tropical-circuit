@@ -363,23 +363,22 @@ are the blocks missed by `I` and the blocks of the elements of `I` reachable fro
 *Proof.*  Take a rainbow independent `I` with `|I| = ν`.  Then `Av(N) = A'` (Theorem 27), and
 `A'` attains equality (Lemma 25).
 
-### 1.9 `k` rounds of augmentation (Step 4 of the proof of `lem:observer`)
+### 1.9 Rounds of augmentation (Step 2 of the proof of `lem:augment`)
 
 **Lemma 29.**  `nu_le`.  `ν(N) ≤ k`.
 
 *Proof.*  A rainbow set `J` with `|J| = ν` maps injectively into `[k]` by `blk`.
 
-**Theorem 30 (`k` rounds of augmentation).**  `iterate_step`.  Let `step` send every rainbow
+**Theorem 30 (`j` rounds of augmentation).**  `iterate_step`.  Let `step` send every rainbow
 independent `J` to a rainbow independent set with at least `|J|` elements, and with `|J| + 1`
-elements when a sink of the exchange graph of `J` is reachable from a source.  Then
-`step^k(∅)`, the result of `k` rounds from `∅`, is rainbow independent of size `ν(N)`.
-`iterate_augStep`: in particular `augStep^k(∅)` is rainbow independent of size `ν(N)`
-(Proposition 18).
+elements when a sink of the exchange graph of `J` is reachable from a source.  Then for every
+`j`, `step^j(∅)` is rainbow independent with at least `min(j, ν(N))` elements.
+`iterate_augStep`: in particular for `augStep` (Proposition 18).  `card_iterate_augStep`: for
+`j ≥ ν(N)`, in particular `j = k` (Lemma 29), `augStep^j(∅)` has `ν(N)` elements.
 
-*Proof.*  Step 1, by induction on `j`, `step^j(∅)` is rainbow independent with at least
-`min(j, ν)` elements: if a sink is reachable from a source, the round adds one element;
-otherwise the set already has `ν` elements (Theorem 24), and the round does not decrease its
-size.  Step 2, for `j = k`, `min(k, ν) = ν` by Lemma 29, and a rainbow independent set has at
+*Proof.*  Step 1, by induction on `j`: if a sink is reachable from a source, the round adds one
+element; otherwise the set already has `ν` elements (Theorem 24), and the round does not
+decrease its size.  Step 2, for `j ≥ ν`, `min(j, ν) = ν`, and a rainbow independent set has at
 most `ν` elements.
 
 
@@ -400,7 +399,7 @@ most `ν` elements.
 | augmentation along a shortest path (Lawler; Schrijver, Theorem 41.2) | `IsShortestPath.augment`, `augment`, `augment_of_pred`, `exists_augment` | same | proved |
 | shortest paths and breadth-first layers | `isShortestPath_of_pred`, `isShortestPath_of_rule`, `exists_isShortestPath`, `isShortestPath_iff`, `reachSet_eq_layer` | same | proved |
 | maximality: no reachable sink implies `|I| = ν` | `card_eq_nu`, `card_eq_nu_iff` | same | proved |
-| `lem:observer`, Step 4: "`k` rounds of the augmenting path algorithm", "the least-index shortest path", "one more exchange graph and its reachable set give `Av(N_G)`" | `augStep`, `augStep_spec`, `iterate_step`, `iterate_augStep`, `nu_le`, `leastPred`, `backPath`, `reachSet_eq_layer`, `av_eq` | same | proved (the mathematical content; the Boolean circuit and its size belong to the observer module) |
+| `lem:augment`: "`j` rounds of the augmenting path algorithm", "the least-index shortest path", "one more exchange graph and its reachable set give `Av`" | `augStep`, `augStep_spec`, `iterate_step`, `iterate_augStep`, `card_iterate_augStep`, `nu_le`, `leastPred`, `backPath`, `reachSet_eq_layer`, `av_eq` | same | proved (the mathematical content; the Boolean circuit and its size belong to the observer module) |
 
 
 ## 3. Differences from the paper
