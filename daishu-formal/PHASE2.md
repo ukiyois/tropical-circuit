@@ -46,9 +46,12 @@ algorithm over `(min, max)`) and runs the compiler at the `2m` levels (Corollary
 most `3328 k³ m⁴ (s+m) + 2`, and `1390 k³ m³ (s+m) + 2` when every component of `M` has rank at
 most one (Corollary `cor:rankone`, `Rainbow/RankOne.lean`).  Theorem D:
 `3328 · 1200 m⁷ (s₁+s₂+m) + 2` for common bases and `3328 · 653313 m⁷ (s₁+s₂+m) + 3` for common
-independent sets.
+independent sets.  The same day the paper dropped its references to the unpublished companion
+paper on the assignment problem, and with them Proposition `prop:assign-pos` and the assignment
+clause of Proposition `prop:posl`; their Lean proofs (`Rainbow/POSLAssign.lean` and the slacks of
+`Rainbow/Partition.lean`) were removed.
 
-Status: complete (2026-10-16).  67 modules, about 24,530 lines; `lake build` reports no errors and no warnings, and every main theorem depends only on `propext`, `Classical.choice` and `Quot.sound`.
+Status: complete (2026-10-16).  66 modules, about 24,210 lines; `lake build` reports no errors and no warnings, and every main theorem depends only on `propext`, `Classical.choice` and `Quot.sound`.
 
 ## 1. Module map
 
@@ -65,11 +68,11 @@ Status: complete (2026-10-16).  67 modules, about 24,530 lines; `lake build` rep
 | `Rainbow/MinBases.lean` | `SignedTropical.Rainbow` | `lem:minbases`(2),(3), `eq:rank-mu`, API | `notes/P0a-minbases.md` |
 | `Rainbow/Exchange.lean` | `SignedTropical.Rainbow.Exchange` | exchange graphs, `lem:avoidable`, augmenting paths | `notes/P2-exchange.md` |
 | `Rainbow/PossiblyOptimal.lean`, `Rainbow/Lagrangian.lean` | `SignedTropical.Rainbow.Pos` | `prop:pos`, `lem:path`, `lem:duality` | `notes/P1-core.md` |
-| `Rainbow/Partition.lean`, `Rainbow/NotMatroid.lean`, `Rainbow/Doubling.lean` | `...Partition`, `...NotMatroid`, `...Doubling` | partition matroids and `prop:assign-pos`, `U_{2,4}` and `prop:notmatroid`, `lem:doubling` and the rank of `M₁ ⊕ M₂✶` | `notes/P1x-partition-doubling.md` |
+| `Rainbow/Partition.lean`, `Rainbow/NotMatroid.lean`, `Rainbow/Doubling.lean` | `...Partition`, `...NotMatroid`, `...Doubling` | the partition matroid of the columns (the matroid `N_S` of `cor:transversal`), `U_{2,4}` and `prop:notmatroid`, `lem:doubling` and the rank of `M₁ ⊕ M₂✶` | `notes/P1x-partition-doubling.md` |
 | `Rainbow/Truncation.lean` | `SignedTropical.Rainbow.Trunc` | truncations (the padded matroids of Theorem D, Step 4) | `notes/Truncation.md` |
 | `Rainbow/Star.lean`, `Rainbow/NPHard.lean` | `SignedTropical.Rainbow.Graphs` | `prop:star`, the reduction of `prop:nphard` | `notes/P1g-graphs.md` |
 | `Rainbow/Update.lean`, `Rainbow/Validity.lean` | `SignedTropical.Rainbow.Validity` | `def:update`, `eq:update-integral`, `thm:validity` | `notes/P3-validity.md` |
-| `Rainbow/POSL.lean`, `Rainbow/POSLRank.lean`, `Rainbow/POSLAssign.lean` | `SignedTropical.Rainbow.POSL`, `...POSLAssign` | `def:posl`, `prop:posl` (with the assignment clause), the rank of `N_G` | `notes/P4-posl.md` |
+| `Rainbow/POSL.lean`, `Rainbow/POSLRank.lean` | `SignedTropical.Rainbow.POSL` | `def:posl`, `prop:posl`, the rank of `N_G` | `notes/P4-posl.md` |
 | `Rainbow/Potential.lean` | `SignedTropical.Rainbow.Potential` | `thm:potential`, the stage map and the stage bound | `notes/P5-potential.md` |
 | `Rainbow/StageLength.lean` | `SignedTropical.Rainbow.StageLength` | `thm:stagelength`: the crossing pair (in one component), the epoch with `ρ = 0`, the stage bounds `1 + (r - 1) k m` and, with a base fixed for the whole stage, `1 + k (2m - k - 1)` | `notes/StageLength.md` |
 | `Rainbow/RankOne.lean` | `SignedTropical.Rainbow.RankOne` | `cor:rankone`: components of rank at most one, every update ends an epoch, stages of at most `r` updates | `notes/StageLength.md`, Section 1.7 |
@@ -124,14 +127,13 @@ fibres of `blk : Fin m → Fin k`.
 | `greedy_intersection.tex` | `lem:path` | `Pos.mem_pos_of_isMinBase_shift` | proved |
 | `greedy_intersection.tex` | `lem:avoidable` | `Exchange.card_add_nu_le`, `card_av_add_nu`, `av_subset` | proved |
 | `greedy_intersection.tex` | `thm:D`, Step 4 (the padded matroids) | `TheoremD.isBase_pad_iff`, `padRankCircuit_rank`, `minCommonBaseWeight_pad` | proved |
-| `greedy_intersection.tex` | `prop:assign-pos` | `Partition.theta_eq_sup'`, `Partition.pos_eq`, `Partition.pos_eq_restrict` | proved |
 | `greedy_intersection.tex` | `prop:notmatroid` | `NotMatroid.theta_values`, `pos_two`, `pos_two_not_exchange`, `pos_two_not_matroid` | proved |
 | `greedy_intersection.tex` | `lem:doubling`; `thm:D`, Steps 1 and 2 | `Doubling.doubling`, `isRainbowBase_iff`, `opt_eq`, `rank_double_eq`, `rk_pair` | proved |
 | `greedy_intersection.tex` | `prop:star` | `Graphs.isRainbowSpanningTree_star_iff`, `rainbowTreePolynomial_eq_permanent` | proved |
 | `greedy_intersection.tex` | `prop:nphard`, Steps 2 to 4 (the reduction) | `Graphs.exists_rainbowSpanningTree_theta_le_iff`, `rank_reduction` | proved; complexity classes cited |
 | `greedy_intersection.tex` | `def:update`, the paragraph after it, `eq:update-integral` | `Validity.tau`, `lam`, `update`, `isLeast_tau`, `mem_Av_iff_lam_le`, `volume_eq`, `update_eq_integral` | proved |
 | `greedy_intersection.tex` | `thm:validity` | `Validity.validity`, `psi_update`, `isMinBase_update`, `nu_le_nu_update` | proved |
-| `greedy_intersection.tex` | `def:posl`, `prop:posl` | `POSL.u`, `POSL.N`, `isAdmissible`, `prop_posl`, `N_eq_NG`, `POSLAssign.isBase_N_iff_restrict` | proved |
+| `greedy_intersection.tex` | `def:posl`, `prop:posl` | `POSL.u`, `POSL.N`, `isAdmissible`, `prop_posl`, `N_eq_NG` | proved |
 | `greedy_intersection.tex` | `lem:events` | `Events.entry_spec`, `Events.mem_PO_iff`, `Events.fwV_le_iff`, `Events.sameCluster_iff`, `Events.bott_inLev`, `Events.uval_inLev`, `Events.ord_iff`, `Events.Qv_inLev` | proved |
 | `greedy_intersection.tex` | `thm:potential` | `Potential.potential`, `stage_bound`, `stageMap_eq_self`, `card_piPairs_le` | proved |
 | `greedy_intersection.tex` | `thm:stagelength` | `StageLength.exists_crossing_pair`, `crossPairs_ssubset`, `av_ne_of_rk_eq_zero`, `av_ne_of_card_av_eq`, `lt_of_nu_iterate_eq`, `resolvedPairs_ssubset`, `le_of_nu_iterate_eq`, `Schedule.validLength_stageLength` | proved |

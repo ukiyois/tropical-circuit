@@ -5,8 +5,7 @@ Natural-language companion of `SignedTropical/Rainbow/POSL.lean` and
 `daishu/paper/greedy_intersection.tex`, Section 4.5 (Definition `def:posl`, Proposition
 `prop:posl`, Steps 1 to 5 of its proof) and Lemma `lem:observer`, Steps 1, 2, 3 and 5 (the
 mathematical content, not the circuit); the referee-corrected Steps 1 to 3 are in
-`daishu/docs/phase2a-rainbow-2026-10-11.md`, Section 4.2.  The assignment clause of Proposition
-`prop:posl` (Step 6) is not formalized here, by the coordinator's instruction (Section 5).
+`daishu/docs/phase2a-rainbow-2026-10-11.md`, Section 4.2.
 
 Build status: `lake build SignedTropical.Rainbow.POSL` and `lake build
 SignedTropical.Rainbow.POSLRank` succeed with no error and no warning.  No `sorry`, `admit`,
@@ -327,7 +326,6 @@ Theorem 14, Step 3.
 | `prop:posl`, (F5) with levels `{0} ∪ {|v_e - v_f|}` | `levels`, `N_eq_N_of_levels` | `POSL.lean` | proved |
 | `prop:posl`, admissible | `isAdmissible`, `prop_posl` | `POSL.lean` | proved |
 | `prop:posl`, Step 5, determined by `G_t` | `Gt`, `POG`, `linkG`, `uG`, `NG`, `u_eq_uG`, `N_eq_NG`, `N_eq_of_Gt_eq` | `POSL.lean` | proved |
-| `prop:posl`, assignment clause (Step 6) | none | none | not done (Section 5) |
 | `lem:observer`, Step 1 (`PO` by rank queries) | `mem_POG_iff` | `POSLRank.lean` | proved |
 | `lem:observer`, Step 2 (order read from `G`) | `uG_lt_uG_iff`, `clusterG`, `repsG` | `POSLRank.lean` | proved |
 | `lem:observer`, Step 3 (`eq:rank-mu` within components) | `rk_minBases_eq_sum_comp`, `rk_N`, `rk_NG`, `belowG` | `POSLRank.lean` | proved |
@@ -391,10 +389,6 @@ Theorem 14, Step 3.
 
 ## 5. Not done
 
-* **The assignment clause of Proposition `prop:posl` (Step 6):** for the partition matroid of
-  the columns of a bipartite graph, `N(t)` is the column matroid restricted to the threshold
-  graph `{D ≤ t}`.  Skipped by the coordinator's instruction: it needs the partition matroid of
-  `Rainbow/Partition.lean` (agent P1x), which was not finished.  The coordinator will handle it.
 * The counterexample in the remark after Definition `def:posl` (Section 3, item 8).
 * The Boolean circuit of Lemma `lem:observer` and its size belong to the observer module
   (agent P6c); this module supplies its mathematical content (Theorems 14, 16 to 18,

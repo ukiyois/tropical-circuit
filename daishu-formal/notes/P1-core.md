@@ -111,5 +111,5 @@ equality for it, so `Opt(w) ≤ w(B) = Ψ(p) ≤ Opt(w)`.
 
 ## 5. Not done here
 
-Proposition `prop:assign-pos`, Proposition `prop:notmatroid` and Lemma `lem:doubling` are agent
-P1x's (`Partition.lean`, `NotMatroid.lean`, `Doubling.lean`).
+Proposition `prop:notmatroid` and Lemma `lem:doubling` are in `NotMatroid.lean` and
+`Doubling.lean` (notes/P1x-partition-doubling.md).

@@ -35,7 +35,6 @@ import SignedTropical.Rainbow.Update
 import SignedTropical.Rainbow.Validity
 import SignedTropical.Rainbow.POSL
 import SignedTropical.Rainbow.POSLRank
-import SignedTropical.Rainbow.POSLAssign
 import SignedTropical.Rainbow.Star
 import SignedTropical.Rainbow.NPHard
 import SignedTropical.Rainbow.Potential
