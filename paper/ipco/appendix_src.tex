@@ -1,0 +1,236 @@
+% Source of appendix.tex.  build_appendix.py fills each %%...%% placeholder from
+% ../greedy_intersection.tex.
+
+\section{Proofs for Section~\texorpdfstring{\ref{sec:model}}{2}}
+\label{app:model}
+
+We use the following classical facts~\cite{oxley11,schrijver03}.
+
+%%ENV:lem:minbases%%
+
+Explicitly, $M^{u}$ is the direct sum, over the values $\ell$ of $u$, of the
+matroids $(M|\{u\le\ell\})/\{u<\ell\}$ on the level sets $\{u=\ell\}$, so its
+rank function is read from that of $M$: if $\ell_1<\cdots<\ell_q$ are the values
+of $u$ and $U_i=\{u\le\ell_i\}$, $U_0=\varnothing$, then
+\begin{equation}
+  r_{M^{u}}(A)=\sum_{i=1}^{q}\Bigl(r\bigl(U_{i-1}\cup(A\cap\{u=\ell_i\})\bigr)-r(U_{i-1})\Bigr).
+  \label{eq:rank-mu}
+\end{equation}
+
+The two expressions in Definition~\ref{def:ti} agree, as $G_t(D)=G_{s_i}(D)$ for
+$t\in[s_i,s_{i+1})$.  If $F(E)=0$, the upper limit $s_m=\max_eD_e$ can be replaced
+by $\infty$, as $G_t(D)=E$ for $t\ge s_m$.
+
+%%PROOFREF:thm:compiler%%
+
+%%ENV:cor:integer%%
+
+%%PROOF:cor:integer%%
+
+%%PROOFREF:cor:levels%%
+
+\section{Proofs for Section~\texorpdfstring{\ref{sec:greedy}}{3}}
+\label{app:greedy}
+
+%%PROOFREF:lem:greedy%%
+
+%%PROOFOF:thm:A%%
+
+%%PROOFOF:thm:B%%
+
+%%ENV:cor:equiv%%
+
+%%PROOFREF:cor:classes%%
+
+A Turing machine that runs in time $T$ on inputs of a fixed length is simulated
+by a Boolean circuit of size $O(T\log T)$~\cite{pippenger-fischer79}.  So every
+matroid whose rank function is computable in time polynomial in $m$ and in the length of a fixed
+description has a Boolean rank circuit, and by Theorem~\ref{thm:A} a
+$(\max,+,-)$-circuit for $h_M$, of size polynomial in these two quantities.
+
+%%ENV:cor:count%%
+
+%%PROOF:cor:count%%
+
+\section{Proofs for Section~\texorpdfstring{\ref{sec:rainbow}}{4}}
+\label{app:rainbow}
+
+\subsection{Setting and the Lagrangian}
+\label{app:lagr}
+
+The definitions of Section~\ref{sec:lagr} and Lemmas~\ref{lem:avoidable}
+and~\ref{lem:augment} apply verbatim to every partition of a finite ground set
+into any number of blocks; Appendix~\ref{app:two} uses them in this form.
+Rainbow independent sets of $M^{v}$ extend to minimum bases of $v$, and a minimum
+base meeting $j$ blocks contains a rainbow set of size $j$; so $\nu_0$ is the
+largest number of blocks met by a minimum base of $v$, and $S_0$ is the set of
+blocks missed by some minimum base meeting $\nu_0$ blocks.
+
+%%PROOFREF:lem:duality%%
+
+%%ENV:prop:star%%
+
+%%PROOF:prop:star%%
+
+\subsection{Possibly Optimal Bases and Two Obstacles}
+\label{app:pos}
+
+%%PROOFREF:prop:pos%%
+
+%%ENV:lem:path%%
+
+%%PROOF:lem:path%%
+
+\begin{proof}[Proof of Proposition~\ref{prop:obstacles}(1)]
+%%PROOFBODY:prop:notmatroid%%
+\end{proof}
+
+\begin{proof}[Proof of Proposition~\ref{prop:obstacles}(2)]
+%%PROOFBODY:prop:nphard%%
+\end{proof}
+
+\subsection{The Update}
+\label{app:update}
+
+\begin{proof}[Proof of Lemma~\ref{lem:updint}]
+By (F2) independent sets of $N(t)$ stay independent in $N(t')$ for $t\le t'$, and
+$\nu(N(0))=\nu_0\ge r$ by (F1), so
+\[
+  r\le\nu(N(0))\le\nu(N(t))\le\nu(N(t'))\qquad(t\le t').
+\]
+Moreover $\nu(N(t))=k>r$ for large $t$ by (F4), and by (F5) both sets of levels in
+Definition~\ref{def:update} are unions of intervals $[c_i,c_{i+1})$ and
+$[c_q,\infty)$, so the minima exist.  For $t<\tau$ we have $\nu(N(t))=r$; a base of
+$N(t)$ meeting exactly $r$ blocks contains a rainbow independent set of size $r$
+missing the same blocks, and a rainbow independent set of size $r$ extends to a
+base of $N(t)$ meeting no further block.  With (F2) this gives
+$b\in\Av(N(t))\iff\lambda_b\le t$ for $t<\tau$, and as
+$\mathbf 1[\nu(N(t))\le r]=1$ exactly for $t<\tau$,
+\[
+  \int_0^{\infty}\mathbf 1\bigl[\nu(N(t))\le r\bigr]\;\mathbf 1\bigl[b\in\Av(N(t))\bigr]\,dt
+  =\int_0^{\tau}\mathbf 1[\lambda_b\le t]\,dt=(\tau-\lambda_b)_+=a_b.\qedhere
+\]
+\end{proof}
+
+%%ENV:lem:avoidable%%
+
+%%PROOF:lem:avoidable%%
+
+%%PROOFREF:thm:validity%%
+
+\subsection{Single Linkage on Possibly Optimal Elements}
+\label{app:posl}
+
+Both inequalities in Definition~\ref{def:posl} are needed: with $v_g\le v_f-t$ in
+$\PO_t$, (F1) fails for $U_{1,3}$ and $v=(0,0,1)$, and with $|v_x-v_y|<t$ in the
+linkage, the two elements of value $0$ there form two clusters at scale $0$ that
+are not ordered.
+
+%%PROOFREF:prop:posl%%
+
+\subsection{Breakpoints}
+\label{app:events}
+
+%%PROOFREF:lem:events%%
+
+\subsection{Termination}
+\label{app:term}
+
+The ties in $\Pi(v)$ are needed: on the cycle matroid of $K_4$ with the edges
+$01$, $02$, $03$, $12$, $13$, $23$ in the blocks $R_1$, $R_1$, $R_1$, $R_1$, $R_2$,
+$R_3$ and $v=(0,0,3,1,2,2)$, where $\nu_0=2$, $S_0=\{2,3\}$, $\tau=1$ and
+$a=(0,1,1)$, the update adds the pairs $(13,12)$ and $(23,12)$ to $\Pi$, both with
+equality; with strict inequality, item 3 of Theorem~\ref{thm:potential} fails.
+
+%%PROOFREF:thm:potential%%
+
+%%CROSSING%%
+
+%%STAGE:lemma%%
+
+%%STAGE:theorem%%
+
+%%PROOFREF:cor:rankone%%
+
+\subsection{The Circuit}
+\label{app:circuit}
+
+%%PROOFREF:lem:augment%%
+
+%%PROOFREF:lem:observer%%
+
+%%PROOFREF:lem:oneupdate%%
+
+%%PROOFOF:thm:C%%
+
+\section{Proofs for Section~\texorpdfstring{\ref{sec:two}}{5}}
+\label{app:two}
+
+%%PROOFREF:lem:doubling%%
+
+%%PROOFOF:thm:D%%
+
+The circuit of Lemma~\ref{lem:augment} computes the largest size of a rainbow
+independent set, that is, it solves unweighted matroid intersection with a
+partition matroid.  Transversal matroids have rank functions of this kind, and
+gammoids are restrictions of their duals, so Theorem~\ref{thm:A} applies to
+both.
+
+%%ENV:cor:transversal%%
+
+%%PROOF:cor:transversal%%
+
+\section{Formal Verification and Computational Checks}
+\label{app:checks}
+
+\paragraph{Formal proofs.}  A Lean~4 development with Mathlib, both at version
+4.32.0, proves the results listed below with the constants stated in the paper, for the
+matroids of Mathlib's \texttt{Matroid} on $\{0,\ldots,m-1\}$.
+
+For Sections~\ref{sec:model} and~\ref{sec:greedy} it proves
+Lemma~\ref{lem:minbases}, the equality of the two expressions in
+Definition~\ref{def:ti}, Theorem~\ref{thm:compiler},
+Corollaries~\ref{cor:integer} and~\ref{cor:levels}, Lemma~\ref{lem:greedy},
+Theorems~\ref{thm:A} and~\ref{thm:B}, and Corollary~\ref{cor:classes}.  For
+Corollary~\ref{cor:count} it proves the count of Step~1 and the conclusion in an
+explicit form: for $m\ge128$, at most a fraction $2^{-\lfloor2^{m}/m^{3}\rfloor}$
+of the matroids on $m$ labeled elements have a $(\max,+,-)$-circuit of size less
+than $2^{m/2}/m^{2}$ that computes $h_M$ on $\{0,1\}^{E}$.
+
+For Sections~\ref{sec:rainbow} and~\ref{sec:two} it proves
+Lemmas~\ref{lem:duality}, \ref{lem:path}, \ref{lem:updint}, \ref{lem:avoidable},
+\ref{lem:events}, \ref{lem:crossing}, \ref{lem:augment}, \ref{lem:observer},
+\ref{lem:oneupdate} and~\ref{lem:doubling}, Propositions~\ref{prop:star},
+\ref{prop:pos} and~\ref{prop:posl}, Proposition~\ref{prop:obstacles}(1),
+Theorems~\ref{thm:validity}, \ref{thm:potential} and~\ref{thm:stagelength},
+Corollary~\ref{cor:rankone}, Theorem~\ref{thm:C} with the size
+$3328\,k^{3}m^{4}(s+m)+2$, and $1390\,k^{3}m^{3}(s+m)+2$ when every component of
+$M$ has rank at most one, Theorem~\ref{thm:D} with the sizes
+$3328\cdot1200\,m^{7}(s_1+s_2+m)+2$ for common bases and
+$3328\cdot653313\,m^{7}(s_1+s_2+m)+3$ for common independent sets, and
+Corollary~\ref{cor:transversal}.  For Proposition~\ref{prop:obstacles}(2) it
+proves the reduction, Steps 2 to 4, for every multigraph $H$ and every
+$h\ge|V(H)|,|C|$; the complexity classes are not formalized, and the
+NP-completeness of the rainbow path problem is cited.
+Proposition~\ref{prop:ladder} is not formalized; it is checked by computation
+below.  Uniformity, a property of the algorithm that produces the circuits, is
+not formalized either.  The following have no Lean statements:
+Corollary~\ref{cor:equiv}, which combines Theorems~\ref{thm:A} and~\ref{thm:B};
+the remark on simulating computations by Boolean circuits in
+Appendix~\ref{app:greedy}; and the two examples opening Appendices~\ref{app:posl}
+and~\ref{app:term}.  The main
+theorems depend on no axioms beyond the three standard axioms of Lean, and the
+build reports no warnings.
+
+%%CHECKS%%
+
+\section{Stage Length of PO-SL}
+\label{app:scope}
+
+On the following inputs, the stage length of PO-SL is not bounded in terms of
+$r$ and $k$ alone, while the exact family $\Pos_t$, which is not admissible,
+needs one update.
+
+%%ENV:prop:ladder%%
+
+%%PROOF:prop:ladder%%
