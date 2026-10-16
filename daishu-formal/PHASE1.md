@@ -741,18 +741,18 @@ concrete non-trivial matroids, and the circuits compute values that depend on th
 |---|---|---|
 | `Circuit.lean` | 348 | circuits, homomorphism lemma, builders |
 | `Inline.lean` | 166 | inlining |
-| `Models.lean` | 128 | gate sets, binary values |
+| `Models.lean` | 138 | gate sets, binary values |
 | `Sorting.lean` | 163 | insertion-sort network |
 | `GapSum.lean` | 188 | gap sum, lem:bit, layer cake |
 | `Lift.lean` | 173 | lem:lift |
-| `Compiler.lean` | 531 | thm:compiler, cor:integer-observable |
+| `Compiler.lean` | 548 | thm:compiler, cor:integer-observable |
 | `Lattice.lean` | 383 | prop:sugeno, thm:lattice |
-| `Matroid.lean` | 244 | greedy as a gap sum |
-| `TheoremA.lean` | 326 | Theorem A |
+| `Matroid.lean` | 258 | greedy as a gap sum |
+| `TheoremA.lean` | 329 | Theorem A |
 | `Converse.lean` | 690 | Theorem B |
 | `Subtractionfree.lean` | 481 | Corollary F |
-| `Binary.lean` | 950 | Corollary C, binary matroids |
-| `Counting.lean` | 293 | Corollary D |
+| `Binary.lean` | 671 | Corollary C, binary matroids |
+| `Counting.lean` | 284 | Corollary D |
 | `Polytope.lean` | 87 | Corollary E |
 | `Examples.lean` | 190 | sanity examples |
-| total | 5341 | |
+| total | 5097 | |

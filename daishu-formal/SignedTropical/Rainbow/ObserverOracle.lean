@@ -1,35 +1,36 @@
 import SignedTropical.Rainbow.POSLRank
 import SignedTropical.Rainbow.MICircuit
+import SignedTropical.Rainbow.Events
 import SignedTropical.BoolAlg.Rel
 
 /-!
-# The observer, Steps 1 to 3: exchange tests for `N_G`
+# The observer, Steps 1 and 2: the context from the event bits, and the exchange tests
 
-`greedy_intersection.tex`, Lemma `lem:observer`, Steps 1 to 3.  A Boolean circuit reads a
-relation `G ⊆ E × E` (`relR m`, entry `(g, f)` the bit `[(g, f) ∈ G]`, `relBits`) and computes once
-a *context* (`Ctx`, `ctxR`), from which a second circuit for each `y`, the *exchange test* of `y`,
-decides independence in `N_G` of the sets `A ∋ y` with `A - y` independent, the only sets on which
-the matroid intersection circuit (`Rainbow/MICircuit.lean`) uses the test of `y`.  The rank
-circuit of `M` (size `s`, the hypothesis of Theorem `thm:A`) is run on computed wires (`runB`,
-`rankB`).
+`greedy_intersection.tex`, Lemma `lem:observer`, Steps 1 and 2.  A Boolean circuit reads the
+*event bits* (`Events.qn m` inputs: the entry bits `[t_x ≤ t]`, the merge bits `[T_xy ≤ t]` and
+the order bits `[U_xy ≤ t]` of `Rainbow/Events.lean`) and computes once a *context* (`Ctx`,
+`ctxR`), from which a second circuit for each `y`, the *exchange test* of `y`, decides
+independence in `N_G` of the sets `A ∋ y` with `A - y` independent, the only sets on which the
+matroid intersection circuit (`Rainbow/MICircuit.lean`) uses the test of `y`.  The rank circuit
+of `M` (size `s`, the hypothesis of Theorem `thm:A`) is run on computed wires (`runB`, `rankB`).
 
-**The context** (`ctxB`, `ctxB_impl`, `ctxCost m s = 2m³ + 8m² + m(3s + 5⌈log₂(m+1)⌉ + 2) + 1`
-gates), with its value `ctxV`:
+**The context** (`evCtxB`, `evCtxB_impl`, `m(2m + s)` gates), with its value `evCtxV`:
 
-* Step 1 (`poB`): `f ∈ PO_G` iff `r({g : (g, f) ∉ G}) < r({g : (g, f) ∉ G} + f)` (`poV_relBits`),
-  two rank runs and a comparison for each `f`;
-* Step 2: the links `(x, y), (y, x) ∈ G` for `x, y ∈ PO_G` in one component (`linksB`; the
-  components are fixed, so this choice costs no gate), Warshall's algorithm for the clusters
-  (`clB`, `clV_relBits`), and the order bits `ordV` (`ordB`), which at `G = G_t`, `t ≥ 0`, are
-  `[u_G(x) < u_G(y)]` within components (`ordP_iff`);
-* Step 3, the part independent of the set: the ranks `r(Below(y))` (`rkbB`), where `Below(y)` is
-  the set of elements below `y` in the order (`belowP`, equal to `Below_G(x)` of `rk_NG` for the
-  representative `x` of the cluster of `y`, `belowP_eq_of_mem_clusterG`, `belowP_eq_belowG`).
+* Step 1: the bits of `PO` are the entry bits, `false` at the loops; the cluster bits are the
+  merge bits within components (`Events.Kr`), and the bits of `PO` on the diagonal; the order
+  bits are `P_x ∧ ¬[U_xy ≤ t]` within components (`andNotB`, two gates each).  The components and
+  the loops are fixed data of `M`, so these choices cost no gate.
+* The part of Step 2 independent of the set: the ranks `r(Below(x))` (`rkbB`), one rank query
+  each, where `Below(x)` is the set of elements below `x` in the order (`belowP`, equal to
+  `Below_G(x)` of `rk_NG` for the representative `x` of the cluster of `y`,
+  `belowP_eq_of_mem_clusterG`, `belowP_eq_belowG`).
 
-For every relation `G`, the context computed from `G` is `ctxOf M G` (`ctxV_relBits`), whose
-fields are the sets above, read from `G`.
+At the event bits of `t ≥ 0` the context is the context `ctxOf M G_t` of the relation
+`G_t = {(e, f) : v_f - v_e ≤ t}` (`evCtxV_eq`): the set `PO_t`, the clusters, the order of the
+clusters within components (`OrdP`, `ordP_iff`) and the ranks of the sets `Below(x)`, by
+`Events.mem_PO_iff`, `Events.sameCluster_iff` and `Events.ord_iff`.
 
-**The exchange test of `y`** (Step 3; `locB`, `locB_impl`,
+**The exchange test of `y`** (Step 2; `locB`, `locB_impl`,
 `locCost m s = s + 2m + 18⌈log₂(m+1)⌉ + popCost m + 3 ≤ s + 42(m + 1)` gates per test):
 `[y ∈ PO]` and `r(Below(y) ∪ (A ∩ Lev(y))) - r(Below(y)) = |A ∩ Lev(y)|`, with `Lev(y)` the
 cluster of `y` (`locV`), one rank run.  By the rank formula `rk_NG`, `r_{N_G}(A)` is the sum of
@@ -38,8 +39,8 @@ these terms over the representatives `x` of the clusters, each term is at most `
 `exists_repsG`, `sum_card_inter_clusterG_le`).  So `A` is independent iff `A ⊆ PO_G` and every
 term is tight, and when `A - y` is independent only the term of the cluster of `y` can fail:
 the test answers every exchange question of `N_{G_t}` at the context of `G_t`, `t ≥ 0`
-(`locV_exchOracle`, `locV_correct`).  `lem_observer_oracle` collects the two implementations,
-their sizes and the correctness.
+(`locV_exchOracle`).  `lem_observer_oracle` collects the two implementations, their sizes and
+the correctness at the event bits.
 -/
 
 open Finset
@@ -47,15 +48,13 @@ open Finset
 namespace SignedTropical.Rainbow.Observer
 
 open SignedTropical SignedTropical.BoolAlg SignedTropical.Rainbow SignedTropical.Rainbow.POSL
+  SignedTropical.Rainbow.Events
 
 variable {m n : ℕ} {M : Matroid (Fin m)}
 
 /-! ### The context of a relation -/
 
-/-- The bits of a relation `G ⊆ E × E`: entry `(g, f)` is `[(g, f) ∈ G]`. -/
-def relBits (G : Finset (Fin m × Fin m)) : Fin m → Fin m → Bool := fun g f => decide ((g, f) ∈ G)
-
-/-- The order of Step 2 read from `G`: `x`, `y` lie in one component, `x ∈ PO_G`, and `y ∉ PO_G`
+/-- The order of Step 1 read from `G`: `x`, `y` lie in one component, `x ∈ PO_G`, and `y ∉ PO_G`
 or `x`, `y` lie in different clusters with `(x, y) ∉ G`.  At `G = G_t`, `t ≥ 0`, this is
 `u_G(x) < u_G(y)` within a component (`ordP_iff`). -/
 def OrdP (M : Matroid (Fin m)) (G : Finset (Fin m × Fin m)) (x y : Fin m) : Prop :=
@@ -63,7 +62,7 @@ def OrdP (M : Matroid (Fin m)) (G : Finset (Fin m × Fin m)) (x y : Fin m) : Pro
     (y ∉ POG M G ∨ (¬SameCluster M (POG M G) (linkG G) x y ∧ (x, y) ∉ G))
 
 open Classical in
-/-- `Below(x)`: the elements below `x` in the order of Step 2. -/
+/-- `Below(x)`: the elements below `x` in the order of Step 1. -/
 noncomputable def belowP (M : Matroid (Fin m)) (G : Finset (Fin m × Fin m)) (x : Fin m) :
     Finset (Fin m) :=
   univ.filter fun y => OrdP M G y x
@@ -75,13 +74,13 @@ structure Ctx (m : ℕ) where
   po : Fin m → Bool
   /-- The cluster bits: `x` and `y` lie in one cluster. -/
   cl : Fin m → Fin m → Bool
-  /-- The order bits of Step 2. -/
+  /-- The order bits of Step 1. -/
   ord : Fin m → Fin m → Bool
   /-- The ranks `r(Below(x))`. -/
   rkb : Fin m → ℕ
 
 open Classical in
-/-- **The context of a relation `G`**: `PO_G`, the clusters, the order of Step 2, and the ranks of
+/-- **The context of a relation `G`**: `PO_G`, the clusters, the order of Step 1, and the ranks of
 the sets `Below(x)`. -/
 noncomputable def ctxOf (M : Matroid (Fin m)) (G : Finset (Fin m × Fin m)) : Ctx m where
   po f := decide (f ∈ POG M G)
@@ -91,160 +90,39 @@ noncomputable def ctxOf (M : Matroid (Fin m)) (G : Finset (Fin m × Fin m)) : Ct
 
 /-! ### The values computed by the circuits -/
 
-/-- Step 1: the bit `[f ∈ PO]` read from the bits `R` of `G`, two rank queries:
-`r({g : ¬R g f}) < r({g : ¬R g f} + f)`. -/
-noncomputable def poV (M : Matroid (Fin m)) (R : Fin m → Fin m → Bool) (f : Fin m) : Bool :=
-  decide (rk M (univ.filter fun g => (!R g f) = true) <
-    rk M (univ.filter fun g => (if g = f then true else !R g f) = true))
-
-open Classical in
-/-- Step 2, the link bits: `x`, `y` lie in one component (a fixed choice), `R x y`, `R y x`,
-and `x, y ∈ P`. -/
-noncomputable def linkV (M : Matroid (Fin m)) (R : Fin m → Fin m → Bool) (P : Fin m → Bool)
-    (x y : Fin m) : Bool :=
-  if connRel M x y then (R x y && R y x) && (P x && P y) else false
-
-/-- Step 2, the cluster bits: `P x` on the diagonal, the transitive closure of the links
-(Warshall's algorithm) elsewhere. -/
-noncomputable def clV (M : Matroid (Fin m)) (R : Fin m → Fin m → Bool) (P : Fin m → Bool)
-    (x y : Fin m) : Bool :=
-  if x = y then P x else warshallV (linkV M R P) x y
-
-open Classical in
-/-- Step 2, the order bits: for `x`, `y` in one component,
-`P x ∧ ¬(P y ∧ (Cl x y ∨ R x y))`. -/
-noncomputable def ordV (M : Matroid (Fin m)) (R : Fin m → Fin m → Bool) (P : Fin m → Bool)
-    (Cl : Fin m → Fin m → Bool) (x y : Fin m) : Bool :=
-  if connRel M x y then P x && !(P y && (Cl x y || R x y)) else false
-
-/-- Step 3, the ranks of the sets `{y : Ord y x}`. -/
+/-- Step 2, the ranks of the sets `{y : Ord y x}`. -/
 noncomputable def rkbV (M : Matroid (Fin m)) (Ord : Fin m → Fin m → Bool) (x : Fin m) : ℕ :=
   rk M (univ.filter fun y => Ord y x = true)
 
-/-- The context computed from the bits `R` of a relation. -/
-noncomputable def ctxV (M : Matroid (Fin m)) (R : Fin m → Fin m → Bool) : Ctx m :=
-  let P := poV M R
-  let Cl := clV M R P
-  let Ord := ordV M R P Cl
-  ⟨P, Cl, Ord, rkbV M Ord⟩
+open Classical in
+/-- **The context read from the event bits** `X` (Step 1): the bits of `PO` are the entry bits
+(`false` at a loop), the cluster bits are the merge bits within components (the bit of `PO` on
+the diagonal), the order bits are `P_x ∧ ¬X(qU x y)` within components, and the ranks are those
+of the sets `{y : ord y x}`. -/
+noncomputable def evCtxV (M : Matroid (Fin m)) (X : Fin (qn m) → Bool) : Ctx m :=
+  let P : Fin m → Bool := fun x => if x ∈ M.closure ∅ then false else X (qT x)
+  let Ord : Fin m → Fin m → Bool := fun x y => if Kr M x y then P x && !X (qU x y) else false
+  ⟨P, fun x y => if x = y then P x else if Kr M x y then X (qB x y) else false, Ord, rkbV M Ord⟩
 
-/-- Step 3, the rank query of the exchange test of `y`, at a context `D` and a set `A'`:
+/-- Step 2, the rank query of the exchange test of `y`, at a context `D` and a set `A'`:
 `r({z : D.ord z y} ∪ A') - D.rkb y`. -/
 noncomputable def locRankV (M : Matroid (Fin m)) (y : Fin m) (P : Ctx m × (Fin m → Bool)) : ℕ :=
   rk M (univ.filter fun z => (P.1.ord z y || P.2 z) = true) - P.1.rkb y
 
-/-- **Step 3, the exchange test of `y`** at a context `D` and a set `A`: `[y ∈ PO]` and the rank
+/-- **Step 2, the exchange test of `y`** at a context `D` and a set `A`: `[y ∈ PO]` and the rank
 query at `A' = A ∩ {z : D.cl y z}`, fitted to `⌈log₂(m+1)⌉` bits, equals `|A'|`
 (`indepOfRankV` of `BoolAlg/Count.lean`).  At the context of `G_t`, `t ≥ 0`, this is
 `[y ∈ PO_G] ∧ [r(Below(y) ∪ (A ∩ Lev(y))) - r(Below(y)) = |A ∩ Lev(y)|]` (`locV_ctxOf`). -/
 noncomputable def locV (M : Matroid (Fin m)) (y : Fin m) (P : Ctx m × (Fin m → Bool)) : Bool :=
   P.1.po y && indepOfRankV (locRankV M y) (P.1, fun z => P.2 z && P.1.cl y z)
 
-/-! ### Steps 1 and 2: the context computed from `G` is the context of `G` -/
-
-section Context
-
-variable (G : Finset (Fin m × Fin m))
-
-/-- The complement of column `f`: `{g : (g, f) ∉ G}`. -/
-theorem filter_not_relBits (f : Fin m) :
-    (univ.filter fun g => (!relBits G g f) = true) = univ.filter fun g => (g, f) ∉ G := by
-  ext g
-  simp [relBits]
-
-/-- The complement of column `f` with entry `f` set: `{g : (g, f) ∉ G} ∪ {f}`. -/
-theorem filter_ite_relBits (f : Fin m) :
-    (univ.filter fun g => (if g = f then true else !relBits G g f) = true) =
-      insert f (univ.filter fun g => (g, f) ∉ G) := by
-  ext g
-  by_cases h : g = f <;> simp [relBits, h]
-
-open Classical in
-/-- **Step 1**: the bits computed from `G` are the bits of `PO_G` (`mem_POG_iff`). -/
-theorem poV_relBits (hE : M.E = Set.univ) : poV M (relBits G) = fun f => decide (f ∈ POG M G) := by
-  funext f
-  rw [poV, filter_not_relBits, filter_ite_relBits]
-  exact decide_eq_decide.2 (mem_POG_iff hE G f).symm
-
-/-- A nonempty chain of links starts in `P`, so for `x ≠ y`, `x` and `y` lie in one cluster iff
-the transitive closure of the links relates them. -/
-theorem sameCluster_iff_transGen_of_ne {P : Set (Fin m)} {J : Fin m → Fin m → Prop} {x y : Fin m}
-    (hxy : x ≠ y) : SameCluster M P J x y ↔ Relation.TransGen (Link M P J) x y := by
-  refine ⟨fun ⟨_, h⟩ => ?_, fun h => ⟨?_, h.to_reflTransGen⟩⟩
-  · exact (Relation.reflTransGen_iff_eq_or_transGen.1 h).resolve_left (Ne.symm hxy)
-  · obtain ⟨b, hb, -⟩ := Relation.TransGen.head'_iff.1 h
-    exact hb.1
-
-open Classical in
-/-- **Step 2, the links**: the link bits computed from `G` and `PO_G` are the links. -/
-theorem linkV_eq_true_iff {x y : Fin m} :
-    linkV M (relBits G) (fun f => decide (f ∈ POG M G)) x y = true ↔
-      Link M (POG M G) (linkG G) x y := by
-  unfold linkV Link linkG relBits
-  split_ifs with h
-  · simp only [Bool.and_eq_true, decide_eq_true_eq]
-    tauto
-  · simp only [false_iff]
-    tauto
-
-open Classical in
-/-- **Step 2, the clusters**: Warshall's algorithm on the links, with the diagonal set to the
-bits of `PO_G`, gives the clusters. -/
-theorem clV_relBits : clV M (relBits G) (fun f => decide (f ∈ POG M G)) =
-    fun x y => decide (SameCluster M (POG M G) (linkG G) x y) := by
-  funext x y
-  unfold clV
-  split_ifs with hxy
-  · subst hxy
-    exact decide_eq_decide.2 ⟨SameCluster.refl, SameCluster.mem_left⟩
-  · rw [Bool.eq_iff_iff, warshallV_eq_true_iff, decide_eq_true_iff,
-      sameCluster_iff_transGen_of_ne hxy]
-    have h : (fun a b => linkV M (relBits G) (fun f => decide (f ∈ POG M G)) a b = true) =
-        Link M (POG M G) (linkG G) := by
-      funext a b
-      exact propext (linkV_eq_true_iff G)
-    rw [h]
-
-open Classical in
-/-- **Step 2, the order bits**, for every relation `G`. -/
-theorem ordV_relBits : ordV M (relBits G) (fun f => decide (f ∈ POG M G))
-    (fun x y => decide (SameCluster M (POG M G) (linkG G) x y)) =
-      fun x y => decide (OrdP M G x y) := by
-  funext x y
-  unfold ordV OrdP relBits
-  split_ifs with h
-  · rw [Bool.eq_iff_iff]
-    simp only [Bool.and_eq_true, Bool.not_eq_true', Bool.and_eq_false_iff, Bool.or_eq_false_iff,
-      decide_eq_true_eq, decide_eq_false_iff_not]
-    tauto
-  · rw [Bool.eq_iff_iff]
-    simp only [Bool.false_eq_true, false_iff, decide_eq_true_eq]
-    tauto
-
-open Classical in
-/-- The ranks read from the order bits are the ranks of the sets `Below(x)`. -/
-theorem rkbV_eq : rkbV M (fun x y => decide (OrdP M G x y)) = fun x => rk M (belowP M G x) := by
-  funext x
-  rw [rkbV, belowP]
-  congr 1
-  ext y
-  simp
-
-/-- **Steps 1 and 2**: for every relation `G`, the context computed from the bits of `G` is the
-context of `G`. -/
-theorem ctxV_relBits (hE : M.E = Set.univ) : ctxV M (relBits G) = ctxOf M G := by
-  simp only [ctxV, poV_relBits G hE, clV_relBits G, ordV_relBits G, rkbV_eq G]
-  rfl
-
-end Context
-
-/-! ### The order of Step 2 and the sets `Below(x)` -/
+/-! ### The order of Step 1 and the sets `Below(x)` -/
 
 section Order
 
 variable {G : Finset (Fin m × Fin m)} {v : Fin m → ℝ} {t : ℝ} {x y : Fin m}
 
-/-- **The order bits of Step 2** (Lemma `lem:observer`, Step 2, with `uG_lt_uG_iff`): at
+/-- **The order bits of Step 1** (Lemma `lem:observer`, Step 1, with `uG_lt_uG_iff`): at
 `G = G_t`, `t ≥ 0`, for `x`, `y` in one component, `x` lies below `y` iff
 `u_G(x) < u_G(y)`. -/
 theorem ordP_iff (ht : 0 ≤ t) :
@@ -275,7 +153,7 @@ theorem belowP_eq_belowG (hx : x ∈ POG M G) : belowP M G x = belowG M G x := b
 
 end Order
 
-/-! ### Step 3: the exchange tests -/
+/-! ### Step 2: the exchange tests -/
 
 section Clusters
 
@@ -374,11 +252,12 @@ theorem locV_ctxOf (G : Finset (Fin m × Fin m)) (y : Fin m) (A : Finset (Fin m)
   have h3 : rk M (belowP M G y ∪ (A ∩ clusterG M G y)) - rk M (belowP M G y) < 2 ^ Nat.size m :=
     lt_of_le_of_lt (Nat.sub_le _ _) (rk_lt_two_pow M _)
   simp only [locV, indepOfRankV, locRankV]
-  rw [h1, h2, Nat.mod_eq_of_lt (by rw [show (ctxOf M G).rkb y = rk M (belowP M G y) from rfl]; exact h3)]
+  rw [h1, h2, Nat.mod_eq_of_lt (by
+    rw [show (ctxOf M G).rkb y = rk M (belowP M G y) from rfl]; exact h3)]
   rfl
 
 open Classical in
-/-- **Lemma `lem:observer`, Step 3, the exchange tests are correct**: at the context of `G_t`,
+/-- **Lemma `lem:observer`, Step 2, the exchange tests are correct**: at the context of `G_t`,
 `t ≥ 0`, for every `y` and every set `A ∋ y` with `A - y` independent in `N_{G_t}`, the test of
 `y` answers `[A independent in N_{G_t}]`.  By `rk_NG`, `r_{N_G}(B)` is the sum over the
 representatives `x` of `T_x(B) = r(Below(x) ∪ (B ∩ Lev(x))) - r(Below(x)) ≤ |B ∩ Lev(x)|`, and
@@ -436,28 +315,81 @@ theorem locV_exchOracle (hE : M.E = Set.univ) (ht : 0 ≤ t) :
     rw [sum_congr rfl h2, hc'] at h1
     omega
 
-/-- **Lemma `lem:observer`, Steps 1 to 3, correctness**: for every `v` and `t ≥ 0`, the exchange
-tests read at the context computed from the bits of `G_t` answer every exchange question of
-`N_{G_t}`. -/
-theorem locV_correct (hE : M.E = Set.univ) (ht : 0 ≤ t) :
-    MI.ExchOracle (fun y => locV M y) (NG M (Gt v t)) (ctxV M (relBits (Gt v t))) := by
-  rw [ctxV_relBits _ hE]
-  exact locV_exchOracle hE ht
-
-/-! ### Step 5: the full relation -/
-
-/-- `G_t = E × E` once `t` bounds every difference `v_f - v_e`. -/
-theorem Gt_eq_univ (h : ∀ e f, v f - v e ≤ t) : Gt v t = univ := by
-  ext p
-  simp [h p.1 p.2]
-
-/-- **`E × E = G_t` for `t ≥ max v - min v`** (Lemma `lem:observer`, Step 5, and Lemma
-`lem:oneupdate`, Step 2). -/
-theorem Gt_eq_univ_of_le (ht : (⨆ e, v e) - (⨅ e, v e) ≤ t) : Gt v t = univ :=
-  Gt_eq_univ fun e f => (sub_le_sub (le_ciSup (Set.finite_range v).bddAbove f)
-    (ciInf_le (Set.finite_range v).bddBelow e)).trans ht
-
 end Local
+
+/-! ### Step 1: the context from the event bits is the context of `G_t` -/
+
+section EventContext
+
+variable {v : Fin m → ℝ} {t : ℝ}
+
+open Classical in
+/-- The bits of `PO_t` from the entry bits. -/
+theorem evPO_eq (ht : 0 ≤ t) (x : Fin m) :
+    (if x ∈ M.closure ∅ then false else decide (Qv M v (qT x) ≤ t)) =
+      decide (x ∈ POG M (Gt v t)) := by
+  rw [← PO_eq_POG, Qv_qT, tz]
+  by_cases hx : x ∈ M.closure ∅
+  · rw [if_pos hx, eq_comm, decide_eq_false_iff_not]
+    exact notMem_PO_of_loop hx
+  · rw [if_neg hx, if_neg hx]
+    exact decide_eq_decide.2 (mem_PO_iff hx ht).symm
+
+open Classical in
+/-- The order bits of `G_t` from the event bits. -/
+theorem evOrd_eq (ht : 0 ≤ t) (x y : Fin m) :
+    (if Kr M x y then (if x ∈ M.closure ∅ then false else decide (Qv M v (qT x) ≤ t)) &&
+        !decide (Qv M v (qU x y) ≤ t) else false) = decide (OrdP M (Gt v t) x y) := by
+  rw [evPO_eq ht]
+  unfold OrdP
+  rw [← PO_eq_POG, ← near_eq_linkG]
+  by_cases hK : Kr M x y
+  · rw [if_pos hK, Qv_qU, uq, if_pos hK, Bool.eq_iff_iff]
+    simp only [Bool.and_eq_true, Bool.not_eq_true', decide_eq_true_eq, decide_eq_false_iff_not,
+      mem_Gt]
+    rw [ord_iff ht hK, mem_PO_iff hK.2.1 ht]
+    exact ⟨fun h => ⟨hK.1, h⟩, fun h => h.2⟩
+  · rw [if_neg hK, eq_comm, decide_eq_false_iff_not]
+    rintro ⟨hxy, hx, -⟩
+    have hx' : x ∉ M.closure ∅ := fun h => notMem_PO_of_loop h hx
+    by_cases he : x = y
+    · subst he
+      exact hK (Kr.refl hx')
+    · exact hK (kr_of_connRel hxy he)
+
+open Classical in
+/-- **Step 1**: at the event bits of `t ≥ 0`, the context computed from the bits is the context of
+`G_t`. -/
+theorem evCtxV_eq (ht : 0 ≤ t) :
+    evCtxV M (fun j => decide (Qv M v j ≤ t)) = ctxOf M (Gt v t) := by
+  have hord : (fun x y => if Kr M x y then
+      (if x ∈ M.closure ∅ then false else decide (Qv M v (qT x) ≤ t)) &&
+        !decide (Qv M v (qU x y) ≤ t) else false) = fun x y => decide (OrdP M (Gt v t) x y) :=
+    funext fun x => funext fun y => evOrd_eq ht x y
+  refine Ctx.ext (funext fun x => evPO_eq ht x) (funext fun x => funext fun y => ?_) hord ?_
+  · show (if x = y then _ else _) = decide (SameCluster M (POG M (Gt v t)) (linkG (Gt v t)) x y)
+    rw [← PO_eq_POG, ← near_eq_linkG]
+    by_cases he : x = y
+    · subst he
+      rw [if_pos rfl, evPO_eq ht, ← PO_eq_POG]
+      exact decide_eq_decide.2 ⟨SameCluster.refl, SameCluster.mem_left⟩
+    · rw [if_neg he]
+      by_cases hK : Kr M x y
+      · rw [if_pos hK]
+        simp only [Qv_qB, bq, if_pos hK]
+        exact decide_eq_decide.2 ⟨fun h => (sameCluster_iff ht).2 ⟨hK, h⟩,
+          fun h => ((sameCluster_iff ht).1 h).2⟩
+      · rw [if_neg hK, eq_comm, decide_eq_false_iff_not]
+        exact fun h => hK ((sameCluster_iff ht).1 h).1
+  · show rkbV M _ = fun x => rk M (belowP M (Gt v t) x)
+    rw [hord]
+    funext x
+    rw [rkbV, belowP]
+    congr 1
+    ext y
+    simp
+
+end EventContext
 
 /-! ### The representation of a context -/
 
@@ -513,80 +445,37 @@ theorem rankB_impl
 
 variable (M C)
 
-/-! #### Step 1 -/
-
-/-- Step 1 for one `f`, from `(R, true)`: the complement of column `f` of `R`, two rank queries
-(without and with `f`) and a comparison. -/
-def poOneB (f : Fin m) : (Fin m → Fin m → Arg n) × Arg n → Bld BoolOp n (Arg n) :=
-  seqB (pairB (fun p => vecNotB fun g => p.1 g f) (pureB Prod.snd))
-    (seqB (pairB (fun q => rankB C q.1) fun q => rankB C fun g => if g = f then q.2 else q.1 g)
-      numLtB)
-
-/-- Step 1: the bits of `PO`, from the bits `R` of `G`; one gate `true` is shared. -/
-def poB : (Fin m → Fin m → Arg n) → Bld BoolOp n (Fin m → Arg n) :=
-  seqB (pairB (pureB fun s => s) fun _ => emit .not .const .const)
-    fun p => tabB fun f => poOneB C f p
-
-/-! #### Step 2 -/
-
-/-- The link bit of one pair before the choice of the component, three gates:
-`(R x y ∧ R y x) ∧ (P x ∧ P y)`. -/
-def linkOneB (x y : Fin m) : (Fin m → Fin m → Arg n) × (Fin m → Arg n) → Bld BoolOp n (Arg n) :=
-  seqB (pairB (fun q => emit .and (q.1 x y) (q.1 y x)) fun q => emit .and (q.2 x) (q.2 y))
-    fun p => emit .and p.1 p.2
-
-open Classical in
-/-- Keep the entries `(x, y)` of a relation with `x`, `y` in one component and replace the others
-by the constant `false`.  The components are fixed data of `M`, so this costs no gate. -/
-noncomputable def connMaskB {σ : Type} (b : σ → Bld BoolOp n (Fin m → Fin m → Arg n)) (s : σ) :
-    Bld BoolOp n (Fin m → Fin m → Arg n) := fun gs =>
-  ((b s gs).1, fun x y => if connRel M x y then (b s gs).2 x y else .const)
-
-/-- Step 2, the link bits, from `(R, P)`. -/
-noncomputable def linksB : (Fin m → Fin m → Arg n) × (Fin m → Arg n) →
-    Bld BoolOp n (Fin m → Fin m → Arg n) :=
-  connMaskB M fun q => tabB fun x => tabB fun y => linkOneB x y q
-
-/-- Step 2, the cluster bits, from `(R, P)`: Warshall's algorithm on the links, and the
-diagonal set to `P`. -/
-noncomputable def clB : (Fin m → Fin m → Arg n) × (Fin m → Arg n) →
-    Bld BoolOp n (Fin m → Fin m → Arg n) :=
-  seqB (pairB (pureB Prod.snd) (seqB (linksB M) warshallB))
-    (pureB fun q x y => if x = y then q.1 x else q.2 x y)
-
-/-- The order bit of one pair before the choice of the component, four gates:
-`P x ∧ ¬(P y ∧ (Cl x y ∨ R x y))`, from `(R, P, Cl)`. -/
-def ordOneB (x y : Fin m) :
-    (Fin m → Fin m → Arg n) × (Fin m → Arg n) × (Fin m → Fin m → Arg n) →
-      Bld BoolOp n (Arg n) :=
-  seqB (pairB (pureB fun q => q.2.1 x)
-    (seqB (seqB (pairB (pureB fun q => q.2.1 y) fun q => emit .or (q.2.2 x y) (q.1 x y))
-      fun p => emit .and p.1 p.2) fun a => emit .not a .const))
-    fun p => emit .and p.1 p.2
-
-/-- Step 2, the order bits, from `(R, P, Cl)`. -/
-noncomputable def ordB :
-    (Fin m → Fin m → Arg n) × (Fin m → Arg n) × (Fin m → Fin m → Arg n) →
-      Bld BoolOp n (Fin m → Fin m → Arg n) :=
-  connMaskB M fun q => tabB fun x => tabB fun y => ordOneB x y q
-
-/-- Step 3, the ranks of the sets `{y : Ord y x}`, from `Ord`. -/
+/-- Step 2, the ranks of the sets `{y : Ord y x}`, from `Ord`. -/
 def rkbB (Ord : Fin m → Fin m → Arg n) : Bld BoolOp n (Fin m → List (Arg n)) :=
   tabB fun x => rankB C fun y => Ord y x
 
-/-- **The context**, from the bits `R` of `G`: Step 1, then Step 2 (clusters and order), then the
-ranks of the sets `Below(x)`. -/
-noncomputable def ctxB (R : Fin m → Fin m → Arg n) : Bld BoolOp n (CtxA m n) := fun gs =>
-  let p₁ := poB C R gs
-  let p₂ := clB M (R, p₁.2) p₁.1
-  let p₃ := ordB M (R, p₁.2, p₂.2) p₂.1
-  let p₄ := rkbB C p₃.2 p₃.1
-  (p₄.1, ⟨p₁.2, p₂.2, p₃.2, p₄.2⟩)
+/-- The order bit of one pair, two gates: `P ∧ ¬u`. -/
+def andNotB : Arg n × Arg n → Bld BoolOp n (Arg n) :=
+  seqB (pairB (pureB Prod.fst) fun p => emit .not p.2 .const) fun q => emit .and q.1 q.2
 
-/-- The gates of the context: `2m³ + 8m² + m(3s + 5⌈log₂(m+1)⌉ + 2) + 1`. -/
-def ctxCost (m s : ℕ) : ℕ := 2 * m ^ 3 + 8 * m ^ 2 + m * (3 * s + 5 * Nat.size m + 2) + 1
+open Classical in
+/-- The operand of the bit of `PO` at `x`: the entry bit, and `false` at a loop. -/
+noncomputable def poArg (X : Fin (qn m) → Arg n) (x : Fin m) : Arg n :=
+  if x ∈ M.closure ∅ then .const else X (qT x)
 
-/-! #### Step 3, the exchange tests -/
+open Classical in
+/-- The order bits within components, from the event bits: `P_x ∧ ¬X(qU x y)`, two gates per
+pair, and the constant `false` outside the components. -/
+noncomputable def ordsB (X : Fin (qn m) → Arg n) : Bld BoolOp n (Fin m → Fin m → Arg n) :=
+  fun gs =>
+    let p := (tabB fun x => tabB fun y => andNotB (poArg M X x, X (qU x y))) gs
+    (p.1, fun x y => if Kr M x y then p.2 x y else .const)
+
+open Classical in
+/-- **The context from the event bits** (Step 1): the bits of `PO` and the cluster bits are chosen
+from the event bits (no gate), the order bits within components cost two gates each, then the
+ranks of the sets `Below(x)`, one rank query each. -/
+noncomputable def evCtxB : (Fin (qn m) → Arg n) → Bld BoolOp n (CtxA m n) :=
+  seqB (pairB (pureB fun X => X) (seqB (ordsB M) (pairB (pureB fun O => O) (rkbB C))))
+    (pureB fun q => ⟨poArg M q.1, fun x y => if x = y then poArg M q.1 x
+      else if Kr M x y then q.1 (qB x y) else .const, q.2.1, q.2.2⟩)
+
+/-! #### Step 2, the exchange tests -/
 
 /-- The rank query of the test of `y`, from `(D, A')`: `r({z : D.ord z y} ∪ A') - D.rkb y`. -/
 def locRankB (y : Fin m) : CtxA m n × (Fin m → Arg n) → Bld BoolOp n (List (Arg n)) :=
@@ -610,124 +499,79 @@ variable (hB : ∀ S : Finset (Fin m),
   (bitsVal (C.eval boolInterp (indicator S)) : ℕ∞) = M.eRk (S : Set (Fin m)))
 include hB
 
-/-- Step 1 for one `f`: `m + 2s + 5⌈log₂(m+1)⌉ + 2` gates. -/
-theorem poOneB_impl (f : Fin m) :
-    Impl ((relR m).prod bitR) (bitR (n := n)) (poOneB C f)
-      (m + 2 * C.size + 5 * Nat.size m + 2)
-      (fun P => decide (rk M (univ.filter fun g => (!P.1 g f) = true) <
-        rk M (univ.filter fun g => (if g = f then P.2 else !P.1 g f) = true))) :=
-  (((vecNotB_impl.pre (R := (relR m).prod bitR) (g := fun p g => p.1 g f)
-      (G := fun P g => P.1 g f) fun _ _ _ hs g => hs.1 g f).pair Impl.snd).comp
-    ((((rankB_impl hB).pre (R := (vecR m).prod bitR) (g := Prod.fst) (G := Prod.fst)
-      fun _ _ _ hs => hs.1).pair
-      ((rankB_impl hB).pre (R := (vecR m).prod bitR) (g := fun q g => if g = f then q.2 else q.1 g)
-        (G := fun Q g => if g = f then Q.2 else Q.1 g) fun _ _ _ hs g => by
-          dsimp only
-          split_ifs
-          exacts [hs.2, hs.1 g])).comp (numLtB_impl _ _))).cost (by rw [max_self]; ring)
-
-/-- **Step 1** (Lemma `lem:observer`): the bits of `PO`, `1 + m(m + 2s + 5⌈log₂(m+1)⌉ + 2)`
-gates. -/
-theorem poB_impl :
-    Impl (relR m) (vecR (n := n) m) (poB C) (1 + m * (m + 2 * C.size + 5 * Nat.size m + 2))
-      (poV M) :=
-  (Impl.extend (true_impl (relR m))).comp (Impl.tab fun f => poOneB_impl hB f)
-
-omit hB
-
-/-- The link bit of one pair, three gates. -/
-theorem linkOneB_impl (x y : Fin m) :
-    Impl ((relR m).prod (vecR m)) (bitR (n := n)) (linkOneB x y) 3
-      (fun Q => (Q.1 x y && Q.1 y x) && (Q.2 x && Q.2 y)) :=
-  ((emitAnd_impl.pre (R := (relR m).prod (vecR m)) (g := fun q => (q.1 x y, q.1 y x))
-      (G := fun Q => (Q.1 x y, Q.1 y x)) fun _ _ _ hs => ⟨hs.1 x y, hs.1 y x⟩).pair
-    (emitAnd_impl.pre (R := (relR m).prod (vecR m)) (g := fun q => (q.2 x, q.2 y))
-      (G := fun Q => (Q.2 x, Q.2 y)) fun _ _ _ hs => ⟨hs.2 x, hs.2 y⟩)).comp emitAnd_impl
-
-variable (M) in
-open Classical in
-/-- Choosing the entries of one component is free. -/
-theorem connMask_impl {σ τ : Type} {R : Rep BoolOp Bool n σ τ}
-    {b : σ → Bld BoolOp n (Fin m → Fin m → Arg n)} {c : ℕ} {F : τ → Fin m → Fin m → Bool}
-    (h : Impl R (relR m) b c F) :
-    Impl R (relR m) (connMaskB M b) c (fun t x y => if connRel M x y then F t x y else false) :=
-  h.post (g := fun L x y => if connRel M x y then L x y else .const)
-    (G := fun L x y => if connRel M x y then L x y else false) fun gs _ _ hs x y => by
-      dsimp only
-      split_ifs
-      exacts [hs x y, den_const gs]
-
-variable (M) in
-/-- The link bits, `3m²` gates. -/
-theorem linksB_impl :
-    Impl ((relR m).prod (vecR m)) (relR (n := n) m) (linksB M) (m * (m * 3))
-      (fun Q => linkV M Q.1 Q.2) :=
-  connMask_impl M (Impl.tab fun x => Impl.tab fun y => linkOneB_impl x y)
-
-variable (M) in
-/-- **Step 2, the clusters** (Lemma `lem:observer`): the links and Warshall's algorithm,
-`3m² + 2m³` gates. -/
-theorem clB_impl :
-    Impl ((relR m).prod (vecR m)) (relR (n := n) m) (clB M) (m * (m * 3) + 2 * m ^ 3)
-      (fun Q => clV M Q.1 Q.2) :=
-  ((Impl.snd.pair ((linksB_impl M).comp warshallB_impl)).comp
-    (Impl.free (R₁ := (vecR m).prod (relR m)) (R₂ := relR m)
-      (g := fun q x y => if x = y then q.1 x else q.2 x y)
-      (F := fun Q x y => if x = y then Q.1 x else Q.2 x y) fun _ _ _ hs x y => by
-        dsimp only
-        split_ifs
-        exacts [hs.1 x, hs.2 x y])).cost (by ring)
-
-/-- The order bit of one pair, four gates. -/
-theorem ordOneB_impl (x y : Fin m) :
-    Impl ((relR m).prod ((vecR m).prod (relR m))) (bitR (n := n)) (ordOneB x y) 4
-      (fun Q => Q.2.1 x && !(Q.2.1 y && (Q.2.2 x y || Q.1 x y))) :=
-  ((Impl.free (R₁ := (relR m).prod ((vecR m).prod (relR m))) (R₂ := bitR)
-      (g := fun q => q.2.1 x) (F := fun Q => Q.2.1 x) fun _ _ _ hs => hs.2.1 x).pair
-    ((((Impl.free (R₁ := (relR m).prod ((vecR m).prod (relR m))) (R₂ := bitR)
-      (g := fun q => q.2.1 y) (F := fun Q => Q.2.1 y) fun _ _ _ hs => hs.2.1 y).pair
-      (emitOr_impl.pre (R := (relR m).prod ((vecR m).prod (relR m)))
-        (g := fun q => (q.2.2 x y, q.1 x y)) (G := fun Q => (Q.2.2 x y, Q.1 x y))
-        fun _ _ _ hs => ⟨hs.2.2 x y, hs.1 x y⟩)).comp emitAnd_impl).comp
-      emitNot_impl)).comp emitAnd_impl
-
-variable (M) in
-/-- **Step 2, the order bits** (Lemma `lem:observer`), `4m²` gates. -/
-theorem ordB_impl :
-    Impl ((relR m).prod ((vecR m).prod (relR m))) (relR (n := n) m) (ordB M) (m * (m * 4))
-      (fun Q => ordV M Q.1 Q.2.1 Q.2.2) :=
-  connMask_impl M (Impl.tab fun x => Impl.tab fun y => ordOneB_impl x y)
-
-include hB
-
-/-- **Step 3, the ranks of the sets `Below(x)`**, `ms` gates. -/
+/-- **Step 2, the ranks of the sets `Below(x)`**, `ms` gates. -/
 theorem rkbB_impl :
     Impl (relR m) (Rep.pi (Fin m) (numR (n := n) (Nat.size m))) (rkbB C) (m * C.size)
       (rkbV M) :=
   Impl.tab fun x => (rankB_impl hB).pre (R := relR m) (g := fun O y => O y x)
     (G := fun O y => O y x) fun _ _ _ hs y => hs y x
 
-/-- **The context** (Lemma `lem:observer`, Steps 1 and 2, and the part of Step 3 independent of
-the set): from the bits of `G`, `ctxB` computes `ctxV`, the context of `G` (`ctxV_relBits`), with
-`ctxCost m s = 2m³ + 8m² + m(3s + 5⌈log₂(m+1)⌉ + 2) + 1` gates. -/
-theorem ctxB_impl : Impl (relR m) (ctxR (n := n) m) (ctxB M C) (ctxCost m C.size) (ctxV M) := by
-  intro gs R T hR
-  obtain ⟨hp₁, hl₁, hr₁⟩ := poB_impl hB hR
-  obtain ⟨hp₂, hl₂, hr₂⟩ := clB_impl M (s := (R, (poB C R gs).2))
-    (T := fun x => (T x, poV M (T x))) ⟨(relR m).mono hp₁ hR, hr₁⟩
-  obtain ⟨hp₃, hl₃, hr₃⟩ := ordB_impl M
-    (s := (R, (poB C R gs).2, (clB M (R, (poB C R gs).2) (poB C R gs).1).2))
-    (T := fun x => (T x, poV M (T x), clV M (T x) (poV M (T x))))
-    ⟨(relR m).mono (hp₁.trans hp₂) hR, (vecR m).mono hp₂ hr₁, hr₂⟩
-  obtain ⟨hp₄, hl₄, hr₄⟩ := rkbB_impl hB hr₃
-  -- the results of the stages persist to the end
-  have q₂ := hp₃.trans hp₄
-  have q₁ := hp₂.trans q₂
-  refine ⟨hp₁.trans q₁, ?_, (⟨(vecR m).mono q₁ hr₁, (relR m).mono q₂ hr₂, (relR m).mono hp₄ hr₃,
-    hr₄⟩ : CtxRep _ _ _)⟩
-  refine hl₄.trans ?_
-  rw [hl₃, hl₂, hl₁, ctxCost]
-  ring
+omit hB in
+/-- `P ∧ ¬u`, two gates. -/
+theorem andNotB_impl :
+    Impl (bitR.prod bitR) (bitR (n := n)) andNotB 2 (fun P => P.1 && !P.2) :=
+  ((Impl.fst.pair (emitNot_impl.pre (R := bitR.prod bitR) (g := Prod.snd) (G := Prod.snd)
+    fun _ _ _ hs => hs.2)).comp emitAnd_impl).cost (by norm_num)
+
+omit hB in
+open Classical in
+theorem poArg_rep {gs : List (Gate BoolOp n)} {X : Fin (qn m) → Arg n}
+    {T : (Fin n → Bool) → Fin (qn m) → Bool} (hX : (vecR (qn m)).rep gs X T) :
+    (vecR m).rep gs (poArg M X) fun z => (evCtxV M (T z)).po := fun x => by
+  unfold poArg
+  split_ifs with h
+  · exact Rep.congr bitR (den_const gs) fun z => by simp [evCtxV, h, boolInterp]
+  · exact Rep.congr bitR (hX (qT x)) fun z => by simp [evCtxV, h]
+
+omit hB in
+open Classical in
+theorem clArg_rep {gs : List (Gate BoolOp n)} {X : Fin (qn m) → Arg n}
+    {T : (Fin n → Bool) → Fin (qn m) → Bool} (hX : (vecR (qn m)).rep gs X T) :
+    (relR m).rep gs (fun x y => if x = y then poArg M X x else if Kr M x y then X (qB x y)
+      else .const) fun z => (evCtxV M (T z)).cl := fun x y => by
+  by_cases he : x = y
+  · subst he
+    simp only [if_true]
+    exact Rep.congr bitR (poArg_rep hX x) fun z => by simp [evCtxV]
+  · simp only [he, if_false]
+    by_cases hK : Kr M x y
+    · simp only [hK, if_true]
+      exact Rep.congr bitR (hX (qB x y)) fun z => by simp [evCtxV, he, hK]
+    · simp only [hK, if_false]
+      exact Rep.congr bitR (den_const gs) fun z => by simp [evCtxV, he, hK, boolInterp]
+
+omit hB in
+open Classical in
+/-- The order bits within components, `2m²` gates. -/
+theorem ordsB_impl :
+    Impl (vecR (qn m)) (relR (n := n) m) (ordsB M) (m * (m * 2)) fun T => (evCtxV M T).ord := by
+  intro gs X T hX
+  obtain ⟨hp, hl, hr⟩ := (Impl.tab (R := vecR (qn m)) fun x => Impl.tab fun y =>
+    andNotB_impl.pre (R := vecR (qn m)) (g := fun X => (poArg M X x, X (qU x y)))
+      (G := fun T => ((evCtxV M T).po x, T (qU x y)))
+      fun _ _ _ hs => ⟨poArg_rep hs x, hs (qU x y)⟩) hX
+  refine ⟨hp, hl, fun x y => ?_⟩
+  show Den boolInterp _ (if Kr M x y then _ else .const) _
+  by_cases hK : Kr M x y
+  · rw [if_pos hK]
+    exact Rep.congr bitR (hr x y) fun z => by simp [evCtxV, hK]
+  · rw [if_neg hK]
+    exact Rep.congr bitR (den_const _) fun z => by simp [evCtxV, hK, boolInterp]
+
+open Classical in
+/-- **The context from the event bits** (Lemma `lem:observer`, Step 1, and the part of Step 2
+independent of the set): `evCtxB` computes `evCtxV` with `m(2m + s)` gates. -/
+theorem evCtxB_impl :
+    Impl (vecR (qn m)) (ctxR (n := n) m) (evCtxB M C) (m * (m * 2) + m * C.size) (evCtxV M) :=
+  (((Impl.self (R := vecR (qn m))).pair ((ordsB_impl (M := M)).comp
+    ((Impl.self (R := relR m)).pair (rkbB_impl hB)))).comp
+    (Impl.free (R₁ := (vecR (qn m)).prod ((relR m).prod (Rep.pi (Fin m) (numR (Nat.size m)))))
+      (R₂ := ctxR m)
+      (g := fun q => ⟨poArg M q.1, fun x y => if x = y then poArg M q.1 x
+        else if Kr M x y then q.1 (qB x y) else .const, q.2.1, q.2.2⟩)
+      (F := fun t => ⟨(evCtxV M t.1).po, (evCtxV M t.1).cl, t.2.1, t.2.2⟩)
+      fun _ _ _ hs => ⟨poArg_rep hs.1, clArg_rep hs.1, hs.2.1, hs.2.2⟩)).cost (by ring)
+    |>.congr fun _ => rfl
 
 /-- The rank query of the test of `y`: `m + s + 13⌈log₂(m+1)⌉ + 1` gates. -/
 theorem locRankB_impl (y : Fin m) :
@@ -740,7 +584,7 @@ theorem locRankB_impl (y : Fin m) :
       (g := fun p => p.1.rkb y) (F := fun P => P.1.rkb y) fun _ _ _ hs => hs.1.rkb y)).comp
     (numSubB_impl _ _) |>.cost (by rw [max_self]; ring)
 
-/-- **The exchange test of `y`** (Lemma `lem:observer`, Step 3): from a context `D` and a set `A`,
+/-- **The exchange test of `y`** (Lemma `lem:observer`, Step 2): from a context `D` and a set `A`,
 `locB` computes `locV M y (D, A)` with `locCost m s` gates (`locCost_le`). -/
 theorem locB_impl (y : Fin m) :
     Impl ((ctxR m).prod (vecR m)) (bitR (n := n)) (locB C y) (locCost m C.size) (locV M y) :=
@@ -753,18 +597,6 @@ theorem locB_impl (y : Fin m) :
     (by unfold locCost; ring)
 
 omit hB in
-/-- The context costs `O(m(s + log m) + m³)` gates; explicitly at most `3ms + 17m³ + 1`. -/
-theorem ctxCost_le (m s : ℕ) : ctxCost m s ≤ 3 * m * s + 17 * m ^ 3 + 1 := by
-  have hW : m * Nat.size m ≤ m * m := Nat.mul_le_mul_left m (size_le_self m)
-  have h₁ : m ≤ m ^ 3 := Nat.le_self_pow (by norm_num) m
-  have h₂ : m ^ 2 ≤ m ^ 3 := by
-    rcases Nat.eq_zero_or_pos m with rfl | hm
-    · simp
-    · exact Nat.pow_le_pow_right hm (by norm_num)
-  unfold ctxCost
-  nlinarith
-
-omit hB in
 /-- One exchange test costs `s + O(m)` gates; explicitly at most `s + 42(m + 1)`. -/
 theorem locCost_le (m s : ℕ) : locCost m s ≤ s + 42 * (m + 1) := by
   have hW := size_le_self m
@@ -773,25 +605,26 @@ theorem locCost_le (m s : ℕ) : locCost m s ≤ s + 42 * (m + 1) := by
   omega
 
 open Classical in
-/-- **Lemma `lem:observer`, Steps 1 to 3.**  Let `M` have ground set `E = Fin m`, and let the
+/-- **Lemma `lem:observer`, Steps 1 and 2.**  Let `M` have ground set `E = Fin m`, and let the
 Boolean circuit `C` of size `s` output the binary digits of the rank of `M`.  Then:
 
-1. a circuit of `ctxCost m s ≤ 3ms + 17m³ + 1` gates computes, from the bits of a relation
-   `G ⊆ E × E`, the context `ctxV M`, which is the context of `G` (`ctxV_relBits`);
+1. a circuit of `m(2m + s)` gates computes, from the event bits, the context `evCtxV M`, which at
+   the event bits of `t ≥ 0` is the context of `G_t` (`evCtxV_eq`);
 2. for each `y`, a circuit of `locCost m s ≤ s + 42(m + 1)` gates computes, from a context `D`
    and a set `A ⊆ E`, the bit `locV M y (D, A)`;
-3. at the context of `G_t`, for every `v` and every `t ≥ 0`, these tests answer the exchange
-   questions of `N_{G_t}`: for `y ∈ A` with `A - y` independent, the bit is
-   `[A independent in N_{G_t}]`. -/
+3. at the event bits of `t ≥ 0`, for every `v`, these tests answer the exchange questions of
+   `N_{G_t}`: for `y ∈ A` with `A - y` independent, the bit is `[A independent in N_{G_t}]`. -/
 theorem lem_observer_oracle (hE : M.E = Set.univ) :
-    Impl (relR m) (ctxR (n := n) m) (ctxB M C) (ctxCost m C.size) (ctxV M) ∧
+    Impl (vecR (qn m)) (ctxR (n := n) m) (evCtxB M C) (m * (m * 2) + m * C.size) (evCtxV M) ∧
       (∀ y, Impl ((ctxR m).prod (vecR m)) (bitR (n := n)) (locB C y) (locCost m C.size)
         (locV M y)) ∧
-      ctxCost m C.size ≤ 3 * m * C.size + 17 * m ^ 3 + 1 ∧
       locCost m C.size ≤ C.size + 42 * (m + 1) ∧
       ∀ (v : Fin m → ℝ) (t : ℝ), 0 ≤ t →
-        MI.ExchOracle (fun y => locV M y) (NG M (Gt v t)) (ctxV M (relBits (Gt v t))) :=
-  ⟨ctxB_impl hB, locB_impl hB, ctxCost_le _ _, locCost_le _ _, fun _ _ ht => locV_correct hE ht⟩
+        MI.ExchOracle (fun y => locV M y) (NG M (Gt v t))
+          (evCtxV M fun j => decide (Qv M v j ≤ t)) :=
+  ⟨evCtxB_impl hB, locB_impl hB, locCost_le _ _, fun _ _ ht => by
+    rw [evCtxV_eq ht]
+    exact locV_exchOracle hE ht⟩
 
 end Circuits
 

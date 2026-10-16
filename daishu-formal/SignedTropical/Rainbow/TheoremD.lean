@@ -17,9 +17,9 @@ output the binary digits of their rank functions (the hypothesis of Theorem A).
 * Steps 1 and 3 (`exists_minCommonBase_circuit`): with a common base and a rank circuit `B` of
   `N = M₁ ⊕ M₂✶`, Theorem C (`TheoremCFinal.theoremC_final`) on `N` (`2m` elements, `m` blocks,
   rank `m`), read at `weight w`, computes the minimum weight of a common base
-  (`Doubling.opt_eq`) with at most `1664 m³ (2m)⁵ (|B| + 2m) + 2` gates.
+  (`Doubling.opt_eq`) with at most `3328 m³ (2m)⁴ (|B| + 2m) + 2` gates.
 * **Part (1)** (`theoremD_commonBase`): with the rank circuit `doubleRankCircuit` of Step 2, at
-  most `1664 m³ (2m)⁵ (s₁ + s₂ + 60m + 15) + 2 ≤ 1664 · 2400 m⁸ (s₁ + s₂ + m) + 2` gates.
+  most `3328 m³ (2m)⁴ (s₁ + s₂ + 60m + 15) + 2 ≤ 3328 · 1200 m⁷ (s₁ + s₂ + m) + 2` gates.
 * Step 4 (`minCommonBaseWeight_pad`): on `E × {1, 2}` the padded matroids
   `pad Mᵢ = (Mᵢ ⊕ U_{m,m})|_{≤m}` (`Rainbow/TheoremDRank.lean`) have the common bases
   `X × {1} ∪ Y × {2}`, `X` a common independent set of `M₁` and `M₂` and `|Y| = m - |X|`, among
@@ -28,8 +28,8 @@ output the binary digits of their rank functions (the hypothesis of Theorem A).
 * The circuit of Step 4 (`negNegCircuit`, `negNegCircuit_spec`): `u = -w` (`m` gates), the circuit
   of Steps 1 to 3 for the padded matroids, and the negation of its output.
 * **Part (2)** (`theoremD_commonIndep`): with the rank circuits `padRankCircuit` of the padded
-  matroids (`2m` elements), at most `1664 · 8192 m⁸ (s₁ + s₂ + 268m + 51) + m + 3 ≤
-  1664 · 2613249 m⁸ (s₁ + s₂ + m) + 3` gates.
+  matroids (`2m` elements), at most `3328 · 2048 m⁷ (s₁ + s₂ + 268m + 51) + m + 3 ≤
+  3328 · 653313 m⁷ (s₁ + s₂ + m) + 3` gates.
 * **Theorem `thm:D`** (`theoremD`): both parts, under the hypotheses of the paper.
 -/
 
@@ -128,13 +128,13 @@ theorem weightCircuit_spec (C : Circuit STOp (m + m)) :
 let `B` be a Boolean circuit that outputs in binary the rank in `N = M₁ ⊕ M₂✶` of every
 `S ⊆ E × {1, 2}`.  Theorem C on `N` (`2m` elements, the `m` blocks `{(e, 1), (e, 2)}`, rank `m`),
 read at `weight w`, computes the minimum weight of a common base at every `w` with at most
-`1664 m³ (2m)⁵ (|B| + 2m) + 2` gates. -/
+`3328 m³ (2m)⁴ (|B| + 2m) + 2` gates. -/
 theorem exists_minCommonBase_circuit (hE₁ : M₁.E = Set.univ) (hE₂ : M₂.E = Set.univ)
     (hX : ∃ X : Finset (Fin m), M₁.IsBase (X : Set (Fin m)) ∧ M₂.IsBase (X : Set (Fin m)))
     (B : Circuit BoolOp (m + m))
     (hB : ∀ S : Finset (Fin (m + m)), (bitsVal (B.eval boolInterp (indicator S)) : ℕ∞)
       = (double M₁ M₂).eRk (S : Set (Fin (m + m)))) :
-    ∃ C : Circuit STOp m, C.size ≤ 1664 * (m ^ 3 * (m + m) ^ 5 * (B.size + (m + m))) + 2 ∧
+    ∃ C : Circuit STOp m, C.size ≤ 3328 * (m ^ 3 * (m + m) ^ 4 * (B.size + (m + m))) + 2 ∧
       ∀ w : Fin m → ℝ, C.eval (stInterp ℝ) w = [minCommonBaseWeight M₁ M₂ w] := by
   obtain ⟨X, h₁, h₂⟩ := hX
   have hrank := rank_eq_rank_of_isBase h₁ h₂
@@ -146,19 +146,19 @@ theorem exists_minCommonBase_circuit (hE₁ : M₁.E = Set.univ) (hE₂ : M₂.E
 
 /-! ### Part (1): the minimum weight of a common base -/
 
-/-- `m³ (2m)⁵ (s + 60m + 15) ≤ 2400 m⁸ (s + m)`. -/
+/-- `m³ (2m)⁴ (s + 60m + 15) ≤ 1200 m⁷ (s + m)`. -/
 theorem size_commonBase_le (m s : ℕ) :
-    m ^ 3 * (m + m) ^ 5 * (s + 60 * m + 15) ≤ 2400 * (m ^ 8 * (s + m)) := by
+    m ^ 3 * (m + m) ^ 4 * (s + 60 * m + 15) ≤ 1200 * (m ^ 7 * (s + m)) := by
   rcases Nat.eq_zero_or_pos m with rfl | hm
   · simp
-  · calc m ^ 3 * (m + m) ^ 5 * (s + 60 * m + 15) = 32 * m ^ 8 * (s + 60 * m + 15) := by ring
-      _ ≤ 32 * m ^ 8 * (75 * (s + m)) := Nat.mul_le_mul_left _ (by omega)
-      _ = 2400 * (m ^ 8 * (s + m)) := by ring
+  · calc m ^ 3 * (m + m) ^ 4 * (s + 60 * m + 15) = 16 * m ^ 7 * (s + 60 * m + 15) := by ring
+      _ ≤ 16 * m ^ 7 * (75 * (s + m)) := Nat.mul_le_mul_left _ (by omega)
+      _ = 1200 * (m ^ 7 * (s + m)) := by ring
 
 /-- **Theorem `thm:D`, first part.**  Let `M₁`, `M₂` be matroids on `E = Fin m` with ground set
 `E` and a common base, and let Boolean circuits `C₁`, `C₂` of sizes `s₁`, `s₂` output `r₁(S)`,
 `r₂(S)` in binary from the indicator vector of every `S ⊆ E`.  Then a signed tropical circuit of
-size at most `1664 m³ (2m)⁵ (s₁ + s₂ + 60m + 15) + 2 ≤ 1664 · 2400 m⁸ (s₁ + s₂ + m) + 2`
+size at most `3328 m³ (2m)⁴ (s₁ + s₂ + 60m + 15) + 2 ≤ 3328 · 1200 m⁷ (s₁ + s₂ + m) + 2`
 computes the minimum weight of a common base at every `w ∈ ℝ^E`. -/
 theorem theoremD_commonBase (hE₁ : M₁.E = Set.univ) (hE₂ : M₂.E = Set.univ)
     (hC₁ : ∀ S : Finset (Fin m),
@@ -167,19 +167,19 @@ theorem theoremD_commonBase (hE₁ : M₁.E = Set.univ) (hE₂ : M₂.E = Set.un
       (bitsVal (C₂.eval boolInterp (indicator S)) : ℕ∞) = M₂.eRk (S : Set (Fin m)))
     (hX : ∃ X : Finset (Fin m), M₁.IsBase (X : Set (Fin m)) ∧ M₂.IsBase (X : Set (Fin m))) :
     ∃ C : Circuit STOp m,
-      C.size ≤ 1664 * (m ^ 3 * (m + m) ^ 5 * (C₁.size + C₂.size + 60 * m + 15)) + 2 ∧
-      C.size ≤ 1664 * 2400 * (m ^ 8 * (C₁.size + C₂.size + m)) + 2 ∧
+      C.size ≤ 3328 * (m ^ 3 * (m + m) ^ 4 * (C₁.size + C₂.size + 60 * m + 15)) + 2 ∧
+      C.size ≤ 3328 * 1200 * (m ^ 7 * (C₁.size + C₂.size + m)) + 2 ∧
       ∀ w : Fin m → ℝ, C.eval (stInterp ℝ) w = [minCommonBaseWeight M₁ M₂ w] := by
   obtain ⟨C, hC, hCe⟩ := exists_minCommonBase_circuit hE₁ hE₂ hX _
     (doubleRankCircuit_rank hE₁ hE₂ hC₁ hC₂)
   have hB := doubleRankCircuit_size_le (rank_le_card M₂) C₁ C₂
-  have h₁ : C.size ≤ 1664 * (m ^ 3 * (m + m) ^ 5 * (C₁.size + C₂.size + 60 * m + 15)) + 2 :=
+  have h₁ : C.size ≤ 3328 * (m ^ 3 * (m + m) ^ 4 * (C₁.size + C₂.size + 60 * m + 15)) + 2 :=
     hC.trans (Nat.add_le_add_right (Nat.mul_le_mul_left _ (Nat.mul_le_mul_left _ (by omega))) 2)
   refine ⟨C, h₁, h₁.trans ?_, hCe⟩
   have h₂ := size_commonBase_le m (C₁.size + C₂.size)
-  calc 1664 * (m ^ 3 * (m + m) ^ 5 * (C₁.size + C₂.size + 60 * m + 15)) + 2
-      ≤ 1664 * (2400 * (m ^ 8 * (C₁.size + C₂.size + m))) + 2 := by gcongr
-    _ = 1664 * 2400 * (m ^ 8 * (C₁.size + C₂.size + m)) + 2 := by ring
+  calc 3328 * (m ^ 3 * (m + m) ^ 4 * (C₁.size + C₂.size + 60 * m + 15)) + 2
+      ≤ 3328 * (1200 * (m ^ 7 * (C₁.size + C₂.size + m))) + 2 := by gcongr
+    _ = 3328 * 1200 * (m ^ 7 * (C₁.size + C₂.size + m)) + 2 := by ring
 
 /-! ### Step 4: common independent sets as common bases of the padded matroids -/
 
@@ -283,24 +283,24 @@ theorem negNegCircuit_spec (D : Circuit STOp m) :
 
 /-! ### Part (2): the maximum weight of a common independent set -/
 
-/-- `1664 · 8192 m⁸ (s + 268m + 51) + m + 3 ≤ 1664 · 2613249 m⁸ (s + m) + 3`. -/
+/-- `3328 · 2048 m⁷ (s + 268m + 51) + m + 3 ≤ 3328 · 653313 m⁷ (s + m) + 3`. -/
 theorem size_commonIndep_le (m s : ℕ) :
-    1664 * (8192 * (m ^ 8 * (s + 268 * m + 51))) + m + 3 ≤
-      1664 * 2613249 * (m ^ 8 * (s + m)) + 3 := by
+    3328 * (2048 * (m ^ 7 * (s + 268 * m + 51))) + m + 3 ≤
+      3328 * 653313 * (m ^ 7 * (s + m)) + 3 := by
   rcases Nat.eq_zero_or_pos m with rfl | hm
   · simp
-  · have h₁ : m ^ 8 * (s + 268 * m + 51) ≤ 319 * (m ^ 8 * (s + m)) := by
-      calc m ^ 8 * (s + 268 * m + 51) ≤ m ^ 8 * (319 * (s + m)) :=
+  · have h₁ : m ^ 7 * (s + 268 * m + 51) ≤ 319 * (m ^ 7 * (s + m)) := by
+      calc m ^ 7 * (s + 268 * m + 51) ≤ m ^ 7 * (319 * (s + m)) :=
             Nat.mul_le_mul_left _ (by omega)
-        _ = 319 * (m ^ 8 * (s + m)) := by ring
-    have h₂ : m ≤ m ^ 8 * (s + m) :=
+        _ = 319 * (m ^ 7 * (s + m)) := by ring
+    have h₂ : m ≤ m ^ 7 * (s + m) :=
       (Nat.le_self_pow (by norm_num) m).trans (Nat.le_mul_of_pos_right _ (by omega))
     nlinarith
 
 /-- **Theorem `thm:D`, second part.**  Let `M₁`, `M₂` be matroids on `E = Fin m` with ground set
 `E`, and let Boolean circuits `C₁`, `C₂` of sizes `s₁`, `s₂` output `r₁(S)`, `r₂(S)` in binary
 from the indicator vector of every `S ⊆ E`.  Then a signed tropical circuit of size at most
-`1664 · 8192 m⁸ (s₁ + s₂ + 268m + 51) + m + 3 ≤ 1664 · 2613249 m⁸ (s₁ + s₂ + m) + 3` computes the
+`3328 · 2048 m⁷ (s₁ + s₂ + 268m + 51) + m + 3 ≤ 3328 · 653313 m⁷ (s₁ + s₂ + m) + 3` computes the
 maximum weight of a common independent set at every `w ∈ ℝ^E`: Steps 1 to 3 for the padded
 matroids on `2m` elements (`padRankCircuit`, `exists_commonBase_pad`), read at `-w` on the first
 copies and `0` on the second, with the output negated (`minCommonBaseWeight_pad`).  No common
@@ -311,8 +311,8 @@ theorem theoremD_commonIndep (hE₁ : M₁.E = Set.univ) (hE₂ : M₂.E = Set.u
     (hC₂ : ∀ S : Finset (Fin m),
       (bitsVal (C₂.eval boolInterp (indicator S)) : ℕ∞) = M₂.eRk (S : Set (Fin m))) :
     ∃ C : Circuit STOp m,
-      C.size ≤ 1664 * (8192 * (m ^ 8 * (C₁.size + C₂.size + 268 * m + 51))) + m + 3 ∧
-      C.size ≤ 1664 * 2613249 * (m ^ 8 * (C₁.size + C₂.size + m)) + 3 ∧
+      C.size ≤ 3328 * (2048 * (m ^ 7 * (C₁.size + C₂.size + 268 * m + 51))) + m + 3 ∧
+      C.size ≤ 3328 * 653313 * (m ^ 7 * (C₁.size + C₂.size + m)) + 3 ∧
       ∀ w : Fin m → ℝ, C.eval (stInterp ℝ) w = [maxCommonIndepWeight M₁ M₂ w] := by
   obtain ⟨D, hD, hDe⟩ := exists_minCommonBase_circuit (M₁ := pad M₁) (M₂ := pad M₂)
     truncate_E truncate_E (exists_commonBase_pad hE₁ hE₂)
@@ -324,16 +324,16 @@ theorem theoremD_commonIndep (hE₁ : M₁.E = Set.univ) (hE₂ : M₂.E = Set.u
   have hP₁ := padRankCircuit_size_le C₁
   have hP₂ := padRankCircuit_size_le C₂
   have h₁ : (negNegCircuit (weightCircuit D)).size ≤
-      1664 * (8192 * (m ^ 8 * (C₁.size + C₂.size + 268 * m + 51))) + m + 3 := by
+      3328 * (2048 * (m ^ 7 * (C₁.size + C₂.size + 268 * m + 51))) + m + 3 := by
     rw [(negNegCircuit_spec _).1, (weightCircuit_spec D).1]
-    have h₃ : (m + m) ^ 3 * (m + m + (m + m)) ^ 5 = 8192 * m ^ 8 := by ring
+    have h₃ : (m + m) ^ 3 * (m + m + (m + m)) ^ 4 = 2048 * m ^ 7 := by ring
     rw [h₃] at hD
-    have h₄ : 8192 * m ^ 8 * ((doubleRankCircuit (padRankCircuit C₁) (padRankCircuit C₂)
+    have h₄ : 2048 * m ^ 7 * ((doubleRankCircuit (padRankCircuit C₁) (padRankCircuit C₂)
         (rank (pad M₂))).size + (m + m + (m + m))) ≤
-        8192 * (m ^ 8 * (C₁.size + C₂.size + 268 * m + 51)) := by
+        2048 * (m ^ 7 * (C₁.size + C₂.size + 268 * m + 51)) := by
       rw [Nat.mul_assoc]
       exact Nat.mul_le_mul_left _ (Nat.mul_le_mul_left _ (by omega))
-    have := Nat.mul_le_mul_left 1664 h₄
+    have := Nat.mul_le_mul_left 3328 h₄
     omega
   refine ⟨negNegCircuit (weightCircuit D), h₁, h₁.trans (size_commonIndep_le m _), fun w => ?_⟩
   rw [(negNegCircuit_spec _).2, (weightCircuit_spec D).2, hDe, minCommonBaseWeight_pad hE₁ hE₂]
@@ -342,8 +342,8 @@ theorem theoremD_commonIndep (hE₁ : M₁.E = Set.univ) (hE₂ : M₂.E = Set.u
 /-- **Theorem `thm:D` (matroid intersection).**  Let `M₁` and `M₂` be matroids on `E = Fin m`
 (ground set `E`, `|E| = m`) with Boolean circuits `C₁`, `C₂` of sizes `s₁`, `s₂` that output the
 binary digits of their rank functions, and with a common base.  Then a signed tropical circuit
-of size at most `1664 · 2400 m⁸ (s₁ + s₂ + m) + 2` computes the minimum weight of a common base
-at every `w ∈ ℝ^E`, and one of size at most `1664 · 2613249 m⁸ (s₁ + s₂ + m) + 3` computes the
+of size at most `3328 · 1200 m⁷ (s₁ + s₂ + m) + 2` computes the minimum weight of a common base
+at every `w ∈ ℝ^E`, and one of size at most `3328 · 653313 m⁷ (s₁ + s₂ + m) + 3` computes the
 maximum weight of a common independent set. -/
 theorem theoremD (hE₁ : M₁.E = Set.univ) (hE₂ : M₂.E = Set.univ)
     (hC₁ : ∀ S : Finset (Fin m),
@@ -351,9 +351,9 @@ theorem theoremD (hE₁ : M₁.E = Set.univ) (hE₂ : M₂.E = Set.univ)
     (hC₂ : ∀ S : Finset (Fin m),
       (bitsVal (C₂.eval boolInterp (indicator S)) : ℕ∞) = M₂.eRk (S : Set (Fin m)))
     (hX : ∃ X : Finset (Fin m), M₁.IsBase (X : Set (Fin m)) ∧ M₂.IsBase (X : Set (Fin m))) :
-    (∃ C : Circuit STOp m, C.size ≤ 1664 * 2400 * (m ^ 8 * (C₁.size + C₂.size + m)) + 2 ∧
+    (∃ C : Circuit STOp m, C.size ≤ 3328 * 1200 * (m ^ 7 * (C₁.size + C₂.size + m)) + 2 ∧
       ∀ w : Fin m → ℝ, C.eval (stInterp ℝ) w = [minCommonBaseWeight M₁ M₂ w]) ∧
-    (∃ C : Circuit STOp m, C.size ≤ 1664 * 2613249 * (m ^ 8 * (C₁.size + C₂.size + m)) + 3 ∧
+    (∃ C : Circuit STOp m, C.size ≤ 3328 * 653313 * (m ^ 7 * (C₁.size + C₂.size + m)) + 3 ∧
       ∀ w : Fin m → ℝ, C.eval (stInterp ℝ) w = [maxCommonIndepWeight M₁ M₂ w]) :=
   let ⟨C, _, h, hC⟩ := theoremD_commonBase hE₁ hE₂ hC₁ hC₂ hX
   let ⟨C', _, h', hC'⟩ := theoremD_commonIndep hE₁ hE₂ hC₁ hC₂

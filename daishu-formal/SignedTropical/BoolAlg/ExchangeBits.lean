@@ -5,7 +5,7 @@ import SignedTropical.Rainbow.Exchange
 # Bits of the exchange graph
 
 The values of the gadgets of `BoolAlg/Rel.lean` and `BoolAlg/Bits.lean` on the exchange graph of
-`Rainbow/Exchange.lean` (Step 4 of the proof of `lem:observer`).  Let the bits `S` mark the
+`Rainbow/Exchange.lean` (Step 3 of the proof of `lem:observer`).  Let the bits `S` mark the
 sources, `G` the arcs and `K` the sinks of the exchange graph of `I`.  Then:
 
 * `layerV G S d` marks `layer N blk I d` (`layerV_iff_mem_layer`), so `layersB` computes the

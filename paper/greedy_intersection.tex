@@ -77,12 +77,13 @@ gammoids and the duals of all of these.
 
 For weighted matroid intersection, two matroids on $m$ elements with Boolean
 rank circuits of sizes $s_1$ and $s_2$ have a signed tropical circuit of size
-$O(m^{8}(s_1+s_2+m))$ for the minimum weight of a common base, exact at every
+$O(m^{7}(s_1+s_2+m))$ for the minimum weight of a common base, exact at every
 real weight vector.  Special cases include rainbow spanning trees, whose
 generating polynomial specializes to the permanent, arborescences and the
 assignment problem.  The circuit applies a fixed schedule of updates to the
 block potentials of a Lagrangian, and each update is a threshold integral of a
-Boolean observable of the pairwise weight differences.  The observable that
+Boolean observable that changes at only $2m$ levels, which the circuit computes
+from the weights.  The observable that
 extends the assignment case exactly, the family of bases that are optimal for some
 weight within $t/2$ of the current one in every coordinate, is not a matroid and is
 NP-hard to query.  We
@@ -242,7 +243,7 @@ matroid.
 \label{thm:C}
 If a Boolean circuit of size $s$ outputs the binary digits of $r(S)$ from the
 indicator vector of $S\subseteq E$, and $M$ has a rainbow base, then a uniform
-signed tropical circuit of size $O(k^{3}m^{5}(s+m))$ computes $\Opt(w)$ at every
+signed tropical circuit of size $O(k^{3}m^{4}(s+m))$ computes $\Opt(w)$ at every
 $w\in\R^{E}$.
 \end{mainthm}
 
@@ -250,8 +251,8 @@ $w\in\R^{E}$.
 \label{thm:D}
 Let $M_1$ and $M_2$ be matroids on $E$, $|E|=m$, with Boolean rank circuits of
 sizes $s_1$ and $s_2$.  If they have a common base, a uniform signed tropical
-circuit of size $O(m^{8}(s_1+s_2+m))$ computes the minimum weight of a common base
-at every $w\in\R^{E}$.  In every case, one of size $O(m^{8}(s_1+s_2+m))$ computes
+circuit of size $O(m^{7}(s_1+s_2+m))$ computes the minimum weight of a common base
+at every $w\in\R^{E}$.  In every case, one of size $O(m^{7}(s_1+s_2+m))$ computes
 the maximum weight of a common independent set.
 \end{mainthm}
 
@@ -301,6 +302,15 @@ can be taken in a minimum base fixed for the whole stage, and a pair that has
 crossed does not cross back, which bounds a stage by
 $\min\bigl(1+(r-1)km,\,1+k(2m-k-1)\bigr)$ updates (Theorem~\ref{thm:stagelength});
 no bound in terms of $r$ and $k$ alone holds (Proposition~\ref{prop:ladder}).
+
+\paragraph{Event levels.}
+For fixed weights, PO-SL changes only at the levels where an element becomes
+possibly optimal and where two clusters merge, at most $2m$ levels besides $0$.
+An element enters at a threshold integral of the weights, and two clusters merge
+at a bottleneck distance built from the entry levels and the weight differences
+(Lemma~\ref{lem:events}).  The circuit computes these levels and runs the compiler
+at them instead of at the $m^{2}$ pairwise differences, which saves a factor $m$
+in Theorems~\ref{thm:C} and~\ref{thm:D}.
 
 \paragraph{Related work.}
 Besides the works above, Hertrich and Loho~\cite{hertrich-loho26} relate circuit
@@ -480,6 +490,38 @@ with $N=L$ gives $c_j=\CC_{f_j}(D)$, $0\le j<L$, at $3ms+mL+6m^{2}$ gates.
 gates per digit.  Since $F\mapsto\CC_F(D)$ is linear,
 \[
   y_0=\sum_{j=0}^{L-1}2^{j}c_j=\CC_{\sum_j2^{j}f_j}(D)=\CC_f(D).\qedhere
+\]
+\end{proof}
+
+The proof of Theorem~\ref{thm:compiler} reads the entries of $D$ in two roles, as
+the levels $s_i$ of Step 1 and as the values tested in Step 2, and the two roles
+can be taken by different vectors.
+
+\begin{corollary}[Compiler at given levels]
+\label{cor:levels}
+Let $\Lambda\in\R^{L}_{\ge0}$, let $0=s_0\le s_1\le\cdots\le s_L$ be its entries in
+increasing order with a zero prepended and $\Delta_i=s_{i+1}-s_i$, and let
+$Y\in\R^{q}$ have every entry among $s_0,\ldots,s_L$.  If one Boolean circuit of
+size $s$ computes $F=(F_1,\ldots,F_N):\{0,1\}^{q}\to\{0,1\}^{N}$, then a signed
+tropical circuit of size at most $\frac32L^{2}+L(1+4q+3s+N)$ computes
+\[
+  \sum_{i=0}^{L-1}\Delta_i\,F_j\bigl(\mathbf 1[Y\le s_i]\bigr),\qquad j=1,\ldots,N,
+\]
+from $\Lambda$ and $Y$, where $\mathbf 1[Y\le s_i]$ has the entries
+$\mathbf 1[Y_l\le s_i]$.
+\end{corollary}
+
+\begin{proof}
+Step 1 of the proof of Theorem~\ref{thm:compiler} sorts $\Lambda$.  In Step 2, for
+$i<L$ and an entry $Y_l$, which occurs among $s_0,\ldots,s_L$, either $Y_l\le s_i$
+or $Y_l\ge s_{i+1}$, so \eqref{eq:bit} holds with $Y_l$ in place of $D_e$:
+\[
+  \max\bigl(\Delta_i-\max(Y_l-s_i,0),\,0\bigr)=\Delta_i\,\mathbf 1[Y_l\le s_i].
+\]
+Steps 3 and 4 are unchanged, with $L$ gaps and $q$ membership values per gap, and
+the count is
+\[
+  \tfrac32L(L-1)+L\bigl(1+4q+3s+N\bigr)\le\tfrac32L^{2}+L\bigl(1+4q+3s+N\bigr).\qedhere
 \]
 \end{proof}
 
@@ -1539,6 +1581,115 @@ and these edges lie within $t$ of the column minimum, in one cluster.  Hence the
 bases of $N(t)$ are those of the column matroid restricted to $\{D\le t\}$.
 \end{proof}
 
+Proposition~\ref{prop:posl} reads $N(t)$ from the $m^{2}$ bits of $G_t$, which
+change at the $m^{2}$ levels $|v_e-v_f|$.  Fewer levels suffice.  Call two elements
+\emph{joined} if they are non-loops in one connected component of $M$, and fix an
+order of $E$.
+
+\begin{lemma}[Event levels]
+\label{lem:events}
+Fix $v\in\R^{E}$.
+\begin{enumerate}
+  \item For a non-loop $x$ let $D^{x}_g=\max(v_x-v_g,0)$ and
+        $\phi_x(S)=\mathbf 1[x\in\cl(E\setminus S)]$, and put
+        $t_x=\CC_{\phi_x}(D^{x})$; put $t_x=0$ at a loop.  For $t\ge0$, a non-loop
+        $x$ lies in $\PO_t$ if and only if $t\ge t_x$, and a loop lies in no
+        $\PO_t$.
+  \item For joined $x,y$ let $W_{xx}=t_x$ and $W_{xy}=\max(t_x,t_y,|v_x-v_y|)$ for
+        $x\ne y$, and let $T_{xy}$ be the least value of
+        $\max_iW_{a_ia_{i+1}}$ over the sequences $x=a_0,a_1,\ldots,a_n=y$ of joined
+        elements with $n\ge1$.  For $t\ge0$, $x$ and $y$ lie in one cluster at scale
+        $t$ if and only if $T_{xy}\le t$.
+  \item Let $\sigma_x$ be the least $T_{xy}$ over the $y<x$ joined to $x$, and
+        $\sigma_x=0$ if there is none, and let $\Lambda$ consist of the $2m$ values
+        $t_x$ and $\sigma_x$, $x\in E$.  Then $T_{xy}\in\Lambda\cup\{0\}$ for all
+        joined $x,y$.
+  \item For joined $x,y$ let
+        $\omega_{xy}=\max\bigl(t_x,t_y,\min(T_{xy},v_y-v_x)\bigr)$.  Then
+        $\omega_{xy}\in\Lambda\cup\{0\}$, and for $t\ge0$, $u_t(x)<u_t(y)$ if and
+        only if $t_x\le t<\omega_{xy}$.
+\end{enumerate}
+In particular $N(t)$ is constant on every interval between consecutive values of
+$\Lambda\cup\{0\}$ and beyond the largest one.
+\end{lemma}
+
+\begin{proof}
+\emph{Step 1, entry levels.}  A loop lies in $\cl\varnothing$, hence in no $\PO_t$.
+Let $x$ be a non-loop and $0=s_0\le\cdots\le s_m$ the entries of $D^{x}$ in
+increasing order with a zero prepended.  For $t\ge0$, $v_g<v_x-t$ if and only if
+$D^{x}_g>t$, so
+\[
+  x\notin\PO_t\iff x\in\cl\bigl(E\setminus G_t(D^{x})\bigr)\iff\phi_x\bigl(G_t(D^{x})\bigr)=1.
+\]
+The function $\phi_x$ is antitone, as $\cl$ is monotone, and $\phi_x(E)=0$, as $x$ is
+not a loop.  Let $j$ be the least index with $\phi_x(G_{s_j}(D^{x}))=0$; it exists,
+as $G_{s_m}(D^{x})=E$.  The sets $G_{s_i}(D^{x})$ grow with $i$, so
+$\phi_x(G_{s_i}(D^{x}))=\mathbf 1[i<j]$, and $s_i<s_j$ for $i<j$, since equal values
+give equal sets.  Hence
+\[
+  t_x=\sum_{i=0}^{m-1}\Delta_i\,\mathbf 1[i<j]=s_j,
+\]
+and as $G_t(D^{x})=G_{s_i}(D^{x})$ for the largest $i$ with $s_i\le t$,
+\[
+  x\notin\PO_t\iff i<j\iff t<s_j=t_x.
+\]
+
+\emph{Step 2, merge levels.}  For joined $a,b$ and $t\ge0$, the link of
+Definition~\ref{def:posl} at scale $t$ asks $a,b\in\PO_t$ and $|v_a-v_b|\le t$, and
+for $a=b$ only $a\in\PO_t$.  By Step 1,
+\[
+  a,b\text{ linked at scale }t\iff W_{ab}\le t,
+\]
+and an element of $\PO_t$ is a non-loop, linked only to joined elements.  The
+clusters are the classes of the chains of links, so $x$ and $y$ lie in one cluster
+at scale $t$ if and only if some sequence of joined elements from $x$ to $y$ has
+$W_{a_ia_{i+1}}\le t$ for every $i$, that is, $T_{xy}\le t$.
+
+\emph{Step 3, merge levels are levels.}  Concatenating sequences gives
+$T_{xz}\le\max(T_{xy},T_{yz})$, reversing them gives $T_{xy}=T_{yx}$, and as
+$W_{ab}\ge\max(t_a,t_b)$ and the sequence $x,x$ is allowed,
+\[
+  \max(t_x,t_y)\le T_{xy},\qquad T_{xx}=t_x.
+\]
+Let $h=T_{xy}$ and $C=\{z:z\text{ joined to }x,\ T_{xz}\le h\}$, which contains $x$
+and $y$.  If $t_z=h$ for some $z\in C$, then $h\in\Lambda$.  Otherwise $t_z<h$ for
+every $z\in C$, as $t_z\le T_{xz}\le h$.  Let $z_0$ be the least element of $C$.  As
+$h=T_{xy}\le\max(T_{xz_0},T_{z_0y})$, some $w\in\{x,y\}$ has $T_{z_0w}\ge h$.  The set
+$P=\{z\in C:T_{wz}<h\}$ contains $w$, as $T_{ww}=t_w<h$, and misses $z_0$; let $z$ be
+its least element, so $z_0<z$.  For $y'<z$ joined to $z$ with $T_{zy'}<h$,
+\[
+  T_{xy'}\le\max(T_{xz},T_{zy'})\le h,\qquad T_{wy'}\le\max(T_{wz},T_{zy'})<h,
+\]
+so $y'\in P$, which contradicts the choice of $z$.  So $T_{zy'}\ge h$ for every
+$y'<z$ joined to $z$, and $y'=z_0$ attains $h$:
+\[
+  h\le T_{zz_0}\le\max(T_{zx},T_{xz_0})\le h.
+\]
+Hence $\sigma_z=h\in\Lambda$.
+
+\emph{Step 4, order levels.}  Let $x,y$ be joined and $t\ge0$.  By
+Definition~\ref{def:posl}, $u_t(x)<u_t(y)$ if and only if $x\in\PO_t$ and either
+$y\notin\PO_t$, or $x,y$ lie in different clusters with $v_x<v_y$, which then means
+$v_y-v_x>t$.  By Steps 1 and 2,
+\[
+  u_t(x)<u_t(y)\iff t\ge t_x\ \text{and}\
+  \bigl(t<t_y\ \text{or}\ t<\min(T_{xy},v_y-v_x)\bigr)\iff t_x\le t<\omega_{xy},
+\]
+as $t\ge t_x$ makes $t<\max(t_x,c)$ equivalent to $t<c$.  If
+$\min(T_{xy},v_y-v_x)\le\max(t_x,t_y)$, then $\omega_{xy}\in\{t_x,t_y\}\subseteq\Lambda$,
+and if $\max(t_x,t_y)<T_{xy}\le v_y-v_x$, then $\omega_{xy}=T_{xy}\in\Lambda\cup\{0\}$ by
+Step 3.  The remaining case $\max(t_x,t_y)<v_y-v_x<T_{xy}$ does not occur: it forces
+$x\ne y$, and then
+\[
+  T_{xy}\le W_{xy}=\max\bigl(t_x,t_y,|v_x-v_y|\bigr)=v_y-v_x.
+\]
+
+\emph{Step 5, constancy.}  By Steps 1, 2 and 4, the bits $\mathbf 1[t_x\le t]$,
+$\mathbf 1[T_{xy}\le t]$ and $\mathbf 1[\omega_{xy}\le t]$ determine $\PO_t$, the
+clusters and their order, hence $u_t$ and $N(t)$, and by Steps 3 and 4 each of these
+bits changes only at a value of $\Lambda\cup\{0\}$.
+\end{proof}
+
 \subsection{Termination}
 \label{sec:term}
 
@@ -1931,115 +2082,124 @@ $(r_0+2)(m+1)^{2}(q+10(m+1))+3k(m+1)+5\lceil\log_2(r_0+1)\rceil$ gates.
 \begin{lemma}[Observer]
 \label{lem:observer}
 Let a Boolean circuit of size $s$ output the binary digits of $r(S)$ from the
-indicator vector of $S\subseteq E$, and fix $r_0\in\{1,\ldots,k-1\}$.  A Boolean
-circuit of size $O(r_0m^{2}(s+m))$ reads a relation $G\subseteq E\times E$ and
-outputs $k$ bits $F_b(G)$, $b\in[k]$, such that
+indicator vector of $S\subseteq E$, and fix $r_0\in\{1,\ldots,k-1\}$.  For
+$v\in\R^{E}$ let $\mathcal Q(v)$ be the vector of the $m+2m^{2}$ values $t_x$,
+$T_{xy}$ and $\omega_{xy}$ of Lemma~\ref{lem:events}, with $T_{xy}=\omega_{xy}=0$ for
+$x,y$ not joined.  A Boolean circuit of size $O(r_0m^{2}(s+m))$ reads $m+2m^{2}$
+bits and outputs $k$ bits $F_b$, $b\in[k]$, such that at the bits
+$\mathbf 1[\mathcal Q(v)\le t]$
 \[
-  F_b(G_t)=\mathbf 1\bigl[\nu(N(t))\le r_0\bigr]\wedge\mathbf 1\bigl[b\in\Av(N(t))\bigr]
+  F_b=\mathbf 1\bigl[\nu(N(t))\le r_0\bigr]\wedge\mathbf 1\bigl[b\in\Av(N(t))\bigr]
 \]
 for every $v\in\R^{E}$ and $t\ge0$, where $N(t)$ is the family of
-Definition~\ref{def:posl} for $v$ and $G_t=\{(e,f):v_f-v_e\le t\}$.  Moreover
-$F_b(E\times E)=0$ for every $b$.
+Definition~\ref{def:posl} for $v$.
 \end{lemma}
 
 \begin{proof}
-By Proposition~\ref{prop:posl}, $N(t)$ depends only on $G_t$; for $G=G_t$ write
-$N_G=N(t)$, $\PO=\PO_t$ and $u=u_t$.  Steps 1 to 3 compute them from $G$,
-correctly whenever $G=G_t$.
+Fix $v$ and $t\ge0$, and write $\PO=\PO_t$, $u=u_t$ and $N_t=N(t)$.
 
-\emph{Step 1, the possibly optimal elements.}  For $f\in E$ let
-$X_f=\{g:(g,f)\notin G\}$.  At $G=G_t$,
+\emph{Step 1, the context.}  The loops and the connected components of $M$ are
+fixed, and by Lemma~\ref{lem:events}, at the bits $\mathbf 1[\mathcal Q(v)\le t]$,
 \[
-  X_f=\{g:v_g<v_f-t\},\qquad f\in\PO\iff r(X_f+f)>r(X_f),
+  x\in\PO\iff x\text{ is a non-loop and }t_x\le t,
 \]
-which costs $m(2s+m+O(\log m))$ gates: $m$ negations, two rank evaluations and a
-comparison for each $f$.
-
-\emph{Step 2, the clusters.}  The components of $M$ are fixed.  The linkage bits
-$[(x,y)\in G]\wedge[(y,x)\in G]$ for $x,y\in\PO$ in one component cost $O(m^{2})$
-gates, and Warshall's algorithm~\cite{warshall62} closes them transitively with
-$2m^{3}$ gates.  Since different clusters are more than $t$ apart, for $x,y$ in
-one component
+two distinct elements lie in one cluster if and only if they are joined and
+$T_{xy}\le t$, and for $x,y$ in one component
 \[
-  u(x)<u(y)\iff\bigl[x\in\PO,\ y\notin\PO\bigr]\vee
-  \bigl[x,y\in\PO\text{ in different clusters},\ (x,y)\notin G\bigr],
+  u(x)<u(y)\iff x,y\text{ joined},\ t_x\le t\ \text{and not}\ \omega_{xy}\le t.
 \]
-at $O(m^{2})$ gates.
+So the bits of $\PO$ and of the clusters cost no gate, and the order bits cost
+$2m^{2}$ gates.
 
-\emph{Step 3, exchange tests.}  For $y\in\PO$ let $\mathrm{Lev}(y)$ be the
-cluster of $y$ and $\mathrm{Below}(y)$ the set of elements of its component with
-smaller $u$; both depend only on the cluster.  By \eqref{eq:rank-mu} within
-components,
+\emph{Step 2, exchange tests.}  For $y\in\PO$ let $\mathrm{Lev}(y)$ be the cluster
+of $y$ and $\mathrm{Below}(y)$ the set of elements of its component with smaller
+$u$; both depend only on the cluster.  By \eqref{eq:rank-mu} within components,
 \[
-  r_{N_G}(A)=\sum_{x}T_x(A),\qquad
-  T_x(A)=r\bigl(\mathrm{Below}(x)\cup(A\cap\mathrm{Lev}(x))\bigr)-r\bigl(\mathrm{Below}(x)\bigr),
+  r_{N_t}(A)=\sum_{x}\kappa_x(A),\qquad
+  \kappa_x(A)=r\bigl(\mathrm{Below}(x)\cup(A\cap\mathrm{Lev}(x))\bigr)-r\bigl(\mathrm{Below}(x)\bigr),
 \]
 the sum over one element $x$ of each cluster; the top level $E\setminus\PO$
 contributes $0$, as $\PO\supseteq\PO_0$ spans $E$.  Each term satisfies
-$T_x(A)\le|A\cap\mathrm{Lev}(x)|$, and the clusters partition $\PO$, so
+$\kappa_x(A)\le|A\cap\mathrm{Lev}(x)|$, and the clusters partition $\PO$, so
 \[
-  r_{N_G}(A)\le\sum_x|A\cap\mathrm{Lev}(x)|=|A\cap\PO|\le|A|,
+  r_{N_t}(A)\le\sum_x|A\cap\mathrm{Lev}(x)|=|A\cap\PO|\le|A|,
 \]
-and $A$ is independent in $N_G$ if and only if $A\subseteq\PO$ and
-$T_x(A)=|A\cap\mathrm{Lev}(x)|$ for every $x$.  Let $y\in A$ with $A-y$
-independent.  Then $A-y\subseteq\PO$, every term of $A-y$ is tight, and the
-terms of $A$ and $A-y$ agree outside the cluster of $y$, so
+and $A$ is independent in $N_t$ if and only if $A\subseteq\PO$ and
+$\kappa_x(A)=|A\cap\mathrm{Lev}(x)|$ for every $x$.  Let $y\in A$ with $A-y$
+independent.  Then $A-y\subseteq\PO$, every term of $A-y$ is tight, and the terms
+of $A$ and $A-y$ agree outside the cluster of $y$, so
 \[
-  A\text{ independent in }N_G\iff y\in\PO\ \text{and}\
+  A\text{ independent in }N_t\iff y\in\PO\ \text{and}\
   r\bigl(\mathrm{Below}(y)\cup(A\cap\mathrm{Lev}(y))\bigr)
   =r\bigl(\mathrm{Below}(y)\bigr)+|A\cap\mathrm{Lev}(y)|.
 \]
 The ranks $r(\mathrm{Below}(y))$ cost $ms$ gates once, and then this test costs
 $q=s+O(m)$ gates: the sets $A\cap\mathrm{Lev}(y)$ and
-$\mathrm{Below}(y)\cup(A\cap\mathrm{Lev}(y))$, one rank evaluation, a
-subtraction, a population count, a comparison and a conjunction with
-$\mathbf 1[y\in\PO]$.
+$\mathrm{Below}(y)\cup(A\cap\mathrm{Lev}(y))$, one rank evaluation, a subtraction,
+a population count, a comparison and a conjunction with $\mathbf 1[y\in\PO]$.
 
-\emph{Step 4, the intersection.}  Lemma~\ref{lem:augment}, with the bits of $G$
-and of the data of Steps 1 to 3 as its input, the matroids $N_G$ and the tests of
-Step 3, gives the bits $F_b(G)$ from $r_0+1$ rounds with
+\emph{Step 3, the intersection.}  Lemma~\ref{lem:augment}, with the input bits and
+the data of Steps 1 and 2 as its input, the matroids $N_t$ and the tests of Step 2,
+gives the bits $F_b$ from $r_0+1$ rounds with
 \[
   (r_0+2)(m+1)^{2}\bigl(q+10(m+1)\bigr)+3k(m+1)+5\lceil\log_2(r_0+1)\rceil
   =O\bigl(r_0m^{2}(s+m)\bigr)
 \]
-gates, as $k\le m$, and Steps 1 to 3 cost $O(ms+m^{3})$.
-
-\emph{Step 5, the top level.}  $E\times E=G_t$ for $t\ge\max v-\min v$, where
-$N(t)=M$ by Step 4 of the proof of Proposition~\ref{prop:posl}, so
-$\nu(N(t))=k>r_0$ and $F_b(E\times E)=0$.
+gates, as $k\le m$, and Steps 1 and 2 cost $ms+2m^{2}$ gates besides the tests.
 \end{proof}
 
 \begin{lemma}[One update]
 \label{lem:oneupdate}
-For each stage $r$, a signed tropical circuit of size $O(rm^{4}(s+m))$ maps
+For each stage $r$, a signed tropical circuit of size $O(rm^{3}(s+m))$ maps
 $(w,p)$ to $p+a$, with $a$ the PO-SL update at $v=w-p_{\blk}$, at every state
 with $\nu_0\ge r$.
 \end{lemma}
 
 \begin{proof}
-\emph{Step 1, the differences.}  The weights $v$ cost $m$ gates and the vector
-$D^{+}\in\R^{E\times E}_{\ge0}$, $D^{+}_{ef}=\max(v_f-v_e,0)$, costs $2m^{2}$, with
-\[
-  \{(e,f):D^{+}_{ef}\le t\}=G_t\qquad(t\ge0).
-\]
+\emph{Step 1, the weights.}  $v=w-p_{\blk}$ costs $m$ gates.
 
-\emph{Step 2, the update as a threshold integral.}  Let $F_b$ be the bits of
-Lemma~\ref{lem:observer} with $r_0=r$.  If $\nu_0=r$, then by
-\eqref{eq:update-integral}, Proposition~\ref{prop:posl} and
-$F_b(E\times E)=0$,
+\emph{Step 2, the levels.}  For a non-loop $x$, the vector $D^{x}$ costs $2m$
+gates, and the Boolean circuit of $\phi_x(S)=\mathbf 1[r(E\setminus S+x)=r(E\setminus S)]$,
+with $m$ negations, two rank evaluations and a comparison, has $2s+O(m)$ gates, so
+Theorem~\ref{thm:compiler} gives $t_x$ with $O(ms+m^{2})$ gates.  Then $W$ costs
+$5m^{2}$ gates, and the Floyd--Warshall algorithm over $(\min,\max)$, which replaces
+$T_{ab}$ by $\min(T_{ab},\max(T_{ac},T_{cb}))$ for the pivots $c$ in turn, computes $T$
+from $W$ with $4m^{3}$ gates.  At every $t$ the bits $\mathbf 1[T_{ab}\le t]$ follow
+Warshall's algorithm~\cite{warshall62} on the bits $\mathbf 1[W_{ab}\le t]$, as
 \[
-  a_b=\int_0^{\infty}F_b(G_t)\,dt=\int_0^{\max D^{+}}F_b\bigl(G_t(D^{+})\bigr)\,dt=\CC_{F_b}(D^{+}),
+  \mathbf 1\bigl[\min(T_{ab},\max(T_{ac},T_{cb}))\le t\bigr]
+  =\mathbf 1[T_{ab}\le t]\vee\bigl(\mathbf 1[T_{ac}\le t]\wedge\mathbf 1[T_{cb}\le t]\bigr),
 \]
-and if $\nu_0>r$, then $\nu(N(t))\ge\nu_0>r$ for all $t$ and
-$\CC_{F_b}(D^{+})=0=a_b$.  The gap sum reads $F_b$ only at sublevel sets of
-$D^{+}$, where the observer is correct, so Theorem~\ref{thm:compiler} on the
-$m^{2}$ pairs with $N=k$ gives $a$ with at most
+so the result is the least value $T_{ab}$ of Lemma~\ref{lem:events}(2).  The values
+$\sigma_x$ cost $3m^{2}$ gates and $\omega$ costs $6m^{2}$, so $\Lambda$ and
+$\mathcal Q(v)$ cost $O(m^{2}s+m^{3})$ gates.
+
+\emph{Step 3, the update as a sum over the levels.}  Let $F_b$ be the bits of
+Lemma~\ref{lem:observer} with $r_0=r$, and $0=s_0\le\cdots\le s_{2m}$ the entries of
+$\Lambda$ in increasing order with a zero prepended.  Every entry of $\mathcal Q(v)$
+lies in $\Lambda\cup\{0\}$ by Lemma~\ref{lem:events}, so the bits
+$\mathbf 1[\mathcal Q(v)\le t]$ are constant on each $[s_i,s_{i+1})$, and for
+$t\ge s_{2m}$ they are all $1$, as at $t'=\max(s_{2m},\max v-\min v)$, where
+$N(t')=M$ by Step 4 of the proof of Proposition~\ref{prop:posl}, so $\nu(N(t'))=k>r$
+and $F_b=0$.  If $\nu_0=r$, then by \eqref{eq:update-integral} and
+Lemma~\ref{lem:observer},
 \[
-  3m^{2}\cdot O\bigl(rm^{2}(s+m)\bigr)+km^{2}+6m^{4}=O\bigl(rm^{4}(s+m)\bigr)
+  a_b=\int_0^{\infty}F_b\bigl(\mathbf 1[\mathcal Q(v)\le t]\bigr)\,dt
+  =\sum_{i=0}^{2m-1}\Delta_i\,F_b\bigl(\mathbf 1[\mathcal Q(v)\le s_i]\bigr),
+\]
+and if $\nu_0>r$, then $\nu(N(t))\ge\nu_0>r$ for all $t$ and both sides are
+$0=a_b$.
+
+\emph{Step 4, the compiler at the levels.}  Corollary~\ref{cor:levels} with $L=2m$
+levels, the $q=m+2m^{2}$ values $\mathcal Q(v)$ and $N=k$ outputs, applied to the
+observer of Lemma~\ref{lem:observer}, gives $a$ with
+\[
+  6m^{2}+2m\Bigl(1+4(m+2m^{2})+3\cdot O\bigl(rm^{2}(s+m)\bigr)+k\Bigr)
+  =O\bigl(rm^{3}(s+m)\bigr)
 \]
 gates.
 
-\emph{Step 3, the sum.}  $p+a$ costs $k$ gates.
+\emph{Step 5, the sum.}  $p+a$ costs $k$ gates.
 \end{proof}
 
 \begin{proof}[Proof of Theorem~\ref{thm:C}]
@@ -2068,17 +2228,17 @@ at $O(ms+m^{2})$ further gates the circuit outputs
   \sum_{r=1}^{k-1}\ell_r\le(k-1)\bigl(1+k(2m-k-1)\bigr)\le(k-1)(1+2km)
   =2k^{2}m-(2km-k+1)\le2k^{2}m.
 \]
-An update of stage $r$ has $O(rm^{4}(s+m))$ gates by Lemma~\ref{lem:oneupdate},
+An update of stage $r$ has $O(rm^{3}(s+m))$ gates by Lemma~\ref{lem:oneupdate},
 and $\ell_r\le1+k(2m-k-1)\le2km$, so
 \[
   \sum_{r=1}^{k-1}r\,\ell_r\le2km\sum_{r=1}^{k-1}r=k^{2}(k-1)m\le k^{3}m
 \]
-and the size is $O(k^{3}m^{5}(s+m))$.  If every connected component of $M$ has
+and the size is $O(k^{3}m^{4}(s+m))$.  If every connected component of $M$ has
 rank at most one, Corollary~\ref{cor:rankone} allows $\ell_r=r$ in Step 1, and
 \[
   \sum_{r=1}^{k-1}r\,\ell_r=\sum_{r=1}^{k-1}r^{2}\le k^{3}
 \]
-gives the size $O(k^{3}m^{4}(s+m))$.  The circuit depends only on $M$, the
+gives the size $O(k^{3}m^{3}(s+m))$.  The circuit depends only on $M$, the
 blocks and the rank circuit.  Besides them it uses the rank $k=r(E)$ and the
 connected components of $M$, which a polynomial-time algorithm obtains from the
 rank circuit: $k$ by one evaluation, a base $B_0$ by the greedy algorithm, each
@@ -2164,7 +2324,7 @@ $r_2(E)$ on $O(\log m)$ bits, at $s_1+s_2+O(m)$ gates.
 blocks and the weights of Lemma~\ref{lem:doubling} gives the minimum weight of a
 common base with
 \[
-  O\bigl(m^{3}(2m)^{5}(s_1+s_2+m)\bigr)=O\bigl(m^{8}(s_1+s_2+m)\bigr)
+  O\bigl(m^{3}(2m)^{4}(s_1+s_2+m)\bigr)=O\bigl(m^{7}(s_1+s_2+m)\bigr)
 \]
 gates.
 
@@ -2188,7 +2348,7 @@ $X$ has such a $Y$, so
   =-\min\{w'(B):B\in\Bases(M_1')\cap\Bases(M_2')\}.
 \]
 Step 3 for $M_1'$ and $M_2'$ on $2m$ elements, $m$ negations for $-w$ and one
-for the output give this value with $O(m^{8}(s_1+s_2+m))$ gates.
+for the output give this value with $O(m^{7}(s_1+s_2+m))$ gates.
 \end{proof}
 
 \paragraph{Transversal matroids and gammoids.}
@@ -2302,7 +2462,8 @@ $\{0,\ldots,m-1\}$.
 
 Of Sections~\ref{sec:model} and~\ref{sec:greedy} it proves Lemma~\ref{lem:minbases},
 the equality of the two expressions in Definition~\ref{def:ti},
-Theorem~\ref{thm:compiler}, Corollary~\ref{cor:integer}, Lemma~\ref{lem:greedy},
+Theorem~\ref{thm:compiler}, Corollaries~\ref{cor:integer} and~\ref{cor:levels},
+Lemma~\ref{lem:greedy},
 Theorems~\ref{thm:A} and~\ref{thm:B}, and Corollary~\ref{cor:classes}.  For
 Corollary~\ref{cor:count} it proves the count of Step~1 and the conclusion in an
 explicit form: for $m\ge128$, at most a fraction $2^{-\lfloor2^{m}/m^{3}\rfloor}$
@@ -2310,17 +2471,17 @@ of the matroids on $m$ labeled elements have a signed tropical circuit of size
 less than $2^{m/2}/m^{2}$ that computes $h_M$ on $\{0,1\}^{E}$.
 
 Of Sections~\ref{sec:rainbow} and~\ref{sec:two} it proves
-Lemmas~\ref{lem:duality}, \ref{lem:path}, \ref{lem:avoidable}, \ref{lem:augment},
-\ref{lem:observer}, \ref{lem:oneupdate} and~\ref{lem:doubling},
+Lemmas~\ref{lem:duality}, \ref{lem:path}, \ref{lem:avoidable}, \ref{lem:events},
+\ref{lem:augment}, \ref{lem:observer}, \ref{lem:oneupdate} and~\ref{lem:doubling},
 Propositions~\ref{prop:star}, \ref{prop:pos}, \ref{prop:assign-pos},
 \ref{prop:notmatroid} and~\ref{prop:posl}, the facts after
 Definition~\ref{def:update} with \eqref{eq:update-integral},
 Theorems~\ref{thm:validity}, \ref{thm:potential} and~\ref{thm:stagelength},
 Corollary~\ref{cor:rankone}, Theorem~\ref{thm:C} with the size
-$1664\,k^{3}m^{5}(s+m)+2$, and $696\,k^{3}m^{4}(s+m)+2$ when every component of $M$
+$3328\,k^{3}m^{4}(s+m)+2$, and $1390\,k^{3}m^{3}(s+m)+2$ when every component of $M$
 has rank at most one, Theorem~\ref{thm:D} with the sizes
-$1664\cdot2400\,m^{8}(s_1+s_2+m)+2$ for common bases and
-$1664\cdot2613249\,m^{8}(s_1+s_2+m)+3$ for common independent sets, and
+$3328\cdot1200\,m^{7}(s_1+s_2+m)+2$ for common bases and
+$3328\cdot653313\,m^{7}(s_1+s_2+m)+3$ for common independent sets, and
 Corollary~\ref{cor:transversal}.  For
 Proposition~\ref{prop:nphard} it proves the reduction, Steps 2 to 4, for every
 multigraph $H$ and every $h\ge|V(H)|,|C|$; the complexity classes are not
@@ -2353,6 +2514,12 @@ the proofs.
         sparse paving matroids.  No check failed.
   \item Lemma~\ref{lem:doubling} together with the schedule, on $59$ random pairs
         of binary and graphic matroids.
+  \item Lemma~\ref{lem:events}, on $1463$ random instances against PO-SL computed
+        from $G_t$ at every level $|v_e-v_f|$, every level of $\Lambda$, the
+        midpoints between consecutive ones and one level beyond: $\PO_t$, the
+        clusters and their order agreed with the bits of $\mathcal Q(v)$, and on
+        $795$ states with $\nu_0<k$ the sum over the levels of $\Lambda$ alone gave
+        the update.
   \item Proposition~\ref{prop:ladder}: for $L=0,\ldots,12$ stage $2$ of PO-SL took
         $L+2$ updates and the schedule returned $\Opt(w)$, and for $L=0,\ldots,8$
         the family $\Pos_t$ took one update.  The independent implementation
@@ -2455,7 +2622,7 @@ take $O(r)$ updates?
 
 \paragraph{Size.}  The bounds of Theorems~\ref{thm:C} and \ref{thm:D} are not
 tuned.  For the assignment problem, a partition matroid whose components have
-rank one, Theorem~\ref{thm:C} with Corollary~\ref{cor:rankone} gives $O(n^{13})$
+rank one, Theorem~\ref{thm:C} with Corollary~\ref{cor:rankone} gives $O(n^{11})$
 against the $O(n^{8})$ of the companion paper, whose specialized schedule and
 observer we do not reuse.
 

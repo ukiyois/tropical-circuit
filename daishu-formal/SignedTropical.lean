@@ -5,6 +5,7 @@ import SignedTropical.Sorting
 import SignedTropical.GapSum
 import SignedTropical.Lift
 import SignedTropical.Compiler
+import SignedTropical.LevelCompiler
 import SignedTropical.Lattice
 import SignedTropical.Matroid
 import SignedTropical.Elimination
@@ -40,6 +41,7 @@ import SignedTropical.Rainbow.NPHard
 import SignedTropical.Rainbow.Potential
 import SignedTropical.Rainbow.StageLength
 import SignedTropical.Rainbow.RankOne
+import SignedTropical.Rainbow.Events
 import SignedTropical.Rainbow.GapUpdate
 import SignedTropical.Rainbow.Schedule
 import SignedTropical.Rainbow.ObserverOracle

@@ -4,7 +4,7 @@ import SignedTropical.BoolAlg.Count
 /-!
 # The matroid intersection circuit
 
-`greedy_intersection.tex`, Lemma `lem:augment` (used in Lemma `lem:observer`, Step 4, and in
+`greedy_intersection.tex`, Lemma `lem:augment` (used in Lemma `lem:observer`, Step 3, and in
 Corollary `cor:transversal`): `j` rounds of the augmenting path algorithm (Lawler; Schrijver,
 Theorem 41.2) on a matroid `N` on `Fin m` and the blocks of `blk : Fin m → Fin k`, then one more
 exchange graph, its reachable set, the avoidable blocks `Av(N)` (Lemma `lem:avoidable`) and the
@@ -254,9 +254,9 @@ variable {n m k : ℕ} {σ τ : Type} {Rc : Rep BoolOp Bool n σ τ}
   {bO : Fin m → σ × (Fin m → Arg n) → Bld BoolOp n (Arg n)} {cO : ℕ}
   {Fo : Fin m → τ × (Fin m → Bool) → Bool}
 
-/-- A static choice between two implementations. -/
-theorem impl_ite {α σ₁ σ₂ τ₁ τ₂ : Type} {R₁ : Rep BoolOp α n σ₁ τ₁} {R₂ : Rep BoolOp α n σ₂ τ₂}
-    (p : Prop) [Decidable p] {b₁ b₂ : σ₁ → Bld BoolOp n σ₂} {c₁ c₂ : ℕ} {F₁ F₂ : τ₁ → τ₂}
+/-- A static choice between two implementations, for any gate set. -/
+theorem impl_ite {Op α σ₁ σ₂ τ₁ τ₂ : Type} {R₁ : Rep Op α n σ₁ τ₁} {R₂ : Rep Op α n σ₂ τ₂}
+    (p : Prop) [Decidable p] {b₁ b₂ : σ₁ → Bld Op n σ₂} {c₁ c₂ : ℕ} {F₁ F₂ : τ₁ → τ₂}
     (h₁ : Impl R₁ R₂ b₁ c₁ F₁) (h₂ : Impl R₁ R₂ b₂ c₂ F₂) :
     Impl R₁ R₂ (fun s => if p then b₁ s else b₂ s) (if p then c₁ else c₂)
       (fun t => if p then F₁ t else F₂ t) := by

@@ -177,7 +177,7 @@ and `(e, 2)` the constant `0`; it has the size of `C` and outputs `C(weight w)`.
 **Theorem 13 (Theorem `thm:D`, Steps 1 and 3).**  `exists_minCommonBase_circuit`.  Let `M₁`,
 `M₂` have ground set `E` and a common base, and let `B` be a rank circuit of
 `N = M₁ ⊕ M₂✶`.  Then a signed tropical circuit on `E` with at most
-`1664 m³ (2m)⁵ (|B| + 2m) + 2` gates outputs the minimum weight of a common base at every `w`.
+`3328 m³ (2m)⁴ (|B| + 2m) + 2` gates outputs the minimum weight of a common base at every `w`.
 
 *Proof.*  `N` has ground set `E × {1, 2}`, rank `m` (`rank_double_eq`) and a rainbow base
 (`exists_isRainbowBase_iff`); Theorem C (`TheoremCFinal.theoremC_final`, `2m` elements, `k = m`)
@@ -187,11 +187,11 @@ and Proposition 12, with `Opt_N(weight w) = minCommonBaseWeight M₁ M₂ w` (`D
 
 **Theorem 14 (Theorem `thm:D`, first part).**  `theoremD_commonBase`.  With rank circuits `C₁`,
 `C₂` of sizes `s₁`, `s₂` and a common base, a signed tropical circuit of size at most
-`1664 m³ (2m)⁵ (s₁ + s₂ + 60m + 15) + 2 ≤ 1664 · 2400 m⁸ (s₁ + s₂ + m) + 2` outputs the minimum
+`3328 m³ (2m)⁴ (s₁ + s₂ + 60m + 15) + 2 ≤ 3328 · 1200 m⁷ (s₁ + s₂ + m) + 2` outputs the minimum
 weight of a common base at every `w ∈ ℝ^E`.
 
 *Proof.*  Theorem 13 with `B = doubleRankCircuit C₁ C₂ r₂(E)`, at most `s₁ + s₂ + 58m + 15` gates
-(Theorem 5).  `size_commonBase_le`: `m³ (2m)⁵ = 32 m⁸` and `s + 60m + 15 ≤ 75(s + m)` for
+(Theorem 5).  `size_commonBase_le`: `m³ (2m)⁴ = 16 m⁷` and `s + 60m + 15 ≤ 75(s + m)` for
 `m ≥ 1`.
 
 ### 1.8 Step 4: common independent sets as common bases of the padded matroids
@@ -217,24 +217,24 @@ and negates its first output: exactly `m + |D| + 1` gates, output `−D(−w)₀
 
 **Theorem 17 (Theorem `thm:D`, second part).**  `theoremD_commonIndep`, `size_commonIndep_le`.
 With rank circuits `C₁`, `C₂` of sizes `s₁`, `s₂`, and no common base assumed, a signed tropical
-circuit of size at most `1664 · 8192 m⁸ (s₁ + s₂ + 268m + 51) + m + 3 ≤
-1664 · 2613249 m⁸ (s₁ + s₂ + m) + 3` outputs the maximum weight of a common independent set at
+circuit of size at most `3328 · 2048 m⁷ (s₁ + s₂ + 268m + 51) + m + 3 ≤
+3328 · 653313 m⁷ (s₁ + s₂ + m) + 3` outputs the maximum weight of a common independent set at
 every `w ∈ ℝ^E`.
 
 *Proof.*  Step 1, Theorem 13 for `pad M₁`, `pad M₂` on `2m` elements, with the common base of
 Theorem 15 and the rank circuit `doubleRankCircuit (padRankCircuit C₁) (padRankCircuit C₂)
 r(pad M₂)` of at most `(s₁ + 74m + 18) + (s₂ + 74m + 18) + 58 · 2m + 15` gates (Theorems 5 and
-9), gives a circuit `D` with at most `1664 (2m)³ (4m)⁵ (s₁ + s₂ + 268m + 51) + 2` gates that
+9), gives a circuit `D` with at most `3328 (2m)³ (4m)⁴ (s₁ + s₂ + 268m + 51) + 2` gates that
 outputs the least weight of a common base of the padded matroids.  Step 2,
 `negNegCircuit (weightCircuit D)` outputs `−D(weight(−w)) = maxCommonIndepWeight M₁ M₂ w`
 (Theorem 15) with `m + |D| + 1` gates.  Step 3, for `m ≥ 1`, `s + 268m + 51 ≤ 319(s + m)` and
-`m ≤ 1664 m⁸ (s + m)`, and `8192 · 319 + 1 = 2613249`.
+`m ≤ m⁷ (s + m)`, and `2048 · 319 + 1 = 653313`.
 
 ### 1.11 Theorem D
 
 **Theorem 18 (Theorem `thm:D`).**  `theoremD`.  With rank circuits of sizes `s₁`, `s₂` and a
-common base, a signed tropical circuit of size at most `1664 · 2400 m⁸ (s₁ + s₂ + m) + 2` outputs
-the minimum weight of a common base, and one of size at most `1664 · 2613249 m⁸ (s₁ + s₂ + m) + 3`
+common base, a signed tropical circuit of size at most `3328 · 1200 m⁷ (s₁ + s₂ + m) + 2` outputs
+the minimum weight of a common base, and one of size at most `3328 · 653313 m⁷ (s₁ + s₂ + m) + 3`
 outputs the maximum weight of a common independent set, at every `w ∈ ℝ^E`.
 
 *Proof.*  Theorems 14 and 17.
@@ -246,11 +246,11 @@ outputs the maximum weight of a common independent set, at every `w ∈ ℝ^E`.
 | :-- | :-- | :-- | :-- |
 | `thm:D` Step 2: `r_N(A × {1} ∪ B × {2}) = r₁(A) + \|B\| + r₂(E \ B) − r₂(E)`, size `s₁ + s₂ + O(m)` | `double_rankCircuit`, `doubleRankCircuit`, `doubleRankCircuit_rank`, `doubleRankCircuit_spec`, `doubleRankCircuit_size`, `doubleRankCircuit_size_le`, `dualB_impl`, `doubleB_impl`, `queryB_impl` | `Rainbow/TheoremDRank` | proved |
 | `thm:D` Steps 1 and 3: Theorem C on `N`, read at the weights `w_e` and `0` | `exists_minCommonBase_circuit`, `weightCircuit`, `weightCircuit_spec` | `Rainbow/TheoremD` | proved |
-| `thm:D` (1), size `O(m⁸(s₁ + s₂ + m))` | `theoremD_commonBase`, `minCommonBaseWeight`, `isLeast_minCommonBaseWeight`, `size_commonBase_le` | `Rainbow/TheoremD` | proved |
+| `thm:D` (1), size `O(m⁷(s₁ + s₂ + m))` | `theoremD_commonBase`, `minCommonBaseWeight`, `isLeast_minCommonBaseWeight`, `size_commonBase_le` | `Rainbow/TheoremD` | proved |
 | `thm:D` Step 4: the padded matroids `M_i'`, their bases, their rank circuits `min(r_i(S ∩ E) + \|S ∩ Z\|, m)` | `loops`, `pad`, `indep_double_loops`, `rank_double_loops`, `isBase_pad_iff`, `padRankCircuit`, `padRankCircuit_rank`, `padRankCircuit_size_le`, `truncRankCircuit_rank` | `Rainbow/TheoremDRank` | proved |
 | `thm:D` Step 4: `max w(X) = −min w'(B)`, `Z` a common base | `minCommonBaseWeight_pad`, `exists_commonBase_pad`, `sum_weight_neg` | `Rainbow/TheoremD` | proved |
 | `thm:D` Step 4: `m` negations for `−w` and one for the output | `negNegCircuit`, `negNegCircuit_spec`, `negB_impl`, `negRunB_impl` | `Rainbow/TheoremD` | proved |
-| `thm:D` (2), size `O(m⁸(s₁ + s₂ + m))` | `theoremD_commonIndep`, `maxCommonIndepWeight`, `isGreatest_maxCommonIndepWeight`, `size_commonIndep_le` | `Rainbow/TheoremD` | proved |
+| `thm:D` (2), size `O(m⁷(s₁ + s₂ + m))` | `theoremD_commonIndep`, `maxCommonIndepWeight`, `isGreatest_maxCommonIndepWeight`, `size_commonIndep_le` | `Rainbow/TheoremD` | proved |
 | `thm:D` | `theoremD` | `Rainbow/TheoremD` | proved |
 | `thm:D`, uniformity | none | | not formalized |
 
@@ -267,9 +267,9 @@ outputs the maximum weight of a common independent set, at every `w ∈ ℝ^E`.
 4. The padded matroids live on `E × {1, 2}`, the second copies playing the paper's `Z`; the
    direct sum with the free matroid on `Z` is `double M (loops m)`, as the dual of the matroid of
    loops is free.
-5. Explicit sizes in Theorem D: `1664 · 2400 m⁸ (s₁ + s₂ + m) + 2` and
-   `1664 · 2613249 m⁸ (s₁ + s₂ + m) + 3`, with the constant `1664` of Theorem C
-   (`theoremC_final`: `1664 k³ m⁵ (s + m) + 2`).  The second part runs Theorem C on the doubled
+5. Explicit sizes in Theorem D: `3328 · 1200 m⁷ (s₁ + s₂ + m) + 2` and
+   `3328 · 653313 m⁷ (s₁ + s₂ + m) + 3`, with the constant `3328` of Theorem C
+   (`theoremC_final`: `3328 k³ m⁴ (s + m) + 2`).  The second part runs Theorem C on the doubled
    padded matroids, `4m` elements and `2m` blocks, hence the larger constant.
 6. The second part of `thm:D` does not use the common base; `theoremD_commonIndep` states it
    without that hypothesis.

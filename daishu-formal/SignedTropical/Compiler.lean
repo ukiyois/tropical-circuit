@@ -140,6 +140,17 @@ noncomputable def bitV (D : Fin m → ℝ) (k : ℕ) (e : Fin m) : ℝ :=
 noncomputable def gapOut (B : Circuit BoolOp m) (D : Fin m → ℝ) (k : ℕ) : List ℝ :=
   B.eval (liftInterp (sortedVal D (k + 1) - sortedVal D k)) (bitV D k)
 
+/-- The membership values of query values `Q` at the gaps of the sorted values of `Λ`:
+`max(Δ_k - max(Q_j - s_k, 0), 0)`, `s` the sorted values of `Λ` (`bitV D = bitQ D D`). -/
+noncomputable def bitQ {q L : ℕ} (Q : Fin q → ℝ) (Λ : Fin L → ℝ) (k : ℕ) (j : Fin q) : ℝ :=
+  max ((sortedVal Λ (k + 1) - sortedVal Λ k) - max (Q j - sortedVal Λ k) 0) 0
+
+/-- The lifted outputs at gap `k` of `Λ`, at the membership values of `Q`
+(`gapOut B D = gapOutQ B D D`). -/
+noncomputable def gapOutQ {q L : ℕ} (B : Circuit BoolOp q) (Q : Fin q → ℝ) (Λ : Fin L → ℝ)
+    (k : ℕ) : List ℝ :=
+  B.eval (liftInterp (sortedVal Λ (k + 1) - sortedVal Λ k)) (bitQ Q Λ k)
+
 /-- One gap: the gap value, the membership values, the lifted circuit, and the update of
 the running sums `acc`. -/
 def gapB (B : Circuit BoolOp m) (d s : List (Arg n)) (k : ℕ) (acc : List (Arg n)) :
@@ -159,37 +170,41 @@ theorem length_gapOut (B : Circuit BoolOp m) (D : Fin m → ℝ) (k : ℕ) :
     (gapOut B D k).length = B.outs.length := by
   simp [gapOut, Circuit.eval]
 
-theorem gapB_spec {B : Circuit BoolOp m} {d s acc : List (Arg n)} {k : ℕ}
-    {gs : List (Gate STOp n)} {D : (Fin n → ℝ) → Fin m → ℝ} {A : (Fin n → ℝ) → List ℝ}
-    (hd : DenL (stInterp ℝ) gs d (fun x => List.ofFn (D x)))
-    (hs : DenL (stInterp ℝ) gs s (fun x => sortedVals (D x)))
+/-- One gap, for query values `Q` and levels `Λ` carried by different operands: the gap of the
+sorted values of `Λ`, the membership values of the `Q_j`, the lifted circuit and the running
+sums. -/
+theorem gapB_spec {B : Circuit BoolOp m} {d s acc : List (Arg n)} {k L : ℕ}
+    {gs : List (Gate STOp n)} {Q : (Fin n → ℝ) → Fin m → ℝ} {Λ : (Fin n → ℝ) → Fin L → ℝ}
+    {A : (Fin n → ℝ) → List ℝ}
+    (hd : DenL (stInterp ℝ) gs d (fun x => List.ofFn (Q x)))
+    (hs : DenL (stInterp ℝ) gs s (fun x => sortedVals (Λ x)))
     (hacc : DenL (stInterp ℝ) gs acc A) (hlen : acc.length = B.outs.length) :
     gs <+: (gapB B d s k acc gs).1 ∧
       (gapB B d s k acc gs).1.length = gs.length + gapCost B ∧
       (gapB B d s k acc gs).2.length = B.outs.length ∧
       DenL (stInterp ℝ) (gapB B d s k acc gs).1 (gapB B d s k acc gs).2
-        (fun x => List.zipWith (· + ·) (A x) (gapOut B (D x) k)) := by
+        (fun x => List.zipWith (· + ·) (A x) (gapOutQ B (Q x) (Λ x) k)) := by
   -- the operands `s_k` and `s_{k+1}`
   have hlo : Den (stInterp ℝ) gs ((Arg.const :: s).getD k .const)
-      (fun x => sortedVal (D x) k) := (DenL.cons (den_const gs) hs).getD k
-  have hhi : Den (stInterp ℝ) gs (s.getD k .const) (fun x => sortedVal (D x) (k + 1)) :=
+      (fun x => sortedVal (Λ x) k) := (DenL.cons (den_const gs) hs).getD k
+  have hhi : Den (stInterp ℝ) gs (s.getD k .const) (fun x => sortedVal (Λ x) (k + 1)) :=
     hs.getD k
   -- the gap
   set p₁ := emit STOp.sub (s.getD k .const) ((Arg.const :: s).getD k .const) gs
   have hp₁ : gs <+: p₁.1 := isPrefix_emit _ _ _ _
   have hΔ : Den (stInterp ℝ) p₁.1 p₁.2
-      (fun x => sortedVal (D x) (k + 1) - sortedVal (D x) k) := den_emit STOp.sub hhi hlo
+      (fun x => sortedVal (Λ x) (k + 1) - sortedVal (Λ x) k) := den_emit STOp.sub hhi hlo
   -- the membership values
-  have hde : ∀ e : Fin m, Den (stInterp ℝ) gs (d.getD e .const) (fun x => D x e) := fun e =>
+  have hde : ∀ e : Fin m, Den (stInterp ℝ) gs (d.getD e .const) (fun x => Q x e) := fun e =>
     (hd.getD e).congr fun x => by rw [List.getD_eq_getElem _ _ (by simp)]; simp
   obtain ⟨hp₂, hlen₂, hmem⟩ := mapB_spec (I := stInterp ℝ) (c := 4) (gs₀ := p₁.1)
-    (F := fun e x => bitV (D x) k e)
+    (F := fun e x => bitQ (Q x) (Λ x) k e)
     (fun e gs' h => bitB_spec ((hde e).mono (hp₁.trans h)) (hlo.mono (hp₁.trans h))
       (hΔ.mono h)) (List.finRange m) p₁.1 (List.prefix_refl _)
   set p₂ := mapB (fun e : Fin m => bitB (d.getD e .const) ((Arg.const :: s).getD k .const) p₁.2)
     (List.finRange m) p₁.1
   have hinp : ∀ e : Fin m, Den (stInterp ℝ) p₂.1 (p₂.2.getD e .const)
-      (fun x => bitV (D x) k e) := fun e =>
+      (fun x => bitQ (Q x) (Λ x) k e) := fun e =>
     (hmem.getD e).congr fun x => by rw [List.getD_eq_getElem _ _ (by simp)]; simp
   -- the lifted circuit
   obtain ⟨hp₃, hlift⟩ := liftB_spec (B := B) (hΔ.mono hp₂) hinp
@@ -218,15 +233,16 @@ def gapsB (B : Circuit BoolOp m) (d s : List (Arg n)) :
     let p := gapB B d s k acc gs
     gapsB B d s ks p.2 p.1
 
-theorem gapsB_spec {B : Circuit BoolOp m} {d s : List (Arg n)} {D : (Fin n → ℝ) → Fin m → ℝ} :
+theorem gapsB_spec {B : Circuit BoolOp m} {d s : List (Arg n)} {L : ℕ}
+    {Q : (Fin n → ℝ) → Fin m → ℝ} {Λ : (Fin n → ℝ) → Fin L → ℝ} :
     ∀ (ks : List ℕ) {acc : List (Arg n)} {A : (Fin n → ℝ) → List ℝ} {gs : List (Gate STOp n)},
-      DenL (stInterp ℝ) gs d (fun x => List.ofFn (D x)) →
-      DenL (stInterp ℝ) gs s (fun x => sortedVals (D x)) →
+      DenL (stInterp ℝ) gs d (fun x => List.ofFn (Q x)) →
+      DenL (stInterp ℝ) gs s (fun x => sortedVals (Λ x)) →
       DenL (stInterp ℝ) gs acc A → acc.length = B.outs.length →
       gs <+: (gapsB B d s ks acc gs).1 ∧
         (gapsB B d s ks acc gs).1.length = gs.length + ks.length * gapCost B ∧
         DenL (stInterp ℝ) (gapsB B d s ks acc gs).1 (gapsB B d s ks acc gs).2
-          (fun x => ks.foldl (fun a k => List.zipWith (· + ·) a (gapOut B (D x) k)) (A x))
+          (fun x => ks.foldl (fun a k => List.zipWith (· + ·) a (gapOutQ B (Q x) (Λ x) k)) (A x))
   | [], acc, A, gs, _, _, hacc, _ => ⟨List.prefix_refl _, by simp [gapsB], hacc⟩
   | k :: ks, acc, A, gs, hd, hs, hacc, hlen => by
     obtain ⟨hp, hlen₁, hlen₂, hden⟩ := gapB_spec (k := k) hd hs hacc hlen
@@ -263,7 +279,8 @@ theorem compileB_spec {B : Circuit BoolOp m} {d : List (Arg n)}
       (fun _ => List.replicate B.outs.length 0) := by
     refine ⟨by simp [Arg.Valid], fun x => ?_⟩
     simp only [List.map_replicate]; rfl
-  obtain ⟨hq, hlen', hden⟩ := gapsB_spec (B := B) (List.range m) (hd.mono hp) hs hacc (by simp)
+  obtain ⟨hq, hlen', hden⟩ := gapsB_spec (B := B) (Q := D) (Λ := D) (List.range m) (hd.mono hp)
+    hs hacc (by simp)
   refine ⟨hp.trans hq, ?_, hden⟩
   have hd_len : d.length = m := by rw [← hd.length_eq (fun _ => 0)]; simp
   simp only [compileB, hlen', hlen, compileCost, hd_len, List.length_range]

@@ -1,90 +1,91 @@
 import SignedTropical.Rainbow.Potential
+import SignedTropical.Rainbow.Events
 import SignedTropical.Integral
 
 /-!
-# The update as a threshold integral over pairs
+# The update as a gap sum over the event levels
 
-`greedy_intersection.tex`, Lemma `lem:oneupdate`, Step 2.  Index the ordered pairs `(e, f)` by
-`Fin (m * m)` and put `D⁺_{ef} = max(v_f - v_e, 0)` (`Dplus`).  Its sublevel set at `t ≥ 0` is
-`G_t` (`relOf_sublevel`).  With the observable `F_b(G) = [ν(N_G) ≤ r] ∧ [b ∈ Av(N_G)]` of Lemma
-`lem:observer` (`obs`), which vanishes at `E × E` (`obs_univ`), the PO-SL update is the gap sum
-`a_b = C_{F_b}(D⁺)` (`update_eq_gapSum`), by `eq:update-integral` (`Validity.update_eq_integral`),
-Proposition `prop:posl` (`POSL.N_eq_NG`) and the integral reading of the gap sum
-(`Integral.gapSum_eq_integral_Ioi`).
+`greedy_intersection.tex`, Lemma `lem:oneupdate`, Step 3.  Let `Λ = lev M v` be the `2m` levels
+and `Q = Qv M v` the query values of `Rainbow/Events.lean`.  Every `Q_j` is a level or `0`
+(`Events.Qv_inLev`), so at `t ≥ 0` the bits `[Q_j ≤ t]` depend only on the sublevel set
+`{i : Λ_i ≤ t}` (`bits_sublevel`).  If a Boolean function `F_b` of these bits equals
+`[ν(N(t)) ≤ r] ∧ [b ∈ Av(N(t))]` at every `t ≥ 0` (the observer of Lemma `lem:observer`), then
+the PO-SL update is the gap sum over the levels,
+`a_b = Σ_{i < 2m} (s_{i+1} - s_i) F_b([Q ≤ s_i])`, `s` the sorted levels with `s_0 = 0`
+(`update_eq_levSum`).  The proof reads `a_b` as an integral (`eq:update-integral`,
+`Validity.update_eq_integral`) and the gap sum as an integral (`Integral.gapSum_eq_integral_Ioi`);
+the integrand vanishes beyond the largest level and the largest difference `v_f - v_e`, where
+`N(t) = M` (`POSL.N_eq_self`) has a rainbow base, so `ν = k > r`.
 -/
 
 open Finset MeasureTheory
 
 namespace SignedTropical.Rainbow.GapUpdate
 
-open SignedTropical.Rainbow
+open SignedTropical.Rainbow SignedTropical.Rainbow.Events
 
-variable {m k : ℕ}
+variable {m k : ℕ} {M : Matroid (Fin m)} {blk : Fin m → Fin k} {r : ℕ}
 
-/-- The pair `(e, f)` with index `i`. -/
-def pairOf (i : Fin (m * m)) : Fin m × Fin m := finProdFinEquiv.symm i
+open Classical in
+/-- At `t ≥ 0` the bits `[Q_j ≤ t]` are read from the sublevel set of the levels: `Q_j = 0`, or
+`Q_j = Λ_i` for some `i` with `Λ_i ≤ t`. -/
+theorem bits_sublevel (v : Fin m → ℝ) {t : ℝ} (ht : 0 ≤ t) :
+    (fun j => decide (Qv M v j = 0 ∨ ∃ i ∈ Integral.sublevel (lev M v) t, lev M v i = Qv M v j))
+      = fun j => decide (Qv M v j ≤ t) := by
+  funext j
+  refine decide_eq_decide.2 ⟨?_, fun h => ?_⟩
+  · rintro (h0 | ⟨i, hi, hiq⟩)
+    · rw [h0]; exact ht
+    · rw [← hiq]; exact Integral.mem_sublevel.1 hi
+  · rcases Qv_inLev (M := M) (v := v) j with h0 | ⟨i, hi⟩
+    · exact Or.inl h0
+    · exact Or.inr ⟨i, Integral.mem_sublevel.2 (hi ▸ h), hi⟩
 
-/-- `D⁺_{ef} = max(v_f - v_e, 0)`, indexed by the pairs. -/
-noncomputable def Dplus (v : Fin m → ℝ) (i : Fin (m * m)) : ℝ :=
-  max (v (pairOf i).2 - v (pairOf i).1) 0
-
-/-- The relation read from a set of pair indices. -/
-def relOf (S : Finset (Fin (m * m))) : Finset (Fin m × Fin m) := S.image pairOf
-
-/-- The observable `F_b(G) = [ν(N_G) ≤ r] ∧ [b ∈ Av(N_G)]` of Lemma `lem:observer`, read on a
-set of pair indices, as a real number `0` or `1`. -/
-noncomputable def obs (M : Matroid (Fin m)) (blk : Fin m → Fin k) (r : ℕ) (b : Fin k)
-    (S : Finset (Fin (m * m))) : ℝ :=
-  if nu (POSL.NG M (relOf S)) blk ≤ r ∧ b ∈ Av (POSL.NG M (relOf S)) blk then 1 else 0
-
-theorem Dplus_nonneg (v : Fin m → ℝ) (i : Fin (m * m)) : 0 ≤ Dplus v i :=
-  le_max_right _ _
-
-/-- The gap sum reads `F` only at the sublevel sets `G_t(D)` with `t ≥ 0`: two observables that
-agree there have the same gap sum.  (So a Boolean observer that is correct on the sets `G_t`
-suffices for the compiler.) -/
-theorem gapSum_congr_sublevel {n : ℕ} {D : Fin n → ℝ} (hD : ∀ e, 0 ≤ D e)
-    {F F' : Finset (Fin n) → ℝ} (h : ∀ t, 0 ≤ t → F (Integral.sublevel D t) = F' (Integral.sublevel D t)) :
-    gapSum F D = gapSum F' D := by
-  refine sum_congr rfl fun k hk => ?_
-  rw [Integral.threshSet_eq_sublevel, h _ ((sortedVal_mono hD (Nat.zero_le k)
-    (Nat.le_of_lt_succ (Nat.lt_succ_of_lt (mem_range.1 hk)))).trans' (by simp [sortedVal]))]
-
-/-- The sublevel set of `D⁺` at `t ≥ 0` is `G_t`. -/
-theorem relOf_sublevel (v : Fin m → ℝ) {t : ℝ} (ht : 0 ≤ t) :
-    relOf (Integral.sublevel (Dplus v) t) = POSL.Gt v t := by
-  ext ⟨e, f⟩
-  simp only [relOf, mem_image, Integral.mem_sublevel, POSL.Gt, mem_filter, mem_univ, true_and]
-  constructor
-  · rintro ⟨i, hi, hpair⟩
-    rw [Dplus, hpair, max_le_iff] at hi
-    exact hi.1
-  · intro h
-    refine ⟨finProdFinEquiv (e, f), ?_, by simp [pairOf]⟩
-    rw [Dplus, show pairOf (finProdFinEquiv (e, f)) = (e, f) by simp [pairOf]]
-    exact max_le h ht
-
-theorem relOf_univ : relOf (univ : Finset (Fin (m * m))) = univ := by
-  refine eq_univ_of_forall fun p => mem_image.2 ⟨finProdFinEquiv p, mem_univ _, by simp [pairOf]⟩
-
-variable {M : Matroid (Fin m)} {blk : Fin m → Fin k} {r : ℕ}
-
-/-- `F_b(E × E) = 0`: at `E × E` the matroid is `M`, which has a rainbow base, so `ν = k > r`. -/
-theorem obs_univ (hE : M.E = Set.univ) (hk : rank M = k) (hM : ∃ B, IsRainbowBase M blk B)
-    (hrk : r < k) (b : Fin k) : obs M blk r b univ = 0 := by
-  rw [obs, relOf_univ, POSL.NG_univ hE, (nu_eq_iff hk).2 hM, if_neg fun h => by omega]
-
-/-- **Lemma `lem:oneupdate`, Step 2.**  At a state with `r ≤ ν₀ = ν(M^v)` and `r < k`, the
-PO-SL update is the gap sum `a_b = C_{F_b}(D⁺)`. -/
-theorem update_eq_gapSum (hE : M.E = Set.univ) (hk : rank M = k)
+open Classical in
+/-- **Lemma `lem:oneupdate`, Step 3.**  At a state with `r ≤ ν₀ = ν(M^v)` and `r < k`, if the
+Boolean function `F_b` of the event bits equals `[ν(N(t)) ≤ r] ∧ [b ∈ Av(N(t))]` at the event bits
+of every `t ≥ 0`, the PO-SL update is `a_b = Σ_{i < 2m} (s_{i+1} - s_i) F_b([Q ≤ s_i])`. -/
+theorem update_eq_levSum (hE : M.E = Set.univ) (hk : rank M = k)
     (hM : ∃ B, IsRainbowBase M blk B) {v : Fin m → ℝ} (hr : r ≤ nu (minBases M v) blk)
-    (hrk : r < k) (b : Fin k) :
-    Validity.update (POSL.N M v) blk r b = gapSum (obs M blk r b) (Dplus v) := by
+    (hrk : r < k) {F : Fin k → (Fin (qn m) → Bool) → Bool}
+    (hF : ∀ t, 0 ≤ t → ∀ b, F b (fun j => decide (Qv M v j ≤ t)) =
+      decide (nu (POSL.N M v t) blk ≤ r ∧ b ∈ Av (POSL.N M v t) blk)) (b : Fin k) :
+    Validity.update (POSL.N M v) blk r b = ∑ i ∈ range (m + m),
+      (sortedVal (lev M v) (i + 1) - sortedVal (lev M v) i) *
+        if F b (fun j => decide (Qv M v j ≤ sortedVal (lev M v) i)) then 1 else 0 := by
+  have hΛ : ∀ i, 0 ≤ lev M v i := lev_nonneg
+  set Φ : Finset (Fin (m + m)) → ℝ := fun S =>
+    if F b (fun j => decide (Qv M v j = 0 ∨ ∃ i ∈ S, lev M v i = Qv M v j)) then 1 else 0
+    with hΦdef
+  have hΦ : ∀ t, 0 ≤ t → Φ (Integral.sublevel (lev M v) t) =
+      (if nu (POSL.N M v t) blk ≤ r then (1 : ℝ) else 0) *
+        (if b ∈ Av (POSL.N M v t) blk then 1 else 0) := by
+    intro t ht
+    simp only [hΦdef, bits_sublevel v ht, hF t ht b, ite_zero_mul_ite_zero, mul_one,
+      decide_eq_true_eq]
+  -- beyond every level and every difference `v_f - v_e`, `N(t) = M`, so `Φ(E) = 0`
+  set T : ℝ := ∑ i, lev M v i + ∑ e, ∑ f, |v f - v e| with hT
+  have hT0 : 0 ≤ T := add_nonneg (sum_nonneg fun i _ => hΛ i)
+    (sum_nonneg fun e _ => sum_nonneg fun f _ => abs_nonneg _)
+  have hΛT : ∀ i, lev M v i ≤ T := fun i =>
+    (single_le_sum (fun j _ => hΛ j) (mem_univ i)).trans (le_add_of_nonneg_right
+      (sum_nonneg fun e _ => sum_nonneg fun f _ => abs_nonneg _))
+  have hvT : ∀ e f, v f - v e ≤ T := fun e f =>
+    (le_abs_self _).trans <| (single_le_sum (f := fun f => |v f - v e|)
+      (fun _ _ => abs_nonneg _) (mem_univ f)).trans <|
+      (single_le_sum (f := fun e => ∑ f, |v f - v e|)
+        (fun _ _ => sum_nonneg fun _ _ => abs_nonneg _) (mem_univ e)).trans
+      (le_add_of_nonneg_left (sum_nonneg fun i _ => hΛ i))
+  have hΦu : Φ univ = 0 := by
+    have hu : Integral.sublevel (lev M v) T = univ :=
+      eq_univ_of_forall fun i => Integral.mem_sublevel.2 (hΛT i)
+    rw [← hu, hΦ T hT0, POSL.N_eq_self hE hvT, (nu_eq_iff hk).2 hM, if_neg (by omega), zero_mul]
   have hN := POSL.isAdmissible hE hM v
   rw [(Validity.update_eq_integral hE hk hr hrk hN (b := b)).2,
-    (Integral.gapSum_eq_integral_Ioi (Dplus_nonneg v) (obs_univ hE hk hM hrk b)).2]
-  refine setIntegral_congr_fun measurableSet_Ioi fun t ht => ?_
-  have ht0 : 0 ≤ t := le_of_lt ht
-  simp only [obs, relOf_sublevel v ht0, ← POSL.N_eq_NG ht0, ite_zero_mul_ite_zero, mul_one]
-
-end SignedTropical.Rainbow.GapUpdate
+    ← setIntegral_congr_fun measurableSet_Ioi (fun t ht => hΦ t (le_of_lt ht)),
+    ← (Integral.gapSum_eq_integral_Ioi hΛ hΦu).2, gapSum]
+  refine sum_congr rfl fun i hi => ?_
+  have hs : 0 ≤ sortedVal (lev M v) i := (sortedVal_zero (lev M v)).symm.le.trans
+    (sortedVal_mono hΛ (Nat.zero_le i) (mem_range.1 hi).le)
+  rw [Integral.threshSet_eq_sublevel]
+  simp only [hΦdef, bits_sublevel v hs]

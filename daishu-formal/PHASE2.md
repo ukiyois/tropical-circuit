@@ -8,7 +8,7 @@ This file is the index.  The natural-language statement and the step-structured 
 formalized result, written to agree with the Lean statement exactly, are in the companion file of
 its module under `notes/`, listed in the last column of the tables below.
 
-Labels follow the revision of `greedy_intersection.tex` of 2026-10-14.  Some notes predate the
+Labels follow the revision of `greedy_intersection.tex` of 2026-10-16.  Some notes predate the
 revision of 2026-10-12 and use two old labels: `lem:observer`, Step 4 (the Boolean augmenting
 path circuit) is now `lem:augment`, and `cor:classes`, items 6 and 7 (transversal matroids and
 gammoids) are now `cor:transversal`.
@@ -32,13 +32,23 @@ Revision of 2026-10-14.  The matroid intersection circuit asks the test of `y` o
 `A ∋ y` with `A - y` independent (`MI.ExchOracle`), and such a set is independent in `N_G` iff
 the term of the cluster of `y` in the rank formula is tight: one rank evaluation per test
 (`Observer.locV_exchOracle`) instead of `m`.  The observer of stage `r` runs `r + 1` rounds of
-augmentation (`MI.avGuardV_eq`), and its size is `O(r m² (s + m))`.  Theorem C has size at most
-`1664 k³ m⁵ (s+m) + 2`, and `696 k³ m⁴ (s+m) + 2` when every component of `M` has rank at most
-one (Corollary `cor:rankone`, `Rainbow/RankOne.lean`).  Theorem D: `1664 · 2400 m⁸ (s₁+s₂+m) + 2`
-for common bases, and, with one padded instance (`TheoremD.minCommonBaseWeight_pad`) instead of
-`m` truncations, `1664 · 2613249 m⁸ (s₁+s₂+m) + 3` for common independent sets.
+augmentation (`MI.avGuardV_eq`), and its size is `O(r m² (s + m))`.  Theorem D for common
+independent sets uses one padded instance (`TheoremD.minCommonBaseWeight_pad`) instead of `m`
+truncations.
 
-Status: complete (2026-10-14).  65 modules, about 23,350 lines; `lake build` reports no errors and no warnings, and every main theorem depends only on `propext`, `Classical.choice` and `Quot.sound`.
+Revision of 2026-10-16 (event levels).  The observer reads the `m + 2m²` event bits
+`[t_x ≤ t]`, `[T_xy ≤ t]`, `[ω_xy ≤ t]` of Lemma `lem:events` (`Rainbow/Events.lean`) instead of
+the `m²` bits of `G_t`, and `N(t)` changes only at the `2m` levels `t_x`, `ρ_x`
+(`Events.bott_inLev`, `Events.uval_inLev`).  The one-update circuit computes these values (the
+entry times by the compiler of Theorem `thm:compiler`, the merge values by the Floyd–Warshall
+algorithm over `(min, max)`) and runs the compiler at the `2m` levels (Corollary `cor:levels`,
+`LevelCompiler.lean`): `2m` lifted copies of the observer instead of `m²`.  Theorem C has size at
+most `3328 k³ m⁴ (s+m) + 2`, and `1390 k³ m³ (s+m) + 2` when every component of `M` has rank at
+most one (Corollary `cor:rankone`, `Rainbow/RankOne.lean`).  Theorem D:
+`3328 · 1200 m⁷ (s₁+s₂+m) + 2` for common bases and `3328 · 653313 m⁷ (s₁+s₂+m) + 3` for common
+independent sets.
+
+Status: complete (2026-10-16).  67 modules, about 24,530 lines; `lake build` reports no errors and no warnings, and every main theorem depends only on `propext`, `Classical.choice` and `Quot.sound`.
 
 ## 1. Module map
 
@@ -64,12 +74,14 @@ Status: complete (2026-10-14).  65 modules, about 23,350 lines; `lake build` rep
 | `Rainbow/StageLength.lean` | `SignedTropical.Rainbow.StageLength` | `thm:stagelength`: the crossing pair (in one component), the epoch with `ρ = 0`, the stage bounds `1 + (r - 1) k m` and, with a base fixed for the whole stage, `1 + k (2m - k - 1)` | `notes/StageLength.md` |
 | `Rainbow/RankOne.lean` | `SignedTropical.Rainbow.RankOne` | `cor:rankone`: components of rank at most one, every update ends an epoch, stages of at most `r` updates | `notes/StageLength.md`, Section 1.7 |
 | `BoolAlg/*.lean` | `SignedTropical.BoolAlg` | Boolean gadgets: arithmetic, counting, relations, paths, composition | `notes/P6a-boolalg.md` |
-| `Rainbow/MICircuit.lean` | `SignedTropical.Rainbow.MI` | `lem:augment`: the matroid intersection circuit with `j` rounds, generic in context-dependent exchange tests indexed by the added element (used in `lem:observer`, Step 4, and in `cor:transversal`) | `notes/P6b-micircuit.md` |
-| `Rainbow/ObserverOracle.lean` | `SignedTropical.Rainbow.Observer` | `lem:observer`, Steps 1 to 3: the context of `G` and the exchange tests of `N_G` | `notes/P6c-observer.md` |
-| `Rainbow/Observer.lean`, `Rainbow/TheoremCFinal.lean` | `SignedTropical.Rainbow.Observer`, `...TheoremCFinal` | `lem:observer` (`r₀ + 1` rounds); Theorem C, unconditional, size at most `1664 k³ m⁵ (s+m) + 2` | `notes/P6c-observer.md` |
-| `Rainbow/GapUpdate.lean` | `SignedTropical.Rainbow.GapUpdate` | `lem:oneupdate`, Steps 1 and 2: the update as a gap sum over pairs | `notes/GapUpdate.md` |
+| `Rainbow/MICircuit.lean` | `SignedTropical.Rainbow.MI` | `lem:augment`: the matroid intersection circuit with `j` rounds, generic in context-dependent exchange tests indexed by the added element (used in `lem:observer`, Step 3, and in `cor:transversal`) | `notes/P6b-micircuit.md` |
+| `Rainbow/Events.lean` | `SignedTropical.Rainbow.Events` | `lem:events`: entry times, merge values by Floyd–Warshall over `(min, max)`, the `2m` levels and the covering lemma, order values, the query values `𝒬(v)` | `notes/P6d-events.md` |
+| `LevelCompiler.lean` | `SignedTropical` | `cor:levels`: the compiler at levels computed inside the circuit | `notes/P6d-events.md` |
+| `Rainbow/ObserverOracle.lean` | `SignedTropical.Rainbow.Observer` | `lem:observer`, Steps 1 and 2: the context from the event bits and the exchange tests of `N(t)` | `notes/P6c-observer.md` |
+| `Rainbow/Observer.lean`, `Rainbow/TheoremCFinal.lean` | `SignedTropical.Rainbow.Observer`, `...TheoremCFinal` | `lem:observer` (`r₀ + 1` rounds, on the `m + 2m²` event bits); Theorem C, unconditional, size at most `3328 k³ m⁴ (s+m) + 2` | `notes/P6c-observer.md` |
+| `Rainbow/GapUpdate.lean` | `SignedTropical.Rainbow.GapUpdate` | `lem:oneupdate`, Step 3: the update as a gap sum over the `2m` event levels | `notes/GapUpdate.md` |
 | `Rainbow/Schedule.lean` | `SignedTropical.Rainbow.Schedule` | `thm:C`, Steps 1 to 4: the schedule for valid stage lengths (`min(r(⌊m²/4⌋+1), 1+(r-1)km, 1+k(2m-k-1))` in general, `r` for components of rank one), the invariant, `Ψ = Opt`, the number of updates, weighted by the rounds of the observers | `notes/Schedule.md` |
-| `Rainbow/OneUpdate.lean`, `Rainbow/TheoremC.lean` | `SignedTropical.Rainbow.TheoremC` | the circuits of `lem:oneupdate` and Theorem C, from observers | `notes/P7-theoremC.md` |
+| `Rainbow/OneUpdate.lean`, `Rainbow/TheoremC.lean` | `SignedTropical.Rainbow.TheoremC` | the circuits of `lem:oneupdate` (the event values, the compiler at the `2m` levels) and Theorem C, from observers | `notes/P7-theoremC.md` |
 | `Rainbow/TheoremDRank.lean` | `SignedTropical.Rainbow.TheoremD` | rank circuits of `M₁ ⊕ M₂✶`, of truncations and of the padded matroids | `notes/P8-theoremD.md` |
 | `Rainbow/TheoremD.lean` | `SignedTropical.Rainbow.TheoremD` | Theorem D, both parts, explicit constants | `notes/P8-theoremD.md` |
 | `Classes/Transversal.lean`, `Classes/TransversalGammoid.lean` | `SignedTropical.Classes.Transversal` | `cor:transversal`: transversal matroids, gammoids, the Ingleton and Piff theorem | `notes/E5-transversal.md` |
@@ -102,6 +114,7 @@ fibres of `blk : Fin m → Fin k`.
 | `signed_assignment.tex` | `prop:two-readings` | `Integral.gapSum_eq_integral_Ioi`, `gapSum_eq_integral_lovasz` | proved |
 | `signed_assignment.tex` | `lem:lipschitz`, Lipschitz part of `cor:integer-observable` | `Integral.lipschitz`, `integer_observable_lipschitz` | proved |
 | `greedy_intersection.tex` | `def:ti` (the two expressions) | `Integral.gapSum_eq_intervalIntegral`, `gapSum_eq_integral_Ioi` | proved |
+| `greedy_intersection.tex` | `cor:levels` | `levB_spec`, `levCost_le`, `levVal_eq` | proved |
 | `greedy_intersection.tex` | `cor:count` | `Asymptotic.corollaryD_tendsto`, `corollaryD_explicit`, `SparsePaving.rpow_le_ncard_matroids` | proved |
 | `greedy_intersection.tex` | `cor:classes`, item 5 (cycle matroids) | `Classes.Graphic.Multigraph.corollaryC_graphic` | proved |
 | `greedy_intersection.tex` | `lem:minbases` | `Conn.isMinBase_iff_fundCircuit`, `isMinBase_iff_forall_subset_closure`, `isBase_minBases_iff`, `IsMinBase.isMinBase_exchange_iff`, `IsMinBase.fundCircuit_minBases`, `Conn.connRel_equivalence`, `Conn.isMinBase_iff_comp`, `minBases_congr` | proved |
@@ -119,14 +132,15 @@ fibres of `blk : Fin m → Fin k`.
 | `greedy_intersection.tex` | `def:update`, the paragraph after it, `eq:update-integral` | `Validity.tau`, `lam`, `update`, `isLeast_tau`, `mem_Av_iff_lam_le`, `volume_eq`, `update_eq_integral` | proved |
 | `greedy_intersection.tex` | `thm:validity` | `Validity.validity`, `psi_update`, `isMinBase_update`, `nu_le_nu_update` | proved |
 | `greedy_intersection.tex` | `def:posl`, `prop:posl` | `POSL.u`, `POSL.N`, `isAdmissible`, `prop_posl`, `N_eq_NG`, `POSLAssign.isBase_N_iff_restrict` | proved |
+| `greedy_intersection.tex` | `lem:events` | `Events.entry_spec`, `Events.mem_PO_iff`, `Events.fwV_le_iff`, `Events.sameCluster_iff`, `Events.bott_inLev`, `Events.uval_inLev`, `Events.ord_iff`, `Events.Qv_inLev` | proved |
 | `greedy_intersection.tex` | `thm:potential` | `Potential.potential`, `stage_bound`, `stageMap_eq_self`, `card_piPairs_le` | proved |
 | `greedy_intersection.tex` | `thm:stagelength` | `StageLength.exists_crossing_pair`, `crossPairs_ssubset`, `av_ne_of_rk_eq_zero`, `av_ne_of_card_av_eq`, `lt_of_nu_iterate_eq`, `resolvedPairs_ssubset`, `le_of_nu_iterate_eq`, `Schedule.validLength_stageLength` | proved |
 | `greedy_intersection.tex` | `cor:rankone` | `RankOne.circuit_encard_le_two`, `RankOne.av_ne_av`, `RankOne.lt_of_nu_iterate_eq`, `Schedule.validLength_rankOne`, `TheoremCFinal.theoremC_final_rankOne` | proved |
 | `greedy_intersection.tex` | `prop:ladder` | none | not formalized; checked by computation (Section `sec:checks` of the paper) |
 | `greedy_intersection.tex` | `lem:augment` | `MI.ExchOracle`, `MI.roundsB_impl`, `MI.stateV_eq`, `MI.miV_spec`, `MI.miCost_add_le`, `MI.avGuardCircuit_spec`, `MI.nuCircuit_spec` | proved |
-| `greedy_intersection.tex` | `lem:observer` | `Observer.lem_observer`, `Observer.locV_exchOracle`, `TheoremCFinal.isObserver_observer`, `observer_size_le` | proved |
-| `greedy_intersection.tex` | `lem:oneupdate` | `TheoremC.oneUpdate`, `oneUpdate_bigO`, `GapUpdate.update_eq_gapSum` | proved |
-| `greedy_intersection.tex` | `thm:C` | `TheoremCFinal.theoremC_final`, `theoremC_final_poly`, `theoremC_final_rankOne`, `TheoremC.theoremC_of_validLength`, `Schedule.psi_schedule`, `Schedule.rounds_le`, `Schedule.sum_stageLength_mul_le` | proved |
+| `greedy_intersection.tex` | `lem:observer` | `Observer.lem_observer`, `Observer.evCtxV_eq`, `Observer.locV_exchOracle`, `TheoremCFinal.isObserver_observer`, `observer_size_le` | proved |
+| `greedy_intersection.tex` | `lem:oneupdate` | `TheoremC.oneUpdate`, `TheoremC.updV_eq_update`, `TheoremC.roundSize_le`, `GapUpdate.update_eq_levSum` | proved |
+| `greedy_intersection.tex` | `thm:C` | `TheoremCFinal.theoremC_final`, `theoremC_final_poly`, `theoremC_final_rankOne`, `TheoremC.theoremC_of_validLength`, `TheoremC.theoremC_bigO`, `Schedule.psi_schedule`, `Schedule.rounds_le`, `Schedule.sum_stageLength_mul_le` | proved |
 | `greedy_intersection.tex` | `thm:D` | `TheoremD.theoremD`, `theoremD_commonBase`, `theoremD_commonIndep`, `minCommonBaseWeight_pad` | proved |
 | `greedy_intersection.tex` | `cor:classes`, items 2 to 4 and the dual in item 5 | `Classes.theoremA_field`, `theoremA_rat`, `dual_rankCircuit`, `Graphic.Multigraph.corollaryC_cographic` | proved |
 | `greedy_intersection.tex` | `cor:transversal` (transversal matroids, gammoids) | `Classes.Transversal.theoremA_transversal`, `transversal_rankCircuit`, `dual_indep_iff_isLinked`, `gammoid_rankCircuit`, `theoremA_gammoid` | proved |
