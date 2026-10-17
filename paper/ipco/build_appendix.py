@@ -16,7 +16,6 @@ of the full paper are dropped.  Placeholders:
                        proof of Lemma lem:crossing and the counting
   %%CROSSING%%         Lemma lem:crossing: the statement of the stage length
                        theorem without its last sentence
-  %%CHECKS%%           the list of computational checks
 """
 import io
 import os
@@ -157,13 +156,6 @@ def crossing():
             + "\n\\end{lemma}")
 
 
-def checks():
-    head = "\\paragraph{Computational checks.}"
-    i = master.index(head)
-    j = master.index("\\end{itemize}", i) + len("\\end{itemize}")
-    return master[i:j]
-
-
 def fill(src):
     lemma, theorem = stage_parts()
 
@@ -184,7 +176,6 @@ def fill(src):
         fail("unknown placeholder " + kind)
 
     out = re.sub(r"%%(ENV|PROOF|PROOFREF|PROOFBODY|PROOFOF|STAGE):([^%]+)%%", repl, src)
-    out = out.replace("%%CHECKS%%", checks())
     out = out.replace("%%CROSSING%%", crossing())
     return out
 

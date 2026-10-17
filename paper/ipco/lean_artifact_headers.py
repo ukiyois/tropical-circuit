@@ -311,9 +311,9 @@ representation).
 -/"""
 
 HEADERS["Counting"] = r"""/-!
-# Counting Boolean circuits: the first step of Corollary 28
+# Counting Boolean circuits: the first step of Corollary 27
 
-Corollary 28 of the paper: most matroids need large (max,+,-)-circuits.  There are
+Corollary 27 of the paper: most matroids need large (max,+,-)-circuits.  There are
 `2^{2^m / poly(m)}` matroids on `m` elements and `2^{O(s log s)}` Boolean circuits of size
 `s`, and Theorem B transfers the bound.  This module proves the counting step; the
 conclusion is in `Asymptotic.lean`.
@@ -335,9 +335,9 @@ conclusion is in `Asymptotic.lean`.
 -/"""
 
 HEADERS["Asymptotic"] = r"""/-!
-# Corollary 28: most matroids need large (max,+,-)-circuits
+# Corollary 27: most matroids need large (max,+,-)-circuits
 
-Corollary 28 of the paper: for all large `m`, most matroids `M` on `m` labeled elements
+Corollary 27 of the paper: for all large `m`, most matroids `M` on `m` labeled elements
 have no (max,+,-)-circuit for `h_M` of size less than `2^{m/2}/m²`.
 
 Matroids are Mathlib's `Matroid (Fin m)` with ground set `univ`; let `N(m)` be their
@@ -352,7 +352,7 @@ than `2^{m/2}/m²` computes `h_M` on `{0,1}^m` (at the indicator vectors of all 
   `N(m) ≥ 2^a` with `m(m+1)a ≥ 2^m` (`exists_two_pow_le_ncard_matroids`, from
   `SparsePaving.two_pow_ceil_le_ncard_matroids`), and `⌊2^m/m³⌋ + m + (2m+2)s + mL ≤ a`
   (`exponent_le`).
-* **Corollary 28** (`count_tendsto`): `A(m)/N(m) → 0`.  The same holds for circuits that
+* **Corollary 27** (`count_tendsto`): `A(m)/N(m) → 0`.  The same holds for circuits that
   compute `h_M` at every `w ∈ ℝ^m` (`count_tendsto_of_forall`), and the fraction of matroids
   for which every (max,+,-)-circuit computing `h_M` on `{0,1}^m` has size at least
   `2^{m/2}/m²` tends to `1` (`count_most`).
@@ -398,7 +398,7 @@ BODY = {
         ("**Comparison** (`lem:observer`, Steps 1 and 4; `thm:D`, Step 4)",
          "**Comparison** (`lem:augment`, Step 3; `lem:oneupdate`, Step 2; `thm:D`, Step 4)"),
         ("**Equality** (`lem:observer`, Step 1)",
-         "**Equality** (`lem:observer`, Step 2; `cor:transversal`, Step 3)")],
+         "**Equality** (`lem:observer`, Step 2; `cor:transversal`, Step 2)")],
     "BoolAlg.Bits": [
         ("(`lem:observer`, Step 2 \"its element of least index\" and Step 4\n"
          "\"the sink of least index ..., then predecessors of least index\")",
@@ -408,7 +408,7 @@ BODY = {
         ("**Sum of `r` numbers** of width `w` (`lem:observer`, Step 3): on",
          "**Sum of `r` numbers** of width `w`: on"),
         ("(`lem:observer`, Step 3, \"an independence\ntest `[r_{N_G}(J) = |J|]`\"; `cor:transversal`, Step 3)",
-         "(`lem:observer`, Step 2;\n`cor:transversal`, Step 3)")],
+         "(`lem:observer`, Step 2;\n`cor:transversal`, Step 2)")],
     "BoolAlg.ExchangeBits": [
         ("(Step 3 of the proof of `lem:observer`)",
          "(`lem:augment`, Steps 1 and 3)")],
@@ -440,6 +440,13 @@ BODY = {
          "`PO_G` from rank queries (Definition `def:posl`)"),
         ("read from `G` (Lemma `lem:observer`, Step 2): at",
          "read from `G` (Lemma `lem:observer`, Step 1): at")],
+    "Rainbow.PossiblyOptimal": [
+        ("  minimum base of some `u` with `|u_e - v_e| ≤ t/2` for every `e`; are equivalent.",
+         "  minimum base of some `u` with `|u_e - v_e| ≤ t/2` for every `e`; are equivalent.\n"
+         "  Conditions (1), (2) and (5) are items 1 to 3 of the proposition."),
+        ("minimum base for some `u` with `‖u - v‖_∞ ≤ t/2`. -/",
+         "minimum base for some `u` with `‖u - v‖_∞ ≤ t/2`.  Conditions (1), (2) and (5) are\n"
+         "items 1 to 3 of Proposition `prop:pos`. -/")],
     "Rainbow.TheoremD": [
         ("* Step 4 (`minCommonBaseWeight_pad`)", "* Steps 4 and 5 (`minCommonBaseWeight_pad`)"),
         ("* The circuit of Step 4 (`negNegCircuit`", "* The circuit of Step 5 (`negNegCircuit`"),
@@ -470,6 +477,6 @@ BODY = {
         ("**Lemma `lem:bit` (exact membership at amplitude).**",
          "**Exact membership at amplitude** (Lemma `lem:bit`).")],
     "Counting": [
-        ("**Corollary D, counting form.**", "**Corollary 28, counting form.**"),
-        ("**Corollary D.**", "**Corollary 28, conditional form.**")],
+        ("**Corollary D, counting form.**", "**Corollary 27, counting form.**"),
+        ("**Corollary D.**", "**Corollary 27, conditional form.**")],
 }

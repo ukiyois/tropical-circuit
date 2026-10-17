@@ -8,6 +8,8 @@
 \usepackage{amsthm}
 \usepackage{microtype}
 \usepackage{tikz-cd}
+\usepackage{booktabs}
+\usepackage{array}
 \usepackage[hidelinks,pdfauthor={},pdftitle={Greedy and Matroid Intersection without Branching}]{hyperref}
 
 \newcommand{\R}{\mathbb R}
@@ -19,8 +21,6 @@
 \newcommand{\Pos}{\mathcal P}
 \newcommand{\CC}{\mathcal C}
 \newcommand{\Av}{\operatorname{Av}}
-\newcommand{\STrop}{\operatorname{size}_{\max,+,-}}
-\newcommand{\Bool}{\operatorname{size}_{\mathrm{Bool}}}
 
 \spnewtheorem{mainthm}{Theorem}{\bfseries}{\itshape}
 \renewcommand{\themainthm}{\Alph{mainthm}}
@@ -92,9 +92,10 @@ converts into a ReLU neural network of size $3S$~\cite{hertrich-kober-loho26},
 so every circuit below also yields an exact ReLU neural network.
 
 Let $M$ be a matroid on a ground set $E$ with $|E|=m$, rank function $r$,
-rank $k=r(E)$ and set of bases $\Bases(M)$.  For $u\in\R^{E}$ and $X\subseteq E$ let
-$u(X)=\sum_{e\in X}u_e$, let $h_M(w)=\max_{B\in\Bases(M)}w(B)$, and let
-$L=\lceil\log_2(k+1)\rceil$.  Our circuits read
+rank $k=r(E)$ and set of bases $\Bases(M)$.  For $u\in\R^{E}$ and $X\subseteq E$ we
+write $u(X)=\sum_{e\in X}u_e$; then $h_M(w)=\max_{B\in\Bases(M)}w(B)$ is the largest
+weight of a base, and $L=\lceil\log_2(k+1)\rceil$ is the number of binary digits of
+$k$.  Our circuits read
 $M$ only through a \emph{Boolean rank circuit}, a Boolean circuit that outputs
 the binary digits of $r(X)$ from the indicator vector of $X\subseteq E$.
 
@@ -111,8 +112,8 @@ has a Boolean rank circuit of size at most $15S^{2}+40S$.
 \end{mainthm}
 
 Hence, for every matroid, the $(\max,+,-)$-circuit complexity of $h_M$ and the
-Boolean circuit complexity of its rank function are polynomially related
-(Corollary~\ref{cor:equiv} in Appendix~\ref{app:greedy}).  Binary matroids,
+Boolean circuit complexity of its rank function are polynomially related.
+Binary matroids,
 matroids represented over $\mathbb Q$ or over a fixed finite field, graphic
 matroids and the duals of all of these (Corollary~\ref{cor:classes}), as well as
 transversal matroids and gammoids (Corollary~\ref{cor:transversal} in
@@ -122,9 +123,9 @@ matroids need $(\max,+,-)$-circuits of size $2^{m/2-O(\log m)}$
 (Corollary~\ref{cor:count} in Appendix~\ref{app:greedy}).
 
 Let the ground set of $M$ be partitioned into blocks $R_1,\ldots,R_k$.  A set is
-\emph{rainbow} if it meets every block at most once, so a rainbow base meets every
-block once, and $\Opt(w)$ is the least weight
-$w(B)$ of a rainbow base $B$ of $M$.  Rainbow spanning trees are the rainbow
+\emph{rainbow} if it meets every block at most once; a rainbow base meets every
+block exactly once.  Let $\Opt(w)$ be the least weight $w(B)$ of a rainbow base $B$
+of $M$.  Rainbow spanning trees are the rainbow
 bases of a graphic matroid with colored edges, and their generating polynomial
 specializes to the permanent (Proposition~\ref{prop:star} in
 Appendix~\ref{app:lagr}).  Arborescences are the rainbow bases of a graphic
@@ -357,7 +358,7 @@ For the following matroids $M$ on $m$ elements, the function $h_M$ has a $(\max,
 \subsection{Setting and the Lagrangian}
 \label{sec:lagr}
 
-Throughout this section the rank function of $M$ is written $r_M$, as the letter
+Throughout this section we write $r_M$ for the rank function of $M$, as the letter
 $r$ denotes a stage, and $E_Q=\bigcup_{b\in Q}R_b$ for $Q\subseteq[k]$.  For a
 matroid $N$ on $E$ let $\nu(N)$ be the
 largest size of a rainbow independent set of $N$, and let $\Av(N)$ be the set of
@@ -394,8 +395,6 @@ For a base $B$ and $t\ge0$ the following are equivalent.
 \begin{enumerate}
   \item $\theta(B)\le t$.
   \item $B$ is a minimum base for $v-t\mathbf 1_B$.
-  \item $v(B)-v(B')\le t\,|B\setminus B'|$ for every base $B'$.
-  \item $e\in\cl\bigl(B\cap\{g:v_g\le v_e+t\}\bigr)$ for every $e\in E$.
   \item $B$ is a minimum base for some $u$ with $\|u-v\|_\infty\le t/2$.
 \end{enumerate}
 \end{proposition}
@@ -565,17 +564,17 @@ $\Lambda\cup\{0\}$ and beyond the largest one.
 \begin{proof}[Proof sketch]
 An element $x$ enters $\PO_t$ at $t_x=\CC_{\phi_x}(D^{x})$, where $\phi_x$ is
 antitone, and two clusters merge at the minimax distance $T_{xy}$.
-If no element of the cluster of $x$ at scale $h=T_{xy}$ enters at $h$, the least
-element $z$ of a class of the relation $T_{ef}<h$ on this cluster that avoids the least element of the cluster
-has $\sigma_z=h$ (Appendix~\ref{app:events}).
+If no element of the cluster of $x$ at scale $h=T_{xy}$ enters at $h$, then
+$T_{ef}<h$ is an equivalence relation on this cluster, and the least element $z$ of
+a class that avoids the least element of the cluster has $\sigma_z=h$
+(Appendix~\ref{app:events}).
 \end{proof}
 
 \subsection{Termination}
 \label{sec:term}
 
-Fix a stage $r<k$ and a state, that is potentials $p$, with $\nu_0=r$, let $a$ be
-its update under PO-SL,
-and let $v'=v-a_{\blk}$.  The blocks of $S_0$ are raised by the full
+Fix a stage $r<k$ and a state, that is, potentials $p$ with $\nu_0=r$.  Let $a$ be
+the update of PO-SL at this state, and let $v'=v-a_{\blk}$.  The blocks of $S_0$ are raised by the full
 length $\tau$ of the update, and the others by less.  Let $\Pi(v)$ be the set of pairs in which an element of a fully raised block
 lies at or below an element of another block,
 \[
@@ -781,22 +780,20 @@ $\max_Xw(X)=-\min\{w'(B):B\in\Bases(M_1')\cap\Bases(M_2')\}$
 \label{sec:checks}
 
 A Lean~4 development with Mathlib, both at version 4.32.0, proves the results of
-Sections~\ref{sec:model} to~\ref{sec:two}, with the constants of the appendix,
-for the matroids of Mathlib's \texttt{Matroid} on $\{0,\ldots,m-1\}$; there a
-circuit is a list of gates with the semantics of Definition~\ref{def:circuits},
-and its size is the number of gates.  Not formalized are uniformity and the complexity classes in
-Proposition~\ref{prop:obstacles}(2), whose reduction is formalized.  The main
-theorems depend on no axioms beyond the three standard axioms of Lean.  The
-development is provided \leanartifact\ and described, with the constants of
-Theorems~\ref{thm:C} and~\ref{thm:D} and the computational checks, in
-Appendix~\ref{app:checks}.
+Sections~\ref{sec:model} to~\ref{sec:two}, with explicit bounds in place of
+$O(\cdot)$, for the matroids of Mathlib's \texttt{Matroid} on $\{0,\ldots,m-1\}$;
+there a circuit is a list of gates with the semantics of
+Definition~\ref{def:circuits}, and its size is the number of gates.  Uniformity is
+not formalized, and of Proposition~\ref{prop:obstacles}(2) only the reduction is.  The
+main theorems depend on no axioms beyond the
+three standard axioms of Lean.  The development is provided \leanartifact;
+Table~\ref{tab:lean} in Appendix~\ref{app:checks} lists the results it proves.
 
 \section{Open Problems}
 \label{sec:scope}
 
-On the inputs of Proposition~\ref{prop:ladder} in Appendix~\ref{app:scope}, a
-stage of PO-SL takes $m-3$ updates at $r=2$ and $k=3$, and $\Pos_t$ needs one.  Does a stage of PO-SL take $O(m)$ updates, or
-can it take $\Theta(km)$?  Is there an admissible family determined by
+By Theorem~\ref{thm:stagelength}, a stage of PO-SL takes $O(km)$ updates.  Does
+it take $O(m)$, or can it take $\Theta(km)$?  Is there an admissible family determined by
 $\mathcal G_t$ whose stages take $O(r)$ updates?  For the assignment
 problem, how far can the exponent $11$ be lowered?  Do rainbow questions about
 $\Pos_t$ stay NP-hard on the states that these updates reach, and is there a

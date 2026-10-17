@@ -57,7 +57,7 @@ directory `GreedyIntersection/`.
 | Definition 15, Proposition 16 | `Rainbow.POSL.N`, `Rainbow.POSL.prop_posl` | `Rainbow/POSL` |
 | Lemma 17 | `Rainbow.Events.mem_PO_iff`, `Rainbow.Events.sameCluster_iff`, `Rainbow.Events.bott_inLev`, `Rainbow.Events.ord_iff` | `Rainbow/Events` |
 | Theorem 18 | `Rainbow.Potential.potential`, `Rainbow.Potential.stage_bound` | `Rainbow/Potential` |
-| Theorem 19, Lemma 32 | `Rainbow.StageLength.exists_crossing_pair`, `Rainbow.StageLength.lt_of_nu_iterate_eq`, `Rainbow.StageLength.le_of_nu_iterate_eq` | `Rainbow/StageLength` |
+| Theorem 19, Lemma 31 | `Rainbow.StageLength.exists_crossing_pair`, `Rainbow.StageLength.lt_of_nu_iterate_eq`, `Rainbow.StageLength.le_of_nu_iterate_eq` | `Rainbow/StageLength` |
 | Corollary 20 | `Rainbow.RankOne.lt_of_nu_iterate_eq` | `Rainbow/RankOne` |
 | Lemma 21 | `Rainbow.MI.miV_spec`, `Rainbow.MI.avIndCircuit_spec` | `Rainbow/MICircuit` |
 | Lemma 22 | `Rainbow.Tests.lem_levelTests` | `Rainbow/Tests` |
@@ -67,17 +67,14 @@ directory `GreedyIntersection/`.
 | Theorem D | `Rainbow.TheoremD.theoremD`, `Rainbow.TheoremD.theoremD_commonBase`, `Rainbow.TheoremD.theoremD_commonIndep` | `Rainbow/TheoremD` |
 | Lemma 25, equation (1) | `Rainbow.Conn.isMinBase_iff_fundCircuit`, `Rainbow.rk_minBases` | `Rainbow/Connectivity`, `Rainbow/MinBases` |
 | Corollary 26 | `integer_levelSum` | `SumCircuit` |
-| Corollary 28 | `Asymptotic.count_explicit`, `Asymptotic.count_tendsto` | `Asymptotic` |
-| Proposition 29 | `Rainbow.Graphs.rainbowTreePolynomial_eq_permanent` | `Rainbow/Star` |
-| Lemma 30 | `Rainbow.Pos.mem_pos_of_isMinBase_shift` | `Rainbow/PossiblyOptimal` |
-| Lemma 31 | `Rainbow.Exchange.card_av_add_nu` | `Rainbow/Exchange` |
-| Corollary 33 | `Classes.Transversal.theoremA_transversal`, `Classes.Transversal.theoremA_gammoid` | `Classes/Transversal`, `Classes/TransversalGammoid` |
+| Corollary 27 | `Asymptotic.count_explicit`, `Asymptotic.count_tendsto` | `Asymptotic` |
+| Proposition 28 | `Rainbow.Graphs.rainbowTreePolynomial_eq_permanent` | `Rainbow/Star` |
+| Lemma 29 | `Rainbow.Pos.mem_pos_of_isMinBase_shift` | `Rainbow/PossiblyOptimal` |
+| Lemma 30 | `Rainbow.Exchange.card_av_add_nu` | `Rainbow/Exchange` |
+| Corollary 32 | `Classes.Transversal.theoremA_transversal`, `Classes.Transversal.theoremA_gammoid` | `Classes/Transversal`, `Classes/TransversalGammoid` |
 
-Not formalized: the uniformity of the circuit families; the complexity classes in
-Proposition 10(2), whose reduction is formalized; Corollary 27, which combines Theorems A
-and B; Proposition 34, which is checked by computation (Appendix E); the remark on
-simulating computations by Boolean circuits in Appendix B and the two examples opening
-Appendices C.4 and C.6.
+Not formalized: the uniformity of the circuit families, and the complexity classes in
+Proposition 10(2), whose reduction is formalized.
 
 The modules `Lattice` and `Subtractionfree`, and the Lipschitz bounds in `Integral`, contain
 auxiliary results that the paper does not state.

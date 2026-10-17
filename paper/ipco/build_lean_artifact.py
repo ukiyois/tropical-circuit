@@ -113,7 +113,7 @@ PROSE = [
     ("guards", "indicator factors"), ("guard", "indicator factor"),
     ("filtration", "family of sublevel sets"),
     ("Phase 1", "this development"), ("Phase 2", "this development"),
-    ("Corollary C", "Corollary 6(1)"), ("Corollary D", "Corollary 28"),
+    ("Corollary C", "Corollary 6(1)"), ("Corollary D", "Corollary 27"),
 ]
 PROSE_LIFT = [("lifted", "simulated"), ("lifts", "simulates"), ("Lifting", "Simulating"),
               ("lifting", "simulating"), ("lift", "simulation")]

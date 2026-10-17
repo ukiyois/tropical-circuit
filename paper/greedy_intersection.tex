@@ -5,6 +5,8 @@
 \usepackage{amssymb}
 \usepackage{amsthm}
 \usepackage{booktabs}
+\usepackage{array}
+\usepackage{placeins}
 \usepackage{microtype}
 \usepackage[margin=1in]{geometry}
 \usepackage{xcolor}
@@ -32,8 +34,6 @@
 \newcommand{\Pos}{\mathcal P}
 \newcommand{\CC}{\mathcal C}
 \newcommand{\Av}{\operatorname{Av}}
-\newcommand{\STrop}{\operatorname{size}_{\max,+,-}}
-\newcommand{\Bool}{\operatorname{size}_{\mathrm{Bool}}}
 
 \definecolor{acc}{RGB}{28,92,160}
 \definecolor{accl}{RGB}{226,236,248}
@@ -197,8 +197,8 @@ has a Boolean rank circuit of size at most $15S^{2}+40S$.
 \end{mainthm}
 
 So, for every matroid, the $(\max,+,-)$-circuit complexity of $h_M$ and the
-Boolean circuit complexity of its rank function are polynomially related, in
-both directions (Corollary~\ref{cor:equiv}).  A binary matroid represented by an
+Boolean circuit complexity of its rank function are polynomially related.  A
+binary matroid represented by an
 $n\times m$ matrix has a Boolean rank circuit of size $O(mn^{2})$ by Gaussian
 elimination without branching.  The same elimination over a field with $q$
 elements costs $O(q^{2}mn^{2})$ gates, graphic matroids are binary, matroids
@@ -214,7 +214,7 @@ By counting, most matroids need $(\max,+,-)$-circuits of size $2^{m/2-O(\log m)}
 \paragraph{Matroid intersection without branching.}
 Let the ground set of $M$ be partitioned into blocks $R_1,\ldots,R_k$, where $k$
 is the rank of $M$.  A set is \emph{rainbow} if it meets every block at most
-once, so a rainbow base meets every block once, and we write
+once; a rainbow base meets every block exactly once.  We write
 \[
   \Opt(w)=\min\{\,w(B):B\text{ a rainbow base of }M\,\}.
 \]
@@ -295,8 +295,7 @@ while the set of fully raised blocks never shrinks within a stage, and this
 bounds a stage by $r(\lfloor m^{2}/4\rfloor+1)$ updates.  One element of the pair
 can be taken in a minimum base fixed for the whole stage, and a pair that has
 crossed does not cross back, which bounds a stage by
-$\min\bigl(1+(r-1)km,\,1+k(2m-k-1)\bigr)$ updates (Theorem~\ref{thm:stagelength});
-no bound in terms of $r$ and $k$ alone holds (Proposition~\ref{prop:ladder}).
+$\min\bigl(1+(r-1)km,\,1+k(2m-k-1)\bigr)$ updates (Theorem~\ref{thm:stagelength}).
 
 \paragraph{Breakpoints.}
 For fixed weights, this family changes only at the levels where an element becomes
@@ -672,20 +671,6 @@ so the output bits are the binary digits of $r(T)$.
 \end{proof}
 
 \begin{corollary}
-\label{cor:equiv}
-Let $\STrop(h_M)$ be the least size of a $(\max,+,-)$-circuit that computes $h_M$
-at every $w\in\R^{E}$, and $\Bool(r)$ the least size of a Boolean rank circuit of
-$M$.
-Then
-\begin{align*}
-  \STrop(h_M)&\le3m\,\Bool(r)+mL+9m^{2}+4m+4L+1,\\
-  \Bool(r)&\le15\,\STrop(h_M)^{2}+40\,\STrop(h_M),
-\end{align*}
-and the second inequality holds also with the least size of a circuit that
-computes $h_M$ on $\{0,1\}^{E}$ only.
-\end{corollary}
-
-\begin{corollary}
 \label{cor:classes}
 For the following matroids $M$ on $m$ elements, the function $h_M$ has a $(\max,+,-)$-circuit of polynomial size.
 \begin{enumerate}
@@ -793,32 +778,10 @@ negations, the given circuit and one gate for the constant $1$.  Since
 $0\le r^{*}(S)\le m<2^{W}$, the result is $r^{*}(S)$, at
 $s+m+1+11(m+1)W$ gates.
 
-\emph{Item 5.}  Let $\chi_e\in\mathrm{GF}(2)^{V(G)}$ be the column of edge $e$ in
-the vertex-edge incidence matrix.  For a nonempty edge set $F$,
-\[
-  \sum_{e\in F}\chi_e=0\iff\deg_F(x)\equiv0\pmod2\text{ for every vertex }x,
-\]
-which holds for a cycle.  Conversely a nonempty $F$ with even degrees contains a
-cycle: a loop, or else the last vertex of a longest path in $F$ has a second edge
-in $F$, which by maximality returns to the path.  Hence, for every edge set $F$,
-\[
-  \begin{aligned}
-  (\chi_e)_{e\in F}\text{ is dependent over }\mathrm{GF}(2)
-  &\iff\sum_{e\in F'}\chi_e=0\text{ for some nonempty }F'\subseteq F\\
-  &\iff F\text{ contains a cycle},
-  \end{aligned}
-\]
-so the matrix represents $M(G)$, and items 1 and 4 with
+\emph{Item 5.}  The vertex-edge incidence matrix of $G$, an $n\times m$ matrix over
+$\mathrm{GF}(2)$, represents $M(G)$~\cite{oxley11}, and items 1 and 4 with
 Theorem~\ref{thm:A} give the two bounds.
 \end{proof}
-
-More generally, a computation of time $T$ on inputs of a fixed length is
-simulated by a Boolean circuit of size $O(T\log T)$~\cite{pippenger-fischer79}.
-So every matroid whose rank is computed in time polynomial in $m$ and in the
-length of a fixed description has a Boolean rank circuit, and by
-Theorem~\ref{thm:A} a $(\max,+,-)$-circuit for $h_M$, of size polynomial in
-these two quantities.  Corollary~\ref{cor:transversal} gives explicit sizes for
-transversal matroids and gammoids.
 
 \begin{corollary}
 \label{cor:count}
@@ -871,7 +834,7 @@ for large $m$, and
 \subsection{Setting and the Lagrangian}
 \label{sec:lagr}
 
-Throughout this section the rank function of $M$ is written $r_M$, as the letter
+Throughout this section we write $r_M$ for the rank function of $M$, as the letter
 $r$ denotes a stage, and $E_Q=\bigcup_{b\in Q}R_b$ for $Q\subseteq[k]$.  For a
 matroid $N$ on $E$ let $\nu(N)$ be the
 largest size of a rainbow independent set of $N$, and let $\Av(N)$ be the set of
@@ -1007,8 +970,6 @@ For a base $B$ and $t\ge0$ the following are equivalent.
 \begin{enumerate}
   \item $\theta(B)\le t$.
   \item $B$ is a minimum base for $v-t\mathbf 1_B$.
-  \item $v(B)-v(B')\le t\,|B\setminus B'|$ for every base $B'$.
-  \item $e\in\cl\bigl(B\cap\{g:v_g\le v_e+t\}\bigr)$ for every $e\in E$.
   \item $B$ is a minimum base for some $u$ with $\|u-v\|_\infty\le t/2$.
 \end{enumerate}
 \end{proposition}
@@ -1021,25 +982,11 @@ Throughout, $e\notin B$ and $f\in C(B,e)-e\subseteq B$, and $u=v-t\mathbf 1_B$.
   \text{(2)}\iff u_f-u_e=v_f-v_e-t\le0\ \text{for all }e\notin B,\ f\in C(B,e)-e\iff\theta(B)\le t.
 \]
 
-\emph{(2)$\Rightarrow$(3).}  For a base $B'$, $u(B)\le u(B')$ gives
-\[
-  v(B)-v(B')\le t\bigl(|B|-|B\cap B'|\bigr)=t\,|B\setminus B'|.
-\]
-
-\emph{(3)$\Rightarrow$(1).}  For the base $B'=B-f+e$,
-$v_f-v_e=v(B)-v(B')\le t\,|B\setminus B'|=t$.
-
-\emph{(1)$\Leftrightarrow$(4).}  For $e\in B$, (4) holds as
-$e\in B\cap\{g:v_g\le v_e+t\}$, and for $e\notin B$,
-\[
-  e\in\cl\bigl(B\cap\{g:v_g\le v_e+t\}\bigr)\iff C(B,e)-e\subseteq\{g:v_g\le v_e+t\}.
-\]
-
-\emph{(2)$\Rightarrow$(5).}  The weight $u+\tfrac t2\mathbf 1$ has the minimum
+\emph{(2)$\Rightarrow$(3).}  The weight $u+\tfrac t2\mathbf 1$ has the minimum
 bases of $u$, and
 $\|u+\tfrac t2\mathbf 1-v\|_\infty=\|\tfrac t2\mathbf 1-t\mathbf 1_B\|_\infty=\tfrac t2$.
 
-\emph{(5)$\Rightarrow$(1).}  If $B$ is minimum for $u'$ with
+\emph{(3)$\Rightarrow$(1).}  If $B$ is minimum for $u'$ with
 $\|u'-v\|_\infty\le t/2$, then $u'_f\le u'_e$ by Lemma~\ref{lem:minbases}(1), and
 \[
   v_f-v_e\le\bigl(u'_f+\tfrac t2\bigr)-\bigl(u'_e-\tfrac t2\bigr)\le t.\qedhere
@@ -1446,12 +1393,8 @@ on possibly optimal elements.
 \end{definition}
 
 By Lemma~\ref{lem:minbases}(4), $N(t)$ depends only on the comparisons of $u_t$
-within components.  The inequalities matter: $\PO_t$
-uses a strict inequality and the linkage a non-strict one
-(Figure~\ref{fig:posl}).  With $v_g\le v_f-t$ in $\PO_t$, property (F1)
-fails already for $U_{1,3}$ and $v=(0,0,1)$, and with $|v_x-v_y|<t$ in the
-linkage, the two elements of value $0$ there form two clusters at scale $0$ that
-are not ordered.  Write $\mathcal G_t=\{(e,f)\in E\times E:v_f-v_e\le t\}$.
+within components; Figure~\ref{fig:posl} shows the clusters of two
+components.  Write $\mathcal G_t=\{(e,f)\in E\times E:v_f-v_e\le t\}$.
 
 \begin{figure}[t]
   \centering
@@ -1727,19 +1670,14 @@ bits changes only at a value of $\Lambda\cup\{0\}$.
 \subsection{Termination}
 \label{sec:term}
 
-Fix a stage $r<k$ and a state, that is potentials $p$, with $\nu_0=r$, let $a$ be
-its update under PO-SL,
-and let $v'=v-a_{\blk}$.  The blocks of $S_0$ are raised by the full
+Fix a stage $r<k$ and a state, that is, potentials $p$ with $\nu_0=r$.  Let $a$ be
+the update of PO-SL at this state, and let $v'=v-a_{\blk}$.  The blocks of $S_0$ are raised by the full
 length $\tau$ of the update, and the others by less.  Let
 \[
   \Pi(v)=\bigl\{(y,g):y\in E_{S_0},\ g\notin E_{S_0},\ v_y\le v_g\bigr\},
 \]
 the pairs in which an element of a fully raised block lies at or below an
-element of another block.  The ties are needed: on the cycle matroid
-of $K_4$ with the edges $01,02,03,12,13,23$ in the blocks $R_1,R_1,R_1,R_1,R_2,R_3$
-and $v=(0,0,3,1,2,2)$, where $\nu_0=2$, $S_0=\{2,3\}$, $\tau=1$ and $a=(0,1,1)$, the
-update adds the pairs $(13,12)$ and $(23,12)$ to $\Pi$, both with equality, and with
-strict inequality item 3 below would fail.
+element of another block.
 
 \begin{theorem}[Potential]
 \label{thm:potential}
@@ -2479,34 +2417,18 @@ The following matroids $M$ on $m$ elements have Boolean rank circuits and $(\max
 \end{corollary}
 
 \begin{proof}
-\emph{Step 1: $\max\{|X|:X\subseteq U\text{ a partial transversal}\}=\nu(N_U)$.}  For $U\subseteq E$ let
-$N_U$ be the matroid on the $p$ incidences $(e,i)$, $e\in A_i$, in which a set is
-independent when it contains at most one incidence of each element and only
-incidences of elements of $U$, with the blocks $R_i=\{(e,i):e\in A_i\}$.  Rainbow
-independent sets of $N_U$ are matchings of elements of $U$ into distinct sets,
-so
+\emph{Step 1: $r(U)=\nu(N_U)$.}  For $U\subseteq E$ let $N_U$ be the matroid on the
+$p$ incidences $(e,i)$, $e\in A_i$, in which a set is independent when it contains
+at most one incidence of each element and only incidences of elements of $U$, with
+the blocks $R_i=\{(e,i):e\in A_i\}$.  Rainbow independent sets of $N_U$ are
+matchings of elements of $U$ into distinct sets, and the partial transversals are
+the independent sets of a matroid, as Edmonds and Fulkerson
+showed~\cite{oxley11}, so
 \[
-  \max\{|X|:X\subseteq U\text{ a partial transversal}\}=\nu(N_U).
+  r(U)=\max\{|X|:X\subseteq U\text{ a partial transversal}\}=\nu(N_U).
 \]
 
-\emph{Step 2: the partial transversals form a matroid with $r(U)=\nu(N_U)$.}  Subsets of partial transversals are partial
-transversals.  Let $X,Y$ be partial transversals such that $X+y$ is none for
-$y\in Y\setminus X$, let $Q=\Av(N_X)$ and $E_Q$ the incidences in the blocks of
-$Q$, and put $A_Q=\bigcup_{i\in Q}A_i$.  An element $y\in Y\cap A_Q$ lies in $X$,
-since a matching of $X$ missing the set $A_i\ni y$, $i\in Q$, would extend to
-$X+y$.  Hence
-\[
-  r_{N_Y}(E_Q)=|Y\cap A_Q|\le|X\cap A_Q|=r_{N_X}(E_Q),
-\]
-and Lemma~\ref{lem:avoidable}(2) for $N_X$ and~(1) for $N_Y$, with
-$\nu(N_X)=|X|$ and $\nu(N_Y)=|Y|$ by Step 1, give
-\[
-  n-|X|=|Q|-r_{N_X}(E_Q)\le|Q|-r_{N_Y}(E_Q)\le n-|Y|.
-\]
-So the partial transversals form a matroid, as Edmonds and Fulkerson
-showed~\cite{oxley11}, with rank function $r(U)=\nu(N_U)$ by Step 1.
-
-\emph{Step 3: the bounds of item 1.}  The set $J$ is independent in
+\emph{Step 2: the bounds of item 1.}  The set $J$ is independent in
 $N_U$ if and only if
 \[
   |J|=r_{N_U}(J)=\bigl|\{e\in U:(e,i)\in J\text{ for some }i\}\bigr|,
@@ -2518,40 +2440,17 @@ population count give $r(U)$ within $36(n+1)(p+1)^{2}(m+p+1)$ gates.
 Theorem~\ref{thm:A} with $k\le m$ gives the second bound, and $p\le mn$ gives
 $p+1,\ m+p+1\le(m+1)(n+1)$ and the last one.
 
-\emph{Step 4: $X$ is linked from $S$ $\iff$ $X$ is independent in $T^{*}$.}  Let $T$ be the transversal matroid on $V$ of
-$A_y=\{y\}\cup\{z:z\to y\}$, $y\in V\setminus S$.  As $V\setminus S$ is a
-transversal, the bases of $T$ are the sets $B$ with a bijection
-$f:B\to V\setminus S$ such that $b\in A_{f(b)}$ for every $b\in B$.  We show, with Ingleton and
-Piff~\cite{oxley11},
+\emph{Step 3: $X$ is linked from $S$ $\iff$ $X$ is independent in $T^{*}$.}  Let $T$ be
+the transversal matroid on $V$ of $A_y=\{y\}\cup\{z:z\to y\}$, $y\in V\setminus S$.
+By a theorem of Ingleton and Piff~\cite{oxley11},
 \[
   X\text{ is linked from }S\iff X\cap B=\varnothing\text{ for some }B\in\Bases(T)
   \iff X\text{ is independent in }T^{*}.
 \]
-Let $X\cap B=\varnothing$ and $g=f^{-1}:V\setminus S\to B$, and for $x\in X$
-continue the sequence $x,g(x),g^{2}(x),\ldots$ while it stays outside $S$.  As $g$
-is injective and $X\cap g(V\setminus S)=\varnothing$, the terms $g^{i}(x)$ and
-$g^{i'}(x')$ of the sequences of $x,x'\in X$, $i\le i'$, satisfy
-\[
-  g^{i}(x)=g^{i'}(x')\ \Longrightarrow\ x=g^{i'-i}(x')\ \Longrightarrow\ i=i',\ x=x'.
-\]
-So the terms are distinct, and as $V$ is finite the sequence of $x\in X\setminus S$
-ends at some $g^{j}(x)\in S$, $j\ge1$.  For $y=g^{i}(x)$, $i<j$, we have
-$g(y)\in A_{f(g(y))}=A_y$ and $g(y)\ne y$, so $g(y)\to y$ is an arc.  Hence the paths
-\[
-  g^{j}(x)\to g^{j-1}(x)\to\cdots\to g(x)\to x\qquad(x\in X\setminus S),
-\]
-with the paths without arcs at the vertices of $X\cap S$, link $X$ from $S$; they
-are disjoint by the implication above.  Conversely, let paths link $X$ from $S$,
-each starting at its last vertex in $S$, and let $P$ be the set of their vertices.
-Put $B=(P\setminus X)\cup\bigl(V\setminus(S\cup P)\bigr)$, let $f(z)$ be the
-successor of $z$ on its path for $z\in P\setminus X$, and let $f(z)=z$ for
-$z\in V\setminus(S\cup P)$.  Then $f$ maps $P\setminus X$ bijectively onto
-$P\setminus S$ and fixes $V\setminus(S\cup P)$, so $f:B\to V\setminus S$ is a
-bijection with $z\in A_{f(z)}$ for $z\in B$, and $X\cap B=\varnothing$ as
-$X\subseteq P$.  So the gammoid is the restriction of $T^{*}$ to $E$.
+So the gammoid is the restriction of $T^{*}$ to $E$.
 
-\emph{Step 5: the bounds of item 2.}  The family $(A_y)$ has at most $v$ sets
-and $v+a$ incidences, so Step 3 for $T$, the dual circuit of
+\emph{Step 4: the bounds of item 2.}  The family $(A_y)$ has at most $v$ sets
+and $v+a$ incidences, so Step 2 for $T$, the dual circuit of
 Corollary~\ref{cor:classes}(4) on $V$, and the input bits placed on $E$ ($0$ on
 $V\setminus E$) give a rank circuit with
 \[
@@ -2562,173 +2461,63 @@ gates.  Theorem~\ref{thm:A} with $k\le m\le v$ and $a\le v^{2}$ gives the other
 two bounds.
 \end{proof}
 
-\section{Verification}
+\clearpage
+\section{Formal verification}
 \label{sec:checks}
 
-\paragraph{Formal proofs.}  A Lean~4 development with Mathlib, both at version
-4.32.0, proves the results of Sections~\ref{sec:model} to~\ref{sec:two} with the
-constants stated here, for the matroids of Mathlib's \texttt{Matroid} on
-$\{0,\ldots,m-1\}$.
+A Lean~4 development with Mathlib, both at version 4.32.0, proves the results of
+Table~\ref{tab:lean} for the matroids of Mathlib's \texttt{Matroid} on
+$\{0,\ldots,m-1\}$, with explicit bounds in place of $O(\cdot)$.  The main theorems
+depend on no axioms beyond \texttt{propext}, \texttt{Classical.choice} and
+\texttt{Quot.sound}, and the build reports no warnings.
 
-Of Sections~\ref{sec:model} and~\ref{sec:greedy} it proves Lemma~\ref{lem:minbases},
-the equality of the two expressions in Definition~\ref{def:ti},
-Theorem~\ref{thm:compiler}, Corollaries~\ref{cor:integer} and~\ref{cor:levels},
-Lemma~\ref{lem:greedy},
-Theorems~\ref{thm:A} and~\ref{thm:B}, and Corollary~\ref{cor:classes}.  For
-Corollary~\ref{cor:count} it proves the count of Step~1 and the conclusion in an
-explicit form: for $m\ge128$, at most a fraction $2^{-\lfloor2^{m}/m^{3}\rfloor}$
-of the matroids on $m$ labeled elements have a $(\max,+,-)$-circuit of size
-less than $2^{m/2}/m^{2}$ that computes $h_M$ on $\{0,1\}^{E}$.
-
-Of Sections~\ref{sec:rainbow} and~\ref{sec:two} it proves
-Lemmas~\ref{lem:duality}, \ref{lem:path}, \ref{lem:avoidable}, \ref{lem:events},
-\ref{lem:augment}, \ref{lem:observer}, \ref{lem:oneupdate} and~\ref{lem:doubling},
-Propositions~\ref{prop:star}, \ref{prop:pos}, \ref{prop:notmatroid}
-and~\ref{prop:posl}, the facts after
-Definition~\ref{def:update} with \eqref{eq:update-integral},
-Theorems~\ref{thm:validity}, \ref{thm:potential} and~\ref{thm:stagelength},
-Corollary~\ref{cor:rankone}, Theorem~\ref{thm:C} with the size
-$3328\,k^{3}m^{4}(s+m)+2$, and $1390\,k^{3}m^{3}(s+m)+2$ when every component of $M$
-has rank at most one, Theorem~\ref{thm:D} with the sizes
-$3328\cdot1200\,m^{7}(s_1+s_2+m)+2$ for common bases and
-$3328\cdot653313\,m^{7}(s_1+s_2+m)+3$ for common independent sets, and
-Corollary~\ref{cor:transversal}.  For
-Proposition~\ref{prop:nphard} it proves the reduction, Steps 2 to 4, for every
-multigraph $H$ and every $h\ge|V(H)|,|Q|$; the complexity classes are not
-formalized, and the NP-completeness of the rainbow path problem is cited.
-Proposition~\ref{prop:ladder} is not formalized; it is checked by computation
-below.  Uniformity, a property of the algorithm that produces the circuits, is not
-formalized either.
-
-The main theorems depend on no axioms beyond the three standard axioms of Lean,
-and the build reports no warnings.
-
-\paragraph{Computational checks.}  The checks below exercise implementations
-of the constructions in exact rational arithmetic and are not used anywhere in
-the proofs.
-\begin{itemize}
-  \item The identity of Lemma~\ref{lem:greedy}, against brute-force maximum bases
-        of $3000$ random binary matroids.
-  \item The updates of Theorem~\ref{thm:C} with PO-SL, run to the end on $320$
-        random instances over partition, uniform, graphic (arborescences and
-        colored graphs) and binary matroids, with ties and negative weights:
-        every run returned $\Opt(w)$, $\nu_0$ never decreased, and every update
-        at $\nu_0>r$ was the identity.
-  \item An independent second implementation checked (F1)--(F5),
-        Theorem~\ref{thm:validity}, Theorem~\ref{thm:potential} and the integral
-        formula \eqref{eq:update-integral} on all $1{,}405{,}996$ states with
-        $\nu_0<k$ over $15$ small matroids, among them $M(K_4)$, the whirl
-        $\mathcal W^{3}$, the Fano plane and a ternary $U_{2,4}$, for every partition
-        into blocks and every $v\in\{0,1,2,3\}^{E}$ ($\{0,1,2\}^{E}$ for the Fano
-        plane), and on $6{,}200$ further random states including non-representable
-        sparse paving matroids.  No check failed.
-  \item Lemma~\ref{lem:doubling} together with these updates, on $59$ random pairs
-        of binary and graphic matroids.
-  \item Lemma~\ref{lem:events}, on $1463$ random instances against PO-SL computed
-        from $\mathcal G_t$ at every level $|v_e-v_f|$, every level of $\Lambda$, the
-        midpoints between consecutive ones and one level beyond: $\PO_t$, the
-        clusters and their order agreed with the bits of $\mathcal Q(v)$, and on
-        $795$ states with $\nu_0<k$ the sum over the levels of $\Lambda$ alone gave
-        the update.
-  \item Proposition~\ref{prop:ladder}: for $n=0,\ldots,12$ stage $2$ of PO-SL took
-        $n+2$ updates and the run returned $\Opt(w)$, and for $n=0,\ldots,8$
-        the family $\Pos_t$ took one update.  The independent implementation
-        above gave the same PO-SL counts and $\Opt(w)$ for $n=0,\ldots,6$.
-\end{itemize}
+\begin{table}[ht]
+  \centering
+  \caption{The results proved in Lean.}
+  \label{tab:lean}
+  \renewcommand{\arraystretch}{1.25}
+  \begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.45\textwidth}
+                  >{\raggedright\arraybackslash}p{0.5\textwidth}@{}}
+    \toprule
+    Results & Lean statement\\
+    \midrule
+    Definition~\ref{def:ti} & the two expressions agree\\
+    Theorems~\ref{thm:compiler}, \ref{thm:A}, \ref{thm:B}; Lemmas~\ref{lem:minbases},
+    \ref{lem:greedy}, equation~\eqref{eq:rank-mu}; Corollaries~\ref{cor:integer},
+    \ref{cor:levels}, \ref{cor:classes} & as stated\\
+    Corollary~\ref{cor:count} & for $m\ge128$, at most a fraction
+    $2^{-\lfloor2^{m}/m^{3}\rfloor}$ of the matroids on $m$ labeled elements have a
+    $(\max,+,-)$-circuit of size less than $2^{m/2}/m^{2}$ that computes $h_M$ on
+    $\{0,1\}^{E}$\\
+    Lemmas~\ref{lem:duality}, \ref{lem:path}, \ref{lem:avoidable}, \ref{lem:events},
+    \ref{lem:augment}, \ref{lem:observer}, \ref{lem:oneupdate}, \ref{lem:doubling};
+    Propositions~\ref{prop:star}, \ref{prop:pos}, \ref{prop:notmatroid},
+    \ref{prop:posl}; Theorems~\ref{thm:validity}, \ref{thm:potential},
+    \ref{thm:stagelength}; Corollaries~\ref{cor:rankone}, \ref{cor:transversal}; the
+    facts after Definition~\ref{def:update} and equation~\eqref{eq:update-integral}
+    & as stated\\
+    Proposition~\ref{prop:nphard} & the reduction, Steps 2 to 4, for every
+    multigraph $H$ and every $h\ge|V(H)|,|Q|$\\
+    Theorem~\ref{thm:C} & size at most $3328\,k^{3}m^{4}(s+m)+2$, and
+    $1390\,k^{3}m^{3}(s+m)+2$ when every component of $M$ has rank at most one\\
+    Theorem~\ref{thm:D} & size at most $3328\cdot1200\,m^{7}(s_1+s_2+m)+2$ for common
+    bases and $3328\cdot653313\,m^{7}(s_1+s_2+m)+3$ for common independent sets\\
+    \midrule
+    Not formalized & uniformity; the complexity classes in
+    Proposition~\ref{prop:nphard}, where the NP-completeness of rainbow path is
+    cited\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+\FloatBarrier
 
 \section{Open problems}
 \label{sec:scope}
 
 \paragraph{Stage length.}  Theorems~\ref{thm:potential} and~\ref{thm:stagelength}
 bound stage $r$ by
-$\min\bigl(r(\lfloor m^{2}/4\rfloor+1),\,1+(r-1)km,\,1+k(2m-k-1)\bigr)$ updates.  On the
-following inputs, the stage length of PO-SL is not bounded in terms of $r$ and
-$k$ alone, while the exact family $\Pos_t$, which is not admissible, needs one
-update.
-
-\begin{proposition}
-\label{prop:ladder}
-For $n\ge0$ let $M$ be the cycle matroid of the multigraph on the vertices
-$0,1,2,3$ with the edges, blocks and weights
-\[
-  \begin{array}{c|cccccc}
-    & g' & g & b_i\ (1\le i\le n) & h & h' & y\\\hline
-    \text{edge} & 03 & 02 & 02 & 01 & 01 & 12\\
-    \text{block} & R_2 & R_2 & R_2 & R_1 & R_3 & R_1\\
-    \text{weight} & 0 & 0 & 2^{n-i} & 2^{n} & 2^{n} & 2^{n}+1
-  \end{array}
-\]
-so that $k=3$ and $m=n+5$.  Stage $2$ of PO-SL takes exactly $n+2=m-3$ updates.
-With $\Pos_t$ in place of $N(t)$ in Definition~\ref{def:update}, $\nu(N(t))$ read as
-the largest number of blocks met by a base in $\Pos_t$, stage $2$ takes one
-update.
-\end{proposition}
-
-\begin{proof}
-Write $A_j=2^{n-j}$ for $0\le j\le n$ and $A_{n+1}=0$, and let \emph{state $j$} be
-the weights with
-\[
-  v_h=v_{h'}=A_j,\qquad v_y=A_j+1,
-\]
-and $v_e=w_e$ on the other edges, so that state $0$ is $p=0$.
-
-\emph{Step 1: $\nu_0=2$, $S_0=\{1,3\}$ and $\lambda_2=\infty$ at every state.}  The edge $g'$ is the only one at vertex $3$, so it
-lies in every spanning tree, and $T=\{g',y,h'\}$ is the only rainbow spanning
-tree.  At every state $j$ the minimum spanning trees are $\{g',g,h\}$ and
-$\{g',g,h'\}$, so $\nu_0=2$, $S_0=\{1,3\}$, and stage $1$ has no updates.  No
-base misses $R_2$, so $\lambda_2=\infty$, and every update lowers $h,h',y$ by
-$\tau$ and fixes the other values.
-
-\emph{Step 2: $b_i\in\PO_t\iff t\ge2^{n-i}$, and $y\in\PO_t\iff t\ge1$.}  At state $j$ the edges $g',g,h,h'$ lie in
-minimum spanning trees, hence in $\PO_t$, and as $b_i$ is parallel to $g$ and $y$
-closes the triangle $\{g,h,y\}$,
-\[
-  b_i\in\PO_t\iff t\ge v_{b_i}-v_g=2^{n-i},\qquad
-  y\in\PO_t\iff t\ge v_y-v_h=1.
-\]
-
-\emph{Step 3: state $j<n$ leads to state $j+1$.}  Here $A_j\ge2$.  For $t<A_j/2$ every $b_i\in\PO_t$
-satisfies $v_{b_i}\le t$, so
-\[
-  v_h-v_{b_i}\ge A_j-t>\frac{A_j}2>t,
-\]
-and the clusters of the triangle are $\{g\}\cup\{b_i\in\PO_t\}$ and
-$\{h,h'\}\cup(\{y\}\cap\PO_t)$.  A base of $N(t)$ then consists of $g'$, an edge
-$02$ and one of $h,h',y$, so $\nu(N(t))=2$ and $\Av(N(t))=\{1,3\}$.  At
-$t=A_j/2$ the edge $b_{j+1}$, of value $A_j/2$, enters $\PO_t$, and
-\[
-  |v_g-v_{b_{j+1}}|=|v_{b_{j+1}}-v_h|=\frac{A_j}2=t,\qquad|v_h-v_y|=1\le t
-\]
-join one cluster, so $T$ is a base of $N(t)$.  Hence $\tau=A_j/2$, and the update
-leads to state $j+1$, as $A_j-A_j/2=A_{j+1}$.
-
-\emph{Step 4: states $n$ and $n+1$ take one update each, and then $\nu_0=3$.}  Here $v_g=0$ and $v_h=v_{h'}=A_j\le1$.  For
-$t<1$ the triangle meets $\PO_t$ in $\{g,h,h'\}$, as $v_{b_i}\ge1$, so a base of
-$N(t)$ consists of $g'$, $g$ and one of $h,h'$, and $\nu(N(t))=2$,
-$\Av(N(t))=\{1,3\}$.  At $t=1$ the edge $y$ enters $\PO_t$, and $|v_g-v_h|\le1$,
-$|v_h-v_y|=1$ join one cluster, so $\tau=1$.  The update leads from state $n$ to
-state $n+1$, and from state $n+1$ to
-\[
-  v_h=v_{h'}=-1,\qquad v_y=0,\qquad v(T)=0+0-1=\min_{B\in\Bases(M)}v(B),
-\]
-where $\nu_0=3$.  So stage $2$ takes $n$ updates in Step 3 and two in Step 4.
-
-\emph{Step 5: with $\Pos_t$, one update ends stage $2$.}  At state $0$ the fundamental circuits of $T$ are
-$\{g,h',y\}$, $\{h,h'\}$ and $\{b_i,h',y\}$, so
-\[
-  \theta(T)=v_y-v_g=2^{n}+1,
-\]
-and as $T$ is the only rainbow spanning tree, the least $t$ at which a base in
-$\Pos_t$ meets three blocks is $\tau=2^{n}+1$.  As in Step 1, $\lambda_1=\lambda_3=0$
-and $\lambda_2=\infty$, so the update lowers $h,h',y$ by $2^{n}+1$, to
-\[
-  v_h=v_{h'}=-1,\qquad v_y=0,
-\]
-where $T$ is minimum, as in Step 4, and $\nu_0=3$.
-\end{proof}
-
-Does a stage of PO-SL take $O(m)$ updates, or can it
-take $\Theta(km)$?  Is there an admissible family determined by $\mathcal G_t$ whose stages
+$\min\bigl(r(\lfloor m^{2}/4\rfloor+1),\,1+(r-1)km,\,1+k(2m-k-1)\bigr)$ updates.  Does a
+stage of PO-SL take $O(m)$ updates, or can it take $\Theta(km)$?  Is there an admissible family determined by $\mathcal G_t$ whose stages
 take $O(r)$ updates?
 
 \paragraph{Size.}  For the assignment problem, how far can the exponent $11$

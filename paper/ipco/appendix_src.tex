@@ -38,15 +38,7 @@ by $\infty$, as $G_t(D)=E$ for $t\ge d_m$.
 
 %%PROOFOF:thm:B%%
 
-%%ENV:cor:equiv%%
-
 %%PROOFREF:cor:classes%%
-
-A Turing machine that runs in time $T$ on inputs of a fixed length is simulated
-by a Boolean circuit of size $O(T\log T)$~\cite{pippenger-fischer79}.  So every
-matroid whose rank function is computable in time polynomial in $m$ and in the length of a fixed
-description has a Boolean rank circuit, and by Theorem~\ref{thm:A} a
-$(\max,+,-)$-circuit for $h_M$, of size polynomial in these two quantities.
 
 %%ENV:cor:count%%
 
@@ -126,11 +118,6 @@ and as $\mathbf 1[\nu(N(t))\le r]=\mathbf 1[t<\tau]$,
 \subsection{Single Linkage on Possibly Optimal Elements}
 \label{app:posl}
 
-Both inequalities in Definition~\ref{def:posl} are needed: with $v_g\le v_f-t$ in
-$\PO_t$, (F1) fails for $U_{1,3}$ and $v=(0,0,1)$, and with $|v_x-v_y|<t$ in the
-linkage, the two elements of value $0$ there form two clusters at scale $0$ that
-are not ordered.
-
 %%PROOFREF:prop:posl%%
 
 \subsection{Breakpoints}
@@ -140,12 +127,6 @@ are not ordered.
 
 \subsection{Termination}
 \label{app:term}
-
-The ties in $\Pi(v)$ are needed: on the cycle matroid of $K_4$ with the edges
-$01$, $02$, $03$, $12$, $13$, $23$ in the blocks $R_1$, $R_1$, $R_1$, $R_1$, $R_2$,
-$R_3$ and $v=(0,0,3,1,2,2)$, where $\nu_0=2$, $S_0=\{2,3\}$, $\tau=1$ and
-$a=(0,1,1)$, the update adds the pairs $(13,12)$ and $(23,12)$ to $\Pi$, both with
-equality; with strict inequality, item 3 of Theorem~\ref{thm:potential} fails.
 
 %%PROOFREF:thm:potential%%
 
@@ -185,57 +166,49 @@ both.
 
 %%PROOF:cor:transversal%%
 
-\section{Formal Verification and Computational Checks}
+\section{Formal Verification}
 \label{app:checks}
 
-\paragraph{Formal proofs.}  A Lean~4 development with Mathlib, both at version
-4.32.0, proves the results listed below with the constants stated in the paper, for the
-matroids of Mathlib's \texttt{Matroid} on $\{0,\ldots,m-1\}$.
+A Lean~4 development with Mathlib, both at version 4.32.0, proves the results of
+Table~\ref{tab:lean} for the matroids of Mathlib's \texttt{Matroid} on
+$\{0,\ldots,m-1\}$, with explicit bounds in place of $O(\cdot)$.  The main theorems
+depend on no axioms beyond \texttt{propext}, \texttt{Classical.choice} and
+\texttt{Quot.sound}, and the build reports no warnings.
 
-For Sections~\ref{sec:model} and~\ref{sec:greedy} it proves
-Lemma~\ref{lem:minbases}, the equality of the two expressions in
-Definition~\ref{def:ti}, Theorem~\ref{thm:compiler},
-Corollaries~\ref{cor:integer} and~\ref{cor:levels}, Lemma~\ref{lem:greedy},
-Theorems~\ref{thm:A} and~\ref{thm:B}, and Corollary~\ref{cor:classes}.  For
-Corollary~\ref{cor:count} it proves the count of Step~1 and the conclusion in an
-explicit form: for $m\ge128$, at most a fraction $2^{-\lfloor2^{m}/m^{3}\rfloor}$
-of the matroids on $m$ labeled elements have a $(\max,+,-)$-circuit of size less
-than $2^{m/2}/m^{2}$ that computes $h_M$ on $\{0,1\}^{E}$.
-
-For Sections~\ref{sec:rainbow} and~\ref{sec:two} it proves
-Lemmas~\ref{lem:duality}, \ref{lem:path}, \ref{lem:updint}, \ref{lem:avoidable},
-\ref{lem:events}, \ref{lem:crossing}, \ref{lem:augment}, \ref{lem:observer},
-\ref{lem:oneupdate} and~\ref{lem:doubling}, Propositions~\ref{prop:star},
-\ref{prop:pos} and~\ref{prop:posl}, Proposition~\ref{prop:obstacles}(1),
-Theorems~\ref{thm:validity}, \ref{thm:potential} and~\ref{thm:stagelength},
-Corollary~\ref{cor:rankone}, Theorem~\ref{thm:C} with the size
-$3328\,k^{3}m^{4}(s+m)+2$, and $1390\,k^{3}m^{3}(s+m)+2$ when every component of
-$M$ has rank at most one, Theorem~\ref{thm:D} with the sizes
-$3328\cdot1200\,m^{7}(s_1+s_2+m)+2$ for common bases and
-$3328\cdot653313\,m^{7}(s_1+s_2+m)+3$ for common independent sets, and
-Corollary~\ref{cor:transversal}.  For Proposition~\ref{prop:obstacles}(2) it
-proves the reduction, Steps 2 to 4, for every multigraph $H$ and every
-$h\ge|V(H)|,|Q|$; the complexity classes are not formalized, and the
-NP-completeness of the rainbow path problem is cited.
-Proposition~\ref{prop:ladder} is not formalized; it is checked by computation
-below.  Uniformity, a property of the algorithm that produces the circuits, is
-not formalized either.  The following have no Lean statements:
-Corollary~\ref{cor:equiv}, which combines Theorems~\ref{thm:A} and~\ref{thm:B};
-the remark on simulating computations by Boolean circuits in
-Appendix~\ref{app:greedy}; and the two examples opening Appendices~\ref{app:posl}
-and~\ref{app:term}.  The main
-theorems depend on no axioms beyond the three standard axioms of Lean, and the
-build reports no warnings.
-
-%%CHECKS%%
-
-\section{Stage Length of PO-SL}
-\label{app:scope}
-
-On the following inputs, the stage length of PO-SL is not bounded in terms of
-$r$ and $k$ alone, while the exact family $\Pos_t$, which is not admissible,
-needs one update.
-
-%%ENV:prop:ladder%%
-
-%%PROOF:prop:ladder%%
+\begin{table}[ht]
+\caption{The results proved in Lean.}
+\label{tab:lean}
+\centering
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.43\textwidth}
+                >{\raggedright\arraybackslash}p{0.53\textwidth}@{}}
+\toprule
+Results & Lean statement\\
+\midrule
+Definition~\ref{def:ti} & the two expressions agree\\
+Theorems~\ref{thm:compiler}, \ref{thm:A}, \ref{thm:B}; Lemmas~\ref{lem:greedy},
+\ref{lem:minbases}, equation~\eqref{eq:rank-mu}; Corollaries~\ref{cor:levels},
+\ref{cor:classes}, \ref{cor:integer} & as stated\\
+Corollary~\ref{cor:count} & for $m\ge128$, at most a fraction
+$2^{-\lfloor2^{m}/m^{3}\rfloor}$ of the matroids on $m$ labeled elements have a
+$(\max,+,-)$-circuit of size less than $2^{m/2}/m^{2}$ that computes $h_M$ on
+$\{0,1\}^{E}$\\
+Lemmas~\ref{lem:duality}, \ref{lem:updint}, \ref{lem:events},
+\ref{lem:augment}--\ref{lem:doubling}, \ref{lem:path}--\ref{lem:crossing};
+Propositions~\ref{prop:pos}, \ref{prop:obstacles}(1), \ref{prop:posl},
+\ref{prop:star}; Theorems~\ref{thm:validity}, \ref{thm:potential},
+\ref{thm:stagelength}; Corollaries~\ref{cor:rankone}, \ref{cor:transversal} & as
+stated\\
+Proposition~\ref{prop:obstacles}(2) & the reduction, Steps 2 to 4, for every
+multigraph $H$ and every $h\ge|V(H)|,|Q|$\\
+Theorem~\ref{thm:C} & size at most $3328\,k^{3}m^{4}(s+m)+2$, and
+$1390\,k^{3}m^{3}(s+m)+2$ when every component of $M$ has rank at most one\\
+Theorem~\ref{thm:D} & size at most $3328\cdot1200\,m^{7}(s_1+s_2+m)+2$ for common
+bases and $3328\cdot653313\,m^{7}(s_1+s_2+m)+3$ for common independent sets\\
+\midrule
+Not formalized & uniformity; the complexity classes in
+Proposition~\ref{prop:obstacles}(2), where the NP-completeness of rainbow path is
+cited\\
+\bottomrule
+\end{tabular}
+\end{table}
