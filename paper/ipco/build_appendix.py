@@ -111,12 +111,12 @@ def proof_ref(label):
 
 def stage_parts():
     body = proof_body("thm:stagelength")
-    parts = re.split(r"(?=\\emph\{Step \d+,)", body)
+    parts = re.split(r"(?=\\emph\{Step \d+:)", body)
     intro, steps = parts[0], parts[1:]
     if len(steps) != 7:
         fail("stage length proof has %d steps" % len(steps))
     for n, s in enumerate(steps, 1):
-        if not s.startswith("\\emph{Step %d," % n):
+        if not s.startswith("\\emph{Step %d:" % n):
             fail("stage length step %d out of order" % n)
 
     def sub(text, old, new, count=1):
@@ -125,15 +125,21 @@ def stage_parts():
             fail("pattern %r found %d times" % (old, found))
         return re.sub(old, lambda _: new, text)
 
-    s6 = sub(steps[5], r"\\emph\{Step 6, item 3\.\}", "\\emph{Step 5, item 3.}")
+    def renumber(text, old, new):
+        """Replace the step heading old (literal text) by new."""
+        if text.count(old) != 1:
+            fail("heading %r found %d times" % (old, text.count(old)))
+        return text.replace(old, new)
+
+    s6 = renumber(steps[5], "\\emph{Step 6: item 3.}", "\\emph{Step 5: item 3.}")
     lemma = ("\\begin{proof}\n" + intro + steps[0] + steps[1] + steps[2] + steps[3]
              + s6.rstrip("\n") + "\n\\end{proof}")
-    s5 = sub(steps[4], r"\\emph\{Step 5, counting within phases\.\}",
-             "\\emph{Step 1, counting within phases.}")
+    s5 = renumber(steps[4], "\\emph{Step 5: at most $1+(r-1)km$ updates.}",
+                  "\\emph{Step 1: at most $1+(r-1)km$ updates.}")
     s5 = sub(s5, r"by item 2", "by Lemma~\\ref{lem:crossing}(2)")
     s5 = sub(s5, r"by\s+item 1", "by Lemma~\\ref{lem:crossing}(1)")
-    s7 = sub(steps[6], r"\\emph\{Step 7, counting across phases\.\}",
-             "\\emph{Step 2, counting across phases.}")
+    s7 = renumber(steps[6], "\\emph{Step 7: at most $1+k(2m-k-1)$ updates.}",
+                  "\\emph{Step 2: at most $1+k(2m-k-1)$ updates.}")
     s7 = sub(s7, r"so item 3 applies", "so Lemma~\\ref{lem:crossing}(3) applies")
     s7 = sub(s7, r"With Step 5,", "With Step 1,")
     theorem = ("\\begin{proof}[Proof of Theorem~\\ref{thm:stagelength}]\n"
@@ -210,23 +216,23 @@ RULES = [
 # cor:classes is stated in the IPCO version with the sizes of h_M only; the
 # sizes of the rank circuits move into the proof.
 CLASSES_RULES = [
-    (r"Theorem~\\ref\{thm:A\} with \$k\\le r\$\s+gives the second bound\.",
-     r"Theorem~\\ref{thm:A} with $k\\le r$ gives the bound of item 1."),
-    (r"Counting costs \$11r\\lceil\\log_2\(r\+1\)\\rceil\$ gates and\s+the constant \$1\$ one gate, "
-     r"and Theorem~\\ref\{thm:A\}, applied to the exact count with\s+\$k\\le r\$ and \$q\\ge2\$, gives "
+    (r"Theorem~\\ref\{thm:A\} with \$k\\le n\$\s+gives the second bound\.",
+     r"Theorem~\\ref{thm:A} with $k\\le n$ gives the bound of item 1."),
+    (r"Counting costs \$11n\\lceil\\log_2\(n\+1\)\\rceil\$ gates and\s+the constant \$1\$ one gate, "
+     r"and Theorem~\\ref\{thm:A\}, applied to the exact count with\s+\$k\\le n\$ and \$q\\ge2\$, gives "
      r"the second bound\.",
-     r"Counting costs $11r\\lceil\\log_2(r+1)\\rceil$ gates and the constant $1$ one gate, so the "
-     r"rank circuit has\n\\[\n  m(6q^{2}r^{2}+3qr^{2}+r^{2}+qr+6r+1)+11r\\lceil\\log_2(r+1)\\rceil+1"
-     r"\n\\]\ngates, and Theorem~\\ref{thm:A}, applied to this count with $k\\le r$ and $q\\ge2$, "
+     r"Counting costs $11n\\lceil\\log_2(n+1)\\rceil$ gates and the constant $1$ one gate, so the "
+     r"rank circuit has\n\\[\n  m(6q^{2}n^{2}+3qn^{2}+n^{2}+qn+6n+1)+11n\\lceil\\log_2(n+1)\\rceil+1"
+     r"\n\\]\ngates, and Theorem~\\ref{thm:A}, applied to this count with $k\\le n$ and $q\\ge2$, "
      r"gives the bound of item 2."),
-    (r"\$2\^\{19\}\(m\+1\)\(r\+1\)\^\{2\}\(r\(r\+b\)\+1\)\^\{6\}\$ gates\.",
-     r"$2^{19}(m+1)(r+1)^{2}(r(r+b)+1)^{6}$ gates, and Theorem~\\ref{thm:A} with $k\\le r$ gives the "
+    (r"\$2\^\{19\}\(m\+1\)\(n\+1\)\^\{2\}\(n\(n\+b\)\+1\)\^\{6\}\$ gates\.",
+     r"$2^{19}(m+1)(n+1)^{2}(n(n+b)+1)^{6}$ gates, and Theorem~\\ref{thm:A} with $k\\le n$ gives the "
      r"bound of item 3."),
     (r"the result is \$r\^\{\*\}\(S\)\$, at\s+\$s\+m\+1\+11\(m\+1\)W\$ gates\.",
      r"the result is $r^{*}(S)$, at $s+m+1+11(m+1)W$ gates, and Theorem~\\ref{thm:A} for $M^{*}$ "
      r"gives the bound of item 4."),
-    (r"item 1 with \$r=n\$ and item 4 with\s+Theorem~\\ref\{thm:A\} give the two bounds\.",
-     r"item 1 with $r=n$ gives the first bound, and the rank circuits of the proofs of items 1 "
+    (r", and items 1 and 4 with\s+Theorem~\\ref\{thm:A\} give the two bounds\.",
+     r".  Item 1 gives the first bound, and the rank circuits of the proofs of items 1 "
      r"and 4 with Theorem~\\ref{thm:A} give the second."),
 ]
 
@@ -234,12 +240,10 @@ CLASSES_RULES = [
 # Displays of the full paper that are wider than the LNCS text: the same
 # formulas, broken over lines.  Each rule must apply exactly once.
 LAYOUT_RULES = [
-    ("  v\\leftarrow x_eA_{\\cdot e},\\qquad v\\leftarrow v-[f_p]\\,v_p\\,b_p\\ \\ (p=1,\\ldots,r),\\qquad\n"
-     "  f_p\\leftarrow f_p\\vee\\ell_p,\\qquad b_p\\leftarrow\\ell_p\\,?\\,v_p^{-1}v:b_p\n",
-     "  \\begin{gathered}\n"
-     "  v\\leftarrow x_eA_{\\cdot e},\\qquad v\\leftarrow v-[f_p]\\,v_p\\,b_p\\ \\ (p=1,\\ldots,r),\\\\\n"
-     "  f_p\\leftarrow f_p\\vee\\ell_p,\\qquad b_p\\leftarrow\\ell_p\\,?\\,v_p^{-1}v:b_p\n"
-     "  \\end{gathered}\n"),
+    ("  D_e=d_{i_e}-d_0=\\sum_{i<i_e}\\Delta_i=\\sum_{i:\\,e\\in X_i}\\Delta_i,\n"
+     "  \\qquad\n",
+     "  D_e=d_{i_e}-d_0=\\sum_{i<i_e}\\Delta_i=\\sum_{i:\\,e\\in X_i}\\Delta_i,\n"
+     "  \\quad\n"),
     ("  r^{*}(S)=|S|+r(E\\setminus S)-r(E)\n"
      "  \\equiv\\bigl(2^{W}-(r(E)\\bmod2^{W})\\bigr)+\\sum_{e\\in S}1+r(E\\setminus S)\\pmod{2^{W}},\n",
      "  \\begin{aligned}\n"
@@ -268,6 +272,20 @@ LAYOUT_RULES = [
      "    u_t(e)=m+1,&e\\notin\\PO_t,\\\\\n"
      "    \\text{clusters are ordered by value},&e\\in\\PO_t,\\ v_f\\le v_e,\\\\\n"
      "    0<v_f-v_e\\le\\theta(B)\\le t\\text{ links }e\\text{ and }f,&e\\in\\PO_t,\\ v_f>v_e,\n"
+     "  \\end{cases}\n"
+     "  \\end{gathered}\n"),
+    ("  u_{t'}(f)\\le u_{t'}(e)\\quad\\text{since}\\quad\n"
+     "  \\begin{cases}\n"
+     "    u_{t'}(e)=m+1,&e\\notin\\PO_{t'},\\\\\n"
+     "    u_t(f)\\le u_t(e),&e\\in\\PO_t,\\\\\n"
+     "    \\text{clusters are ordered by value},&e\\in\\PO_{t'}\\setminus\\PO_t,\\ v_f\\le v_e.\n"
+     "  \\end{cases}\n",
+     "  \\begin{gathered}\n"
+     "  u_{t'}(f)\\le u_{t'}(e)\\quad\\text{since}\\\\\n"
+     "  \\begin{cases}\n"
+     "    u_{t'}(e)=m+1,&e\\notin\\PO_{t'},\\\\\n"
+     "    u_t(f)\\le u_t(e),&e\\in\\PO_t,\\\\\n"
+     "    \\text{clusters are ordered by value},&e\\in\\PO_{t'}\\setminus\\PO_t,\\ v_f\\le v_e.\n"
      "  \\end{cases}\n"
      "  \\end{gathered}\n"),
     ("  u_t(x)<u_t(y)\\iff t\\ge t_x\\ \\text{and}\\\n"

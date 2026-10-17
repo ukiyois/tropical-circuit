@@ -207,11 +207,13 @@ def label_phrase(kind_word, label):
         fail("label %s has no number in gi_ipco.aux" % label)
     num, prefix = NUMS[label], label.split(":")[0]
     if prefix == "eq":
-        return "equation (%s)" % num
+        return "%s (%s)" % ("Equation" if kind_word == "Equation" else "equation", num)
     return "%s %s" % (KIND[prefix], num)
 
 
-LABEL_RE = re.compile(r"(?:(Theorem|Lemma|Corollary|Proposition|Definition|Section|Thm\.)\s+)?"
+# a kind word before the label is absorbed, so "equation `eq:x`" gives "equation (1)"
+LABEL_RE = re.compile(r"(?:(Theorem|Lemma|Corollary|Proposition|Definition|Section|Thm\.|"
+                      r"Equation|equation)\s+)?"
                       r"`((?:thm|lem|cor|prop|def|eq|sec|app):[A-Za-z0-9-]+)`")
 
 

@@ -17,9 +17,9 @@ of $u$ and $U_i=\{u\le\ell_i\}$, $U_0=\varnothing$, then
   \label{eq:rank-mu}
 \end{equation}
 
-The two expressions in Definition~\ref{def:ti} agree, as $G_t(D)=G_{s_i}(D)$ for
-$t\in[s_i,s_{i+1})$.  If $F(E)=0$, the upper limit $s_m=\max_eD_e$ can be replaced
-by $\infty$, as $G_t(D)=E$ for $t\ge s_m$.
+The two expressions in Definition~\ref{def:ti} agree, as $G_t(D)=G_{d_i}(D)$ for
+$t\in[d_i,d_{i+1})$.  If $F(E)=0$, the upper limit $d_m=\max_eD_e$ can be replaced
+by $\infty$, as $G_t(D)=E$ for $t\ge d_m$.
 
 %%PROOFREF:thm:compiler%%
 
@@ -60,7 +60,7 @@ $(\max,+,-)$-circuit for $h_M$, of size polynomial in these two quantities.
 
 The definitions of Section~\ref{sec:lagr} and Lemmas~\ref{lem:avoidable}
 and~\ref{lem:augment} apply verbatim to every partition of a finite ground set
-into any number of blocks; Appendix~\ref{app:two} uses them in this form.
+into any number $k$ of blocks; Appendix~\ref{app:two} uses them in this form.
 Rainbow independent sets of $M^{v}$ extend to minimum bases of $v$, and a minimum
 base meeting $j$ blocks contains a rainbow set of size $j$; so $\nu_0$ is the
 largest number of blocks met by a minimum base of $v$, and $S_0$ is the set of
@@ -103,9 +103,14 @@ Definition~\ref{def:update} are unions of intervals $[c_i,c_{i+1})$ and
 $[c_q,\infty)$, so the minima exist.  For $t<\tau$ we have $\nu(N(t))=r$; a base of
 $N(t)$ meeting exactly $r$ blocks contains a rainbow independent set of size $r$
 missing the same blocks, and a rainbow independent set of size $r$ extends to a
-base of $N(t)$ meeting no further block.  With (F2) this gives
-$b\in\Av(N(t))\iff\lambda_b\le t$ for $t<\tau$, and as
-$\mathbf 1[\nu(N(t))\le r]=1$ exactly for $t<\tau$,
+base of $N(t)$ meeting no further block.  With (F2) this gives, for $t<\tau$,
+\[
+  \begin{aligned}
+  b\in\Av(N(t))&\iff\text{some base of }N(t)\text{ meeting exactly }r\text{ blocks misses }b\\
+  &\iff\lambda_b\le t,
+  \end{aligned}
+\]
+and as $\mathbf 1[\nu(N(t))\le r]=\mathbf 1[t<\tau]$,
 \[
   \int_0^{\infty}\mathbf 1\bigl[\nu(N(t))\le r\bigr]\;\mathbf 1\bigl[b\in\Av(N(t))\bigr]\,dt
   =\int_0^{\tau}\mathbf 1[\lambda_b\le t]\,dt=(\tau-\lambda_b)_+=a_b.\qedhere
@@ -210,7 +215,7 @@ $3328\cdot1200\,m^{7}(s_1+s_2+m)+2$ for common bases and
 $3328\cdot653313\,m^{7}(s_1+s_2+m)+3$ for common independent sets, and
 Corollary~\ref{cor:transversal}.  For Proposition~\ref{prop:obstacles}(2) it
 proves the reduction, Steps 2 to 4, for every multigraph $H$ and every
-$h\ge|V(H)|,|C|$; the complexity classes are not formalized, and the
+$h\ge|V(H)|,|Q|$; the complexity classes are not formalized, and the
 NP-completeness of the rainbow path problem is cited.
 Proposition~\ref{prop:ladder} is not formalized; it is checked by computation
 below.  Uniformity, a property of the algorithm that produces the circuits, is

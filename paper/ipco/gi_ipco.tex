@@ -45,25 +45,19 @@
 \begin{abstract}
 The greedy algorithm and the augmenting path algorithms of matroid optimization
 compare weights and branch on the outcome.  A $(\max,+,-)$-circuit, like a ReLU
-neural network, computes a continuous function and cannot branch.  We show that
-both algorithms have exact counterparts of polynomial size.  For a matroid on $m$
+network, computes a continuous function and cannot branch; we show that both
+algorithms have exact counterparts of polynomial size.  For a matroid on $m$
 elements, a Boolean circuit of size $s$ for the rank function yields a
-$(\max,+,-)$-circuit of size $3ms+O(m^{2})$ for the maximum weight of a base at
-all real weights, and conversely a $(\max,+,-)$-circuit of size $S$ yields a
-rank circuit of size $O(S^{2})$.  Rank circuits of polynomial size exist for
-binary, graphic and transversal matroids, gammoids, matroids represented over
-$\mathbb Q$ or a fixed finite field, and their duals.  For two matroids with rank
-circuits of sizes $s_1$ and $s_2$, a $(\max,+,-)$-circuit of size
-$O(m^{7}(s_1+s_2+m))$ computes the minimum weight of a common base, and one of
-the same order the maximum weight of a common independent set.  Special cases
-include arborescences; rainbow spanning trees, whose generating polynomial
-specializes to the permanent; and the assignment problem, for which polynomial
-size was open.  The circuit applies a fixed sequence of updates to Lagrange
-multipliers.  The exact family of bases for these updates is not a matroid and,
-for general weights, NP-hard to query; we replace it by a matroid that contains
-it, show that containment alone keeps every update valid, and bound the number
-of updates by a potential.  Correctness and size bounds of all circuits are
-verified in Lean~4 with Mathlib.
+$(\max,+,-)$-circuit of size $3ms+O(m^{2})$ for the maximum weight of a base, and
+the two complexities are polynomially equivalent.  Both are polynomial for binary
+matroids, matroids represented over $\mathbb Q$ or a fixed finite field, and
+gammoids.  For two matroids with rank circuits of sizes $s_1$ and $s_2$, circuits
+of size $O(m^{7}(s_1+s_2+m))$ compute the optimal values of weighted matroid
+intersection, including the assignment problem, for which polynomial size was
+open.  The circuit updates Lagrange multipliers in a fixed sequence.  The family
+of bases these updates should test is NP-hard to query in general, but a
+monotone family of matroids containing it keeps the updates valid; a potential
+bounds their number.  All circuits and size bounds are verified in Lean~4.
 \keywords{Tropical circuits \and ReLU neural networks \and Matroid intersection
 \and Greedy algorithm \and Lagrangian relaxation}
 \end{abstract}
@@ -96,11 +90,12 @@ $\max(a,b)=\max(0,a-b)+\max(0,b)-\max(0,-b)$, a $(\max,+,-)$-circuit of size $S$
 converts into a ReLU neural network of size $3S$~\cite{hertrich-kober-loho26},
 so every circuit below also yields an exact ReLU neural network.
 
-Let $M$ be a matroid on a ground set $E$ with $|E|=m$, rank function $r$ and
-rank $k=r(E)$, let $h_M(w)=\max_{B\in\Bases(M)}w(B)$ with
-$w(B)=\sum_{e\in B}w_e$, and let $L=\lceil\log_2(k+1)\rceil$.  Our circuits read
+Let $M$ be a matroid on a ground set $E$ with $|E|=m$, rank function $r$,
+rank $k=r(E)$ and set of bases $\Bases(M)$.  For $u\in\R^{E}$ and $X\subseteq E$ let
+$u(X)=\sum_{e\in X}u_e$, let $h_M(w)=\max_{B\in\Bases(M)}w(B)$, and let
+$L=\lceil\log_2(k+1)\rceil$.  Our circuits read
 $M$ only through a \emph{Boolean rank circuit}, a Boolean circuit that outputs
-the binary digits of $r(S)$ from the indicator vector of $S\subseteq E$.
+the binary digits of $r(X)$ from the indicator vector of $X\subseteq E$.
 
 \begin{mainthm}[Maximum-weight bases]
 \label{thm:A}
@@ -125,8 +120,9 @@ all of them $h_M$ has a $(\max,+,-)$-circuit of polynomial size.  By counting, m
 matroids need $(\max,+,-)$-circuits of size $2^{m/2-O(\log m)}$
 (Corollary~\ref{cor:count} in Appendix~\ref{app:greedy}).
 
-Let the ground set of $M$ be partitioned into blocks $R_1,\ldots,R_k$.  A base is
-\emph{rainbow} if it meets every block once, and $\Opt(w)$ is the least weight
+Let the ground set of $M$ be partitioned into blocks $R_1,\ldots,R_k$.  A set is
+\emph{rainbow} if it meets every block at most once, so a rainbow base meets every
+block once, and $\Opt(w)$ is the least weight
 $w(B)$ of a rainbow base $B$ of $M$.  Rainbow spanning trees are the rainbow
 bases of a graphic matroid with colored edges, and their generating polynomial
 specializes to the permanent (Proposition~\ref{prop:star} in
@@ -174,7 +170,7 @@ blocks and, with $\blk(e)$ the block of $e$, the Lagrangian
   \Psi(p)=\sum_{b}p_b+\min_{B\in\Bases(M)}\sum_{e\in B}\bigl(w_e-p_{\blk(e)}\bigr).
 \]
 It is at most $\Opt(w)$ and equals it once some minimum base of the shifted
-weights $v=w-p_{\blk}$ is rainbow.  Stage $r=1,\ldots,k-1$ raises the potentials
+weights $v_e=w_e-p_{\blk(e)}$ is rainbow.  Stage $r=1,\ldots,k-1$ raises the potentials
 until a minimum base of $v$ meets $r+1$ blocks.  An update raises $p_b$ by
 the length of the set of levels $t\ge0$ at which a matroid $N(t)$ that grows with $t$
 has a base that meets exactly $r$ blocks and misses $b$, up to the first level at which $N(t)$
@@ -234,26 +230,28 @@ circuits.
 \end{definition}
 
 We use standard matroid terminology~\cite{oxley11,schrijver03} and write
-$X+e=X\cup\{e\}$, $X-e=X\setminus\{e\}$ and $[k]=\{1,\ldots,k\}$.  For a base $B$
+$\cl$ for the closure operator of $M$, $X+e=X\cup\{e\}$, $X-e=X\setminus\{e\}$, $[k]=\{1,\ldots,k\}$, $\mathbf 1_X$ for the indicator vector of
+a set $X$, $\mathbf 1=\mathbf 1_E$ and $\mathbf 1[P]\in\{0,1\}$ for the truth value of a
+statement $P$.  For a base $B$
 and $e\notin B$, $C(B,e)$ is the fundamental circuit in $B+e$.  For $u\in\R^{E}$
-write $u(X)=\sum_{e\in X}u_e$ and $\beta_M(u)=\min_Bu(B)$.  The minimum bases of
+write $\beta_M(u)=\min_Bu(B)$.  The minimum bases of
 $u$ are the bases of a matroid $M^{u}$, and they decompose over the connected
 components of $M$ (Lemma~\ref{lem:minbases} in Appendix~\ref{app:model}).
 
 \begin{definition}
 \label{def:ti}
 For $D\in\R^{E}_{\ge0}$ and $t\ge0$ let $G_t(D)=\{e:D_e\le t\}$, and let
-$0=s_0\le s_1\le\cdots\le s_m$ be the entries of $D$ in increasing order with a
-zero prepended.  Let $\Delta_i=s_{i+1}-s_i$.  For
+$0=d_0\le d_1\le\cdots\le d_m$ be the entries of $D$ in increasing order with a
+zero prepended.  Let $\Delta_i=d_{i+1}-d_i$.  For
 $F:2^{E}\to\R$ let
 \[
-  \CC_F(D)=\sum_{i=0}^{m-1}\Delta_i\,F\bigl(G_{s_i}(D)\bigr)
-  =\int_0^{s_m}F\bigl(G_t(D)\bigr)\,dt.
+  \CC_F(D)=\sum_{i=0}^{m-1}\Delta_i\,F\bigl(G_{d_i}(D)\bigr)
+  =\int_0^{d_m}F\bigl(G_t(D)\bigr)\,dt.
 \]
 \end{definition}
 
 If $F(E)=0$, then $\CC_F(D)=\int_0^{\infty}F(G_t(D))\,dt$ is the Lov\'asz
-extension of $S\mapsto F(E\setminus S)$ at $D$~\cite{lovasz83}.
+extension of $X\mapsto F(E\setminus X)$ at $D$~\cite{lovasz83}.
 
 \begin{theorem}
 \label{thm:compiler}
@@ -264,15 +262,15 @@ $j=1,\ldots,N$, at every $D\in\R^{E}_{\ge0}$.
 \end{theorem}
 
 \begin{proof}[Proof sketch]
-A sorting network gives the levels $s_i$ and the differences $\Delta_i$.  Since $D_e$ occurs among
-the $s_i$, we have $\max(\Delta_i-\max(D_e-s_i,0),0)=\Delta_i\mathbf 1[e\in G_{s_i}(D)]$,
+A sorting network gives the levels $d_i$ and the differences $\Delta_i$.  Since $D_e$ occurs among
+the $d_i$, we have $\max(\Delta_i-\max(D_e-d_i,0),0)=\Delta_i\mathbf 1[e\in G_{d_i}(D)]$,
 and for $x,y\in\{0,1\}$ and $\Delta\ge0$,
 \[
   \max(\Delta x+\Delta y-\Delta,0)=\Delta(x\wedge y),\quad
   \max(\Delta x,\Delta y)=\Delta(x\vee y),\quad
   \Delta-\Delta x=\Delta(\neg x).
 \]
-So the Boolean circuit, simulated gate by gate, outputs $\Delta_iF_j(G_{s_i}(D))$,
+So the Boolean circuit, simulated gate by gate, outputs $\Delta_iF_j(G_{d_i}(D))$,
 and the sums over $i$ are $\CC_{F_j}(D)$ (Appendix~\ref{app:model}).
 \end{proof}
 
@@ -281,14 +279,14 @@ following corollary.
 
 \begin{corollary}
 \label{cor:levels}
-Let $\Lambda\in\R^{L}_{\ge0}$, let $0=s_0\le s_1\le\cdots\le s_L$ be its entries in
-increasing order with a zero prepended and $\Delta_i=s_{i+1}-s_i$, and let
-$Y\in\R^{q}$ have every entry among $s_0,\ldots,s_L$.  Let $\mathbf 1[Y\le s_i]$ have the entries $\mathbf 1[Y_l\le s_i]$.  If a single
+Let $\Lambda\in\R^{n}_{\ge0}$, let $0=d_0\le d_1\le\cdots\le d_n$ be its entries in
+increasing order with a zero prepended and $\Delta_i=d_{i+1}-d_i$, and let
+$Y\in\R^{q}$ have every entry among $d_0,\ldots,d_n$.  Let $\mathbf 1[Y\le d_i]$ have the entries $\mathbf 1[Y_l\le d_i]$.  If a single
 Boolean circuit of size $s$ computes $F=(F_1,\ldots,F_N):\{0,1\}^{q}\to\{0,1\}^{N}$,
-then a $(\max,+,-)$-circuit of size at most $\frac32L^{2}+L(1+4q+3s+N)$ computes
+then a $(\max,+,-)$-circuit of size at most $\frac32n^{2}+n(1+4q+3s+N)$ computes
 from $\Lambda$ and $Y$ the values
 \[
-  \sum_{i=0}^{L-1}\Delta_i\,F_j\bigl(\mathbf 1[Y\le s_i]\bigr),\qquad j=1,\ldots,N.
+  \sum_{i=0}^{n-1}\Delta_i\,F_j\bigl(\mathbf 1[Y\le d_i]\bigr),\qquad j=1,\ldots,N.
 \]
 \end{corollary}
 
@@ -303,46 +301,47 @@ form of Definition~\ref{def:ti}.
 \label{lem:greedy}
 For every $D\in\R^{E}_{\ge0}$ and $\mu\in\R$,
 \begin{align*}
-  h_M(D)&=\sum_{i=0}^{m-1}\Delta_i\,r\bigl(E\setminus G_{s_i}(D)\bigr)=\CC_F(D)
-  \quad\text{with }F(S)=r(E\setminus S),\\
+  h_M(D)&=\sum_{i=0}^{m-1}\Delta_i\,r\bigl(E\setminus G_{d_i}(D)\bigr)=\CC_F(D)
+  \quad\text{with }F(X)=r(E\setminus X),\\
   h_M(D+\mu\mathbf 1)&=h_M(D)+\mu\,r(E).
 \end{align*}
 \end{lemma}
 
 \begin{proof}[Proof sketch]
-With $X_i=E\setminus G_{s_i}(D)$, so that $D_e=\sum_{i:\,e\in X_i}\Delta_i$, every
+With $X_i=E\setminus G_{d_i}(D)$, so that $D_e=\sum_{i:\,e\in X_i}\Delta_i$, every
 base $B$ satisfies
 \[
-  D(B)=\sum_{i=0}^{m-1}\Delta_i\,|B\cap X_i|\le\sum_{i=0}^{m-1}\Delta_i\,r(X_i).
+  D(B)=\sum_{i=0}^{m-1}\Delta_i\,|B\cap X_i|\le\sum_{i=0}^{m-1}\Delta_i\,r(X_i),\qquad
+  (D+\mu\mathbf 1)(B)=D(B)+\mu\,r(E).
 \]
 A base that extends nested bases of $X_{m-1}\subseteq\cdots\subseteq X_0$
-attains the bound.  Every base has $r(E)$ elements, which gives the shift.
+attains the bound.
 \end{proof}
 
 \begin{proof}[Proof sketch of Theorems~\ref{thm:A} and~\ref{thm:B}]
-For Theorem~\ref{thm:A}, normalize $D=w-\mu\mathbf 1$ with $\mu=\min_ew_e$,
-apply Corollary~\ref{cor:integer} in Appendix~\ref{app:model} to
-$F(S)=r(E\setminus S)$, and
-add $\mu k$.  For Theorem~\ref{thm:B}, on inputs in $\{0,1\}$ every wire of a
-$(\max,+,-)$-circuit with $S$ gates carries an integer of absolute value at most
-$2^{S}$, so $(S+2)$-bit two's complement arithmetic simulates it gate by gate,
-and $h_M(\mathbf 1_T)=r(T)$ (Appendix~\ref{app:greedy}).
+For Theorem~\ref{thm:A}, Lemma~\ref{lem:greedy} with $\mu=\min_ew_e$ and
+$F(X)=r(E\setminus X)$ gives $h_M(w)=\mu k+\CC_F(w-\mu\mathbf 1)$, and
+Corollary~\ref{cor:integer} in Appendix~\ref{app:model} computes $\CC_F$.  For
+Theorem~\ref{thm:B}, on $\{0,1\}^{E}$ the wires of a $(\max,+,-)$-circuit with $S$
+gates carry integers in $[-2^{S},2^{S}]$, so $(S+2)$-bit two's complement
+arithmetic simulates it gate by gate, and $h_M(\mathbf 1_T)=r(T)$
+(Appendix~\ref{app:greedy}).
 \end{proof}
 
 Gaussian elimination without branching, and for duals the formula
-$r^{*}(S)=|S|+r(E\setminus S)-r(E)$, give the rank circuits of the next corollary.
+$r^{*}(X)=|X|+r(E\setminus X)-r(E)$, give the rank circuits of the next corollary.
 
 \begin{corollary}
 \label{cor:classes}
 For the following matroids $M$ on $m$ elements, the function $h_M$ has a $(\max,+,-)$-circuit of polynomial size.
 \begin{enumerate}
-  \item A binary matroid represented by an $r\times m$ matrix over
-        $\mathrm{GF}(2)$: size at most $100(m+1)^{2}(r+1)^{2}$.
-  \item A matroid represented by an $r\times m$ matrix over a finite field with
-        $q$ elements: size at most $25q^{2}(m+1)^{2}(r+1)^{2}$.
-  \item A matroid represented over $\mathbb Q$ by an $r\times m$ integer matrix
+  \item A binary matroid represented by an $n\times m$ matrix over
+        $\mathrm{GF}(2)$: size at most $100(m+1)^{2}(n+1)^{2}$.
+  \item A matroid represented by an $n\times m$ matrix over a finite field with
+        $q$ elements: size at most $25q^{2}(m+1)^{2}(n+1)^{2}$.
+  \item A matroid represented over $\mathbb Q$ by an $n\times m$ integer matrix
         whose entries have absolute value less than $2^{b}$: size at most
-        $2^{21}(m+1)^{2}(r+1)^{2}(r(r+b)+1)^{6}$.
+        $2^{21}(m+1)^{2}(n+1)^{2}(n(n+b)+1)^{6}$.
   \item The dual $M^{*}$ of a matroid $M$ with a Boolean rank circuit of size
         $s$: size $3ms+O(m^{2}\log m)$.
   \item The cycle matroid $M(G)$ of a multigraph $G$ with $n$ vertices and $m$
@@ -357,19 +356,18 @@ For the following matroids $M$ on $m$ elements, the function $h_M$ has a $(\max,
 \subsection{Setting and the Lagrangian}
 \label{sec:lagr}
 
-Throughout this section $M$ is a matroid of rank $k$ on $E$, $|E|=m$, with rank
-function $r_M$ (the letter $r$ denotes a stage), the blocks $R_1,\ldots,R_k$
-partition $E$, $\blk(e)$ is the block of $e$, and $E_Q=\bigcup_{b\in Q}R_b$ for
-$Q\subseteq[k]$.  A set is \emph{rainbow} if it
-meets every block at most once.  For a matroid $N$ on $E$ let $\nu(N)$ be the
+Throughout this section the rank function of $M$ is written $r_M$, as the letter
+$r$ denotes a stage, and $E_Q=\bigcup_{b\in Q}R_b$ for $Q\subseteq[k]$.  For a
+matroid $N$ on $E$ let $\nu(N)$ be the
 largest size of a rainbow independent set of $N$, and let $\Av(N)$ be the set of
 blocks missed by some rainbow independent set of size $\nu(N)$, the
 \emph{avoidable} blocks.  We assume that $M$ has a rainbow base; the algorithm
 that produces the circuit checks this once by unweighted matroid intersection.  For
-$p\in\R^{k}$ write $v=w-p_{\blk}$, that is $v_e=w_e-p_{\blk(e)}$, and
+$y\in\R^{k}$ let $y_{\blk}\in\R^{E}$ have the entries $y_{\blk(e)}$.  For
+$p\in\R^{k}$ the shifted weights are $v=w-p_{\blk}$ and the Lagrangian is
+$\Psi(p)=\sum_{b=1}^{k}p_b+\beta_M(v)$.  Let
 \[
-  \Psi(p)=\sum_{b=1}^{k}p_b+\beta_M(v),\qquad \nu_0=\nu(M^{v}),\qquad
-  S_0=\Av(M^{v}).
+  \nu_0=\nu(M^{v}),\qquad S_0=\Av(M^{v}).
 \]
 So $\nu_0$ is the largest number of blocks met by a minimum base of $v$.
 
@@ -437,9 +435,8 @@ on $[c_q,\infty)$.
 Let $r<k$ and $\nu_0\ge r$.  For an admissible family let $\tau$ be the least
 $t$ with $\nu(N(t))\ge r+1$, let $\lambda_b$ be the least $t$ at which some base
 of $N(t)$ meeting exactly $r$ blocks misses $b$, with $\lambda_b=\infty$ if there
-is none, and let $a_b=(\tau-\lambda_b)_+=\max(\tau-\lambda_b,0)$.  The update of
-stage $r$ is
-$p\mapsto p+a$.  If $\nu_0>r$, then $\tau=0$ and $a=0$.
+is none, and let $a_b=(\tau-\lambda_b)_+=\max(\tau-\lambda_b,0)$.  The vector $a$ is
+the update of stage $r$, and stage $r$ replaces $p$ by $p+a$ while $\nu_0=r$.  If $\nu_0>r$, then $\tau=0$ and $a=0$.
 \end{definition}
 
 \begin{lemma}
@@ -464,26 +461,26 @@ Let $\nu_0=r<k$, let $N(t)$ be admissible, and let $a$ be its update.  Then
 \end{theorem}
 
 \begin{proof}[Proof sketch]
-For $s\in[0,\tau]$ let $a(s)_b=(s-\lambda_b)_+$, $v(s)=v-a(s)_{\blk}$ and
-$S_s=\{b:\lambda_b\le s\}$.  The function $\varphi(s)=\Psi(p+a(s))$ is piecewise
+For $t\in[0,\tau]$ let $a(t)_b=(t-\lambda_b)_+$, $v(t)=v-a(t)_{\blk}$ and
+$S_t=\{b:\lambda_b\le t\}$.  The function $\varphi(t)=\Psi(p+a(t))$ is piecewise
 linear with right derivative
-$|S_s|-\max\{|B\cap E_{S_s}|:B\in\Bases(M^{v(s)})\}$.  Let $s<\tau$.  As
-$a(s)\in[0,s]^{k}$, every minimum base of $v(s)$ lies in $\Pos_s$
-(Lemma~\ref{lem:path} in Appendix~\ref{app:pos}), hence in $\Bases(N(s))$ by
-(F3).  By Lemma~\ref{lem:updint}, $\nu(N(s))=r$ and $\Av(N(s))=S_s$, and by
+$|S_t|-\max\{|B\cap E_{S_t}|:B\in\Bases(M^{v(t)})\}$.  Let $t<\tau$.  As
+$a(t)\in[0,t]^{k}$, every minimum base of $v(t)$ lies in $\Pos_t$
+(Lemma~\ref{lem:path} in Appendix~\ref{app:pos}), hence in $\Bases(N(t))$ by
+(F3).  By Lemma~\ref{lem:updint}, $\nu(N(t))=r$ and $\Av(N(t))=S_t$, and by
 Lemma~\ref{lem:avoidable} in Appendix~\ref{app:update},
 $|\Av(N)|-r_N(E_{\Av(N)})=k-\nu(N)$ for every matroid $N$.  A base $B^{*}$ of
-$M^{v}$ meeting $r$ blocks misses only blocks of $S_0\subseteq S_s$, so
+$M^{v}$ meeting $r$ blocks misses only blocks of $S_0\subseteq S_t$, so
 \[
-  \max_{B\in\Bases(M^{v(s)})}|B\cap E_{S_s}|\le r_{N(s)}(E_{S_s})=|S_s|-(k-r)
-  \le|B^{*}\cap E_{S_s}|.
+  \max_{B\in\Bases(M^{v(t)})}|B\cap E_{S_t}|\le r_{N(t)}(E_{S_t})=|S_t|-(k-r)
+  \le|B^{*}\cap E_{S_t}|.
 \]
-Hence $\varphi'(s^{+})\ge k-r$, while $\varphi^{*}(s)=\sum_b(p_b+a(s)_b)+v(s)(B^{*})$
+Hence $\varphi'(t^{+})\ge k-r$, while $\varphi^{*}(t)=\sum_b(p_b+a(t)_b)+v(t)(B^{*})$
 satisfies $\varphi^{*}\ge\varphi$, $\varphi^{*}(0)=\varphi(0)$ and
-$(\varphi^{*})'(s^{+})\le k-r$ (Appendix~\ref{app:update}).  So $B^{*}$ stays
+$(\varphi^{*})'(t^{+})\le k-r$ (Appendix~\ref{app:update}).  So $B^{*}$ stays
 minimum and
 \[
-  \Psi(p)+(k-r)s\le\varphi(s)\le\varphi^{*}(s)\le\Psi(p)+(k-r)s.\qedhere
+  \Psi(p)+(k-r)t\le\varphi(t)\le\varphi^{*}(t)\le\Psi(p)+(k-r)t.\qedhere
 \]
 \end{proof}
 
@@ -515,15 +512,17 @@ by $\mathcal G_t$.
 \end{proposition}
 
 \begin{proof}[Proof sketch]
-For (F3), a base with $\theta(B)\le t$ is minimum for $v-t\mathbf 1_B$, so its
-elements lie in $\PO_t$, and an exchange gain of at most $t$ links the two
-exchanged elements.  For (F2), let $t<t'$ and let $B$ be a minimum base of $u_t$.  As the scale
-grows, $\PO_t$ grows and clusters merge in order, so the only exchanges to check
-are those of an $e\in\PO_{t'}\setminus\PO_t$ outside $B$ with an $f\in C(B,e)$
-such that $v_f>v_e$.  Such an $e$ is spanned by the elements of $B$ in clusters
-no higher than that of some $x\in\PO_t$ with $v_x<v_e-t$; as $v_x<v_e<v_f$, the
-element $f$ lies in the cluster of $x$, and at scale $t'$ the element $e$ joins
-this cluster (Appendix~\ref{app:posl}).
+For (F3), a base with $\theta(B)\le t$ is minimum for $v-t\mathbf 1_B$, so
+$B\subseteq\PO_t$, and an exchange gain $v_f-v_e\in(0,t]$ links $e$ and $f$.  For
+(F2), let $t<t'$ and let $B$ be a minimum base of $u_t$.  As the scale grows,
+$\PO_t$ grows and clusters merge in order, so it remains to consider
+$e\in\PO_{t'}\setminus\PO_t$ outside $B$ and $f\in C(B,e)$ with $v_f>v_e$.  Then
+$e\in\cl\{h\in B:u_t(h)\le u_t(x)\}$ for some $x\in\PO_t$ with $v_x<v_e-t$, and as
+clusters are ordered by value (Appendix~\ref{app:posl}),
+\[
+  u_t(f)\le u_t(x),\ v_x<v_e<v_f\ \Rightarrow\ u_t(f)=u_t(x)\ \Rightarrow\
+  u_{t'}(f)=u_{t'}(x)=u_{t'}(e).\qedhere
+\]
 \end{proof}
 
 \subsection{Breakpoints}
@@ -531,8 +530,8 @@ this cluster (Appendix~\ref{app:posl}).
 
 By Proposition~\ref{prop:posl}, $N(t)$ is determined by the $m^{2}$ bits of
 $\mathcal G_t$, which change at the $m^{2}$ levels $|v_e-v_f|$;
-Lemma~\ref{lem:events} reduces them to $2m$ levels.  Call two elements
-\emph{joined} if they are non-loops in the same connected component of $M$, and
+Lemma~\ref{lem:events} reduces them to $2m$ levels.  Call two elements,
+not necessarily distinct, \emph{joined} if they are non-loops in the same connected component of $M$, and
 fix a linear order on $E$.
 
 \begin{lemma}
@@ -566,15 +565,16 @@ $\Lambda\cup\{0\}$ and beyond the largest one.
 An element $x$ enters $\PO_t$ at $t_x=\CC_{\phi_x}(D^{x})$, where $\phi_x$ is
 antitone, and two clusters merge at the minimax distance $T_{xy}$.
 If no element of the cluster of $x$ at scale $h=T_{xy}$ enters at $h$, the least
-element $z$ of a class of $\{T<h\}$ that avoids the least element of the cluster
+element $z$ of a class of the relation $T_{ef}<h$ on this cluster that avoids the least element of the cluster
 has $\sigma_z=h$ (Appendix~\ref{app:events}).
 \end{proof}
 
 \subsection{Termination}
 \label{sec:term}
 
-Fix a stage $r<k$ and a state with $\nu_0=r$, let $a$ be its update under PO-SL,
-and let $v'=v-a_{\blk}$.  The blocks of $S_0=\Av(M^{v})$ are raised by the full
+Fix a stage $r<k$ and a state, that is potentials $p$, with $\nu_0=r$, let $a$ be
+its update under PO-SL,
+and let $v'=v-a_{\blk}$.  The blocks of $S_0$ are raised by the full
 length $\tau$ of the update, and the others by less.  Let $\Pi(v)$ be the set of pairs in which an element of a fully raised block
 lies at or below an element of another block,
 \[
@@ -597,8 +597,9 @@ updates.
 Item 1 follows from Theorem~\ref{thm:validity}(2), and item 2 from
 $a_b=\tau\ge a_{b'}$ for $b\in S_0$ and every block $b'$.  For item 3, let
 $\delta>0$ be the first level at which $\Av(N(t))$ or $\nu(N(t))$ changes, so
-that $a_b\le\tau-\delta$ for $b\notin S_0$.  By Lemma~\ref{lem:avoidable}, the
-rank of $E_{S_0}$ in $N(t)$ increases at $\delta$, so for a minimum base $B$ of $v$ with the most elements in $E_{S_0}$,
+that $a_b\le\tau-\delta$ for $b\notin S_0$.  By Lemma~\ref{lem:avoidable},
+$r_{N(\delta)}(E_{S_0})>|S_0|-(k-r)=r_{M^{v}}(E_{S_0})$, so for a minimum base $B$
+of $v$ with $|B\cap E_{S_0}|=r_{M^{v}}(E_{S_0})$,
 some $g\in B\setminus E_{S_0}$ and $y\in E_{S_0}\setminus B$ lie in the same cluster
 at scale $\delta$ with $v_g<v_y$.  In that cluster, some consecutive values
 $\alpha=v_{z_1}<\beta=v_{z_2}$ with
@@ -685,7 +686,7 @@ $t\ge0$, on input $\mathbf 1[\mathcal Q(v)\le t]$,
 By Lemma~\ref{lem:events}, the bits $\mathbf 1[\mathcal Q(v)\le t]$ give $\PO_t$
 and the clusters at no cost, and their order with $2m^{2}$ gates.  Let
 $\mathrm{Lev}(y)$ be the cluster of $y$ and $\mathrm{Below}(y)$ the set of
-elements of its component in lower clusters.  By the rank formula of $M^{u_t}$,
+elements of its component with smaller $u_t$.  By the rank formula of $M^{u_t}$,
 for a set $A$ with $A-y$ independent in $N(t)$,
 \[
   \begin{aligned}
@@ -711,12 +712,12 @@ The circuit computes $v$, the entry levels $t_x$ by
 Theorem~\ref{thm:compiler}, the merge levels by the Floyd--Warshall algorithm
 over $(\min,\max)$, whose bits $\mathbf 1[T_{xy}\le t]$ follow Warshall's
 algorithm~\cite{warshall62} at every $t$, and from them $\Lambda$ and
-$\mathcal Q(v)$.  With $0=s_0\le\cdots\le s_{2m}$ the entries of $\Lambda$ in
+$\mathcal Q(v)$.  With $0=d_0\le\cdots\le d_{2m}$ the entries of $\Lambda$ in
 increasing order with a zero prepended and $F_b$
 the circuit of Lemma~\ref{lem:observer} for $r_0=r$, Lemmas~\ref{lem:updint}
 and~\ref{lem:events} give
 \[
-  a_b=\sum_{i=0}^{2m-1}(s_{i+1}-s_i)\,F_b\bigl(\mathbf 1[\mathcal Q(v)\le s_i]\bigr).
+  a_b=\sum_{i=0}^{2m-1}(d_{i+1}-d_i)\,F_b\bigl(\mathbf 1[\mathcal Q(v)\le d_i]\bigr).
 \]
 Corollary~\ref{cor:levels} computes this sum with $2m$ simulated copies of that
 circuit (Appendix~\ref{app:circuit}).
@@ -764,14 +765,14 @@ The matroid $N$ of Lemma~\ref{lem:doubling} has rank $m$ on $2m$ elements with
 $m$ blocks, and its rank function costs $s_1+s_2+O(m)$ gates since, with $r_i$
 the rank function of $M_i$,
 \[
-  r_N\bigl(A\times\{1\}\cup B\times\{2\}\bigr)=r_1(A)+|B|+r_2(E\setminus B)-r_2(E).
+  r_N\bigl(X_1\times\{1\}\cup X_2\times\{2\}\bigr)=r_1(X_1)+|X_2|+r_2(E\setminus X_2)-r_2(E).
 \]
 So Theorem~\ref{thm:C} with $k=m$ gives the minimum
 weight of a common base with $O(m^{3}(2m)^{4}(s_1+s_2+m))=O(m^{7}(s_1+s_2+m))$
-gates.  For common independent sets, the truncations at $m$ of the direct sums of
-$M_1$ and $M_2$ with a free matroid on $m$ new elements $Z$ have the common base
-$Z$, and at the weight $-w$ on $E$ and $0$ on $Z$ their least common base weight
-is minus the greatest weight of a common independent set
+gates.  For common independent sets $X$, the truncations $M_1',M_2'$ at $m$ of the
+direct sums of $M_1$ and $M_2$ with a free matroid on $m$ new elements $Z$ have the
+common base $Z$, and with $w'$ equal to $-w$ on $E$ and $0$ on $Z$,
+$\max_Xw(X)=-\min\{w'(B):B\in\Bases(M_1')\cap\Bases(M_2')\}$
 (Appendix~\ref{app:two}).
 \end{proof}
 

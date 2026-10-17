@@ -388,7 +388,66 @@ BODY = {
          "Theorem `thm:D`) are built",
          "The circuits of Lemma 22 and of the proof of Theorem D of the paper are built"),
         ("Unfolded, this is the Phase 1 form of a gadget\n  specification",
-         "Unfolded, this is the form of a gadget\n  specification in `Circuit.lean`")],
+         "Unfolded, this is the form of a gadget\n  specification in `Circuit.lean`"),
+        # step citations of the current paper (the docstrings cite an earlier step layout)
+        ("(`lem:observer`, Steps 1 and 3, \"evaluate the rank circuit on ...\")",
+         "(the rank evaluations of `lem:observer`, Step 2, and of `thm:D`,\nSteps 2 and 4)")],
+    "BoolAlg.Arith": [
+        ("**Truncated subtraction** (`lem:observer`, Step 3; `thm:D`, Step 2)",
+         "**Truncated subtraction** (`lem:observer`, Step 2; `thm:D`, Step 2)"),
+        ("**Comparison** (`lem:observer`, Steps 1 and 4; `thm:D`, Step 4)",
+         "**Comparison** (`lem:augment`, Step 3; `lem:oneupdate`, Step 2; `thm:D`, Step 4)"),
+        ("**Equality** (`lem:observer`, Step 1)",
+         "**Equality** (`lem:observer`, Step 2; `cor:transversal`, Step 3)")],
+    "BoolAlg.Bits": [
+        ("(`lem:observer`, Step 2 \"its element of least index\" and Step 4\n"
+         "\"the sink of least index ..., then predecessors of least index\")",
+         "(`lem:augment`, Step 1, \"the sink of least index in the first layer\n"
+         "containing a sink, the predecessors of least index\")")],
+    "BoolAlg.Count": [
+        ("**Sum of `r` numbers** of width `w` (`lem:observer`, Step 3): on",
+         "**Sum of `r` numbers** of width `w`: on"),
+        ("(`lem:observer`, Step 3, \"an independence\ntest `[r_{N_G}(J) = |J|]`\"; `cor:transversal`, Step 3)",
+         "(`lem:observer`, Step 2;\n`cor:transversal`, Step 3)")],
+    "BoolAlg.ExchangeBits": [
+        ("(Step 3 of the proof of `lem:observer`)",
+         "(`lem:augment`, Steps 1 and 3)")],
+    "BoolAlg.Rel": [
+        ("* **Warshall's algorithm** (`warshallB`, `2r³` gates, the count of `lem:observer`): one round",
+         "* **Warshall's algorithm** (`warshallB`, `2r³` gates): one round"),
+        ("gates), the reflexive transitive closure (`rtcV_eq_true_iff`, `Relation.ReflTransGen`).",
+         "gates), the reflexive transitive closure (`rtcV_eq_true_iff`, `Relation.ReflTransGen`).\n"
+         "  Run on the bits `[W ≤ t]`, `warshallV` gives the bits of the Floyd–Warshall algorithm of\n"
+         "  `lem:oneupdate`, Step 2 (`Rainbow/Events.lean`)."),
+        ("/-- **Warshall's algorithm** (`lem:observer`, Step 2, \"Warshall's algorithm closes them\n"
+         "transitively with `2m³` gates\"): `2r³` gates;",
+         "/-- **Warshall's algorithm**: `2r³` gates;")],
+    "Rainbow.POSL": [
+        ("`N_G = M` (Lemma `lem:observer`, Step 5)",
+         "`N_G = M` (Proposition `prop:posl`, Step 4)")],
+    "Rainbow.POSLRank": [
+        ("Lemma `lem:observer`, Steps 1 to 3, the mathematical content",
+         "Lemma `lem:observer`, Steps 1 and 2, the mathematical content"),
+        ("* `mem_POG_iff` (Step 1): `f ∈ PO_G` iff",
+         "* `mem_POG_iff` (Definition `def:posl`): `f ∈ PO_G` iff"),
+        ("* `uG_lt_uG_iff` (Step 2): at `G = G_t`",
+         "* `uG_lt_uG_iff` (Step 1): at `G = G_t`"),
+        ("**The rank of `N(t)`** (Lemma `lem:observer`, Step 3)",
+         "**The rank of `N(t)`** (Lemma `lem:observer`, Step 2)"),
+        ("**The rank of `N_G` read from `G`** (Lemma `lem:observer`, Step 3)",
+         "**The rank of `N_G` read from `G`** (Lemma `lem:observer`, Step 2)"),
+        ("`PO_G` from rank queries (Lemma `lem:observer`, Step 1)",
+         "`PO_G` from rank queries (Definition `def:posl`)"),
+        ("read from `G` (Lemma `lem:observer`, Step 2): at",
+         "read from `G` (Lemma `lem:observer`, Step 1): at")],
+    "Rainbow.TheoremD": [
+        ("* Step 4 (`minCommonBaseWeight_pad`)", "* Steps 4 and 5 (`minCommonBaseWeight_pad`)"),
+        ("* The circuit of Step 4 (`negNegCircuit`", "* The circuit of Step 5 (`negNegCircuit`"),
+        ("/-! ### Step 4: common independent sets as common bases of the padded matroids -/",
+         "/-! ### Steps 4 and 5: common independent sets as common bases of the padded matroids -/"),
+        ("**Theorem `thm:D`, Step 4.**", "**Theorem `thm:D`, Steps 4 and 5.**"),
+        ("/-! ### The circuit of Step 4 -/", "/-! ### The circuit of Step 5 -/"),
+        ("/-- The circuit of Step 4 (`negNegB`)", "/-- The circuit of Step 5 (`negNegB`)")],
     "Rainbow.Defs": [
         ("`greedy_intersection.tex`, Sections 4 and 5.  This module fixes the objects that every module\n"
          "of the Phase 2 development refers to.",
@@ -407,7 +466,9 @@ BODY = {
         ("**Corollary F, lower bound.**", "**Lower bound.**")],
     "GapSum": [
         ("**The threshold integral, as a gap sum** (`eq:gap-sum`):",
-         "**The sum of Definition 2**:")],
+         "**The sum of Definition 2**:"),
+        ("**Lemma `lem:bit` (exact membership at amplitude).**",
+         "**Exact membership at amplitude** (Lemma `lem:bit`).")],
     "Counting": [
         ("**Corollary D, counting form.**", "**Corollary 28, counting form.**"),
         ("**Corollary D.**", "**Corollary 28, conditional form.**")],
