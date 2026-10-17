@@ -67,10 +67,19 @@ at four gates.
   \max(\Delta x,\Delta y)=\Delta(x\vee y),\quad
   \Delta-\Delta x=\Delta(\neg x).
 \]
-With each Boolean gate replaced by the left side, at most three gates, and each
-input bit by \eqref{eq:bit}, every wire carries $\Delta$ times its Boolean value at
-$G_{d_i}(D)$, by induction on the gates, and the outputs are
-$\Delta_iF_j(G_{d_i}(D))$, $j=1,\ldots,N$.
+Let $B$ be the given Boolean circuit and $B_\Delta$ the circuit in which each gate of
+$B$ is replaced by the left side, at most three gates.  By induction on the gates,
+\[
+  \begin{tikzcd}[column sep=4.5em,row sep=2.2em]
+    \{0,1\}^{E}\arrow[r,"B"]\arrow[d,"\Delta\,\cdot"'] & \{0,1\}^{N}\arrow[d,"\Delta\,\cdot"]\\
+    \R^{E}\arrow[r,"B_\Delta"'] & \R^{N}
+  \end{tikzcd}
+\]
+commutes, and at the inputs of \eqref{eq:bit}
+\[
+  B_\Delta\bigl(\Delta\mathbf 1_{G_{d_i}(D)}\bigr)=\Delta B\bigl(\mathbf 1_{G_{d_i}(D)}\bigr)
+  =\Delta_iF\bigl(G_{d_i}(D)\bigr).
+\]
 
 \emph{Step 4: $\CC_{F_j}(D)$ with at most $3ms+mN+6m^{2}$ gates.}  With $N$ additions for each $i$,
 \[
@@ -1280,16 +1289,25 @@ gates, as $k\le m$, and Steps 1 and 2 cost $ms+2m^{2}$ gates besides the tests.
 \emph{Step 2: $\Lambda$ and $\mathcal Q(v)$ with $O(m^{2}s+m^{3})$ gates.}  For a non-loop $x$, the vector $D^{x}$ costs $2m$
 gates and the Boolean circuit of $\phi_x(S)=\mathbf 1[r_M(E\setminus S+x)=r_M(E\setminus S)]$,
 with $m$ negations, two rank evaluations and a comparison, has $2s+O(m)$ gates, so
-Theorem~\ref{thm:compiler} gives $t_x$ with $O(ms+m^{2})$ gates.  The
-Floyd--Warshall algorithm over $(\min,\max)$ starts from $W$ and replaces $T_{xy}$
-by $\min(T_{xy},\max(T_{xz},T_{zy}))$ for the pivots $z$ in turn; at every $t$ its
-bits follow Warshall's algorithm~\cite{warshall62} on the bits
-$\mathbf 1[W_{xy}\le t]$, as
+Theorem~\ref{thm:compiler} gives $t_x$ with $O(ms+m^{2})$ gates.  Let $\mathcal J$ be the
+set of joined pairs, so that $W\in\R^{\mathcal J}$.  The Floyd--Warshall algorithm
+$\mathrm{FW}$ over $(\min,\max)$ starts from $W$ and replaces $T_{xy}$ by
+$\min(T_{xy},\max(T_{xz},T_{zy}))$ for the pivots $z$ in turn, and Warshall's
+algorithm~\cite{warshall62} does the same on bits with $\vee$ and $\wedge$.  As
 \[
   \mathbf 1\bigl[\min(T_{xy},\max(T_{xz},T_{zy}))\le t\bigr]
   =\mathbf 1[T_{xy}\le t]\vee\bigl(\mathbf 1[T_{xz}\le t]\wedge\mathbf 1[T_{zy}\le t]\bigr),
 \]
-so it computes the least value $T_{xy}$ of Lemma~\ref{lem:events}(2).  With the
+every pivot commutes with the threshold map, so for every $t\ge0$
+\[
+  \begin{tikzcd}[column sep=4.5em,row sep=2.2em]
+    \R^{\mathcal J}\arrow[r,"\mathrm{FW}"]\arrow[d,"{\mathbf 1[\,\cdot\,\le t]}"'] &
+    \R^{\mathcal J}\arrow[d,"{\mathbf 1[\,\cdot\,\le t]}"]\\
+    \{0,1\}^{\mathcal J}\arrow[r,"\text{Warshall}"'] & \{0,1\}^{\mathcal J}
+  \end{tikzcd}
+\]
+commutes, and $\mathrm{FW}(W)$ is the matrix of the least values $T_{xy}$ of
+Lemma~\ref{lem:events}(2).  With the
 values $\sigma_x$ and $\omega_{xy}$, the levels $\Lambda$ and the values
 $\mathcal Q(v)$ cost
 \[
@@ -1299,22 +1317,35 @@ $\mathcal Q(v)$ cost
 gates.
 
 \emph{Step 3: $a_b=\sum_{i<2m}\Delta_i\,F_b(\mathbf 1[\mathcal Q(v)\le d_i])$.}  Let $F_b$ be the bits of
-Lemma~\ref{lem:observer} with $r_0=r$, and $0=d_0\le\cdots\le d_{2m}$ the entries of
+Lemma~\ref{lem:observer} with $r_0=r$, and for a matroid $N$ on $E$ let
+$\chi_b(N)=\mathbf 1[\nu(N)\le r]\wedge\mathbf 1[b\in\Av(N)]$.  By
+Lemma~\ref{lem:observer}, for every $v\in\R^{E}$
+\[
+  \begin{tikzcd}[column sep=5.4em,row sep=2.4em]
+    {[0,\infty)}\arrow[r,"{t\,\mapsto\,\mathbf 1[\mathcal Q(v)\le t]}"]
+      \arrow[d,"{t\,\mapsto\,N(t)}"'] &
+    \{0,1\}^{m+2m^{2}}\arrow[d,"F_b"]\\
+    \{\text{matroids on }E\}\arrow[r,"\chi_b"'] & \{0,1\}
+  \end{tikzcd}
+\]
+commutes.  Let $0=d_0\le\cdots\le d_{2m}$ be the entries of
 $\Lambda$ in increasing order with a zero prepended.  Every entry of $\mathcal Q(v)$
 lies in $\Lambda\cup\{0\}$ by Lemma~\ref{lem:events}, so the bits
 $\mathbf 1[\mathcal Q(v)\le t]$ are constant on each $[d_i,d_{i+1})$, and for
 $t\ge d_{2m}$ they are all $1$, as at $t'=\max(d_{2m},\max v-\min v)$, where
 $N(t')=M$ by Step 4 of the proof of Proposition~\ref{prop:posl} and $\nu(M)=k>r$.
-So for $t\ge d_{2m}$, by Lemma~\ref{lem:observer},
+So for $t\ge d_{2m}$, by the square,
 \[
   F_b\bigl(\mathbf 1[\mathcal Q(v)\le t]\bigr)=F_b\bigl(\mathbf 1[\mathcal Q(v)\le t']\bigr)
-  \le\mathbf 1\bigl[\nu(M)\le r\bigr]=0.
+  =\chi_b(M)=0.
 \]
-If $\nu_0=r$, then by Lemma~\ref{lem:updint} and
-Lemma~\ref{lem:observer},
+If $\nu_0=r$, then by Lemma~\ref{lem:updint} and the square,
 \[
-  a_b=\int_0^{\infty}F_b\bigl(\mathbf 1[\mathcal Q(v)\le t]\bigr)\,dt
-  =\sum_{i=0}^{2m-1}\Delta_i\,F_b\bigl(\mathbf 1[\mathcal Q(v)\le d_i]\bigr),
+  \begin{aligned}
+  a_b&=\int_0^{\infty}\chi_b\bigl(N(t)\bigr)\,dt
+  =\int_0^{\infty}F_b\bigl(\mathbf 1[\mathcal Q(v)\le t]\bigr)\,dt\\
+  &=\sum_{i=0}^{2m-1}\Delta_i\,F_b\bigl(\mathbf 1[\mathcal Q(v)\le d_i]\bigr),
+  \end{aligned}
 \]
 and if $\nu_0>r$, then $\nu(N(t))\ge\nu_0>r$ for all $t$ and both sides are
 $0=a_b$.
